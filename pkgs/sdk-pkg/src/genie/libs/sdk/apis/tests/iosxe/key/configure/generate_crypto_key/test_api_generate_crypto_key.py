@@ -1,90 +1,186 @@
-import os
 import unittest
-from pyats.topology import loader
+from unittest import TestCase
+from unittest.mock import Mock
+
 from genie.libs.sdk.apis.iosxe.key.configure import generate_crypto_key
 
 
-class TestGenerateCryptoKey(unittest.TestCase):
+class TestGenerateCryptoKey(TestCase):
 
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          INT1:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: iosxe
-            type: iosxe
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['INT1']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
+    def assert_generate_crypto_key(
+        self,
+        key_type,
+        key_label,
+        modulus,
+        key_size,
+        exportable,
+        expected_command,
+    ):
+        device = Mock()
+        device.state_machine.current_state = "enable"
+        device.configure.return_value = None
+
+        result = generate_crypto_key(
+            device,
+            key_type,
+            key_label,
+            modulus,
+            key_size,
+            exportable,
+            30,
         )
 
+        self.assertIsNone(result)
+        device.configure.assert_called_once()
+
+        sent_command = device.configure.call_args.args[0]
+        self.assertIsInstance(sent_command, str)
+        self.assertEqual(sent_command, expected_command)
+
+        sent_kwargs = device.configure.call_args.kwargs
+        self.assertIn("reply", sent_kwargs)
+        self.assertEqual(
+            sent_kwargs["error_pattern"],
+            ["% Please define a domain-name first."],
+        )
+        self.assertEqual(sent_kwargs["timeout"], 30)
+
     def test_generate_crypto_key(self):
-        result = generate_crypto_key(self.device, 'ec', 'ECKEYS', None, '521', True, 30)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        self.assert_generate_crypto_key(
+            key_type="ec",
+            key_label="ECKEYS",
+            modulus=None,
+            key_size="521",
+            exportable=True,
+            expected_command=(
+                "crypto key generate ec keysize 521 "
+                "exportable label ECKEYS"
+            ),
+        )
 
     def test_generate_crypto_key_1(self):
-        result = generate_crypto_key(self.device, 'ec', 'ECKEYS', None, '256', False, 30)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        self.assert_generate_crypto_key(
+            key_type="ec",
+            key_label="ECKEYS",
+            modulus=None,
+            key_size="256",
+            exportable=False,
+            expected_command=(
+                "crypto key generate ec keysize 256 label ECKEYS"
+            ),
+        )
 
     def test_generate_crypto_key_2(self):
-        result = generate_crypto_key(self.device, 'ec', None, None, '384', True, 30)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        self.assert_generate_crypto_key(
+            key_type="ec",
+            key_label=None,
+            modulus=None,
+            key_size="384",
+            exportable=True,
+            expected_command=(
+                "crypto key generate ec keysize 384 exportable"
+            ),
+        )
 
     def test_generate_crypto_key_3(self):
-        result = generate_crypto_key(self.device, 'ec', None, None, '521', False, 30)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        self.assert_generate_crypto_key(
+            key_type="ec",
+            key_label=None,
+            modulus=None,
+            key_size="521",
+            exportable=False,
+            expected_command="crypto key generate ec keysize 521",
+        )
 
     def test_generate_crypto_key_4(self):
-        result = generate_crypto_key(self.device, 'rsa', 'RSAKEYS', '4096', None, True, 30)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        self.assert_generate_crypto_key(
+            key_type="rsa",
+            key_label="RSAKEYS",
+            modulus="4096",
+            key_size=None,
+            exportable=True,
+            expected_command=(
+                "crypto key generate rsa label RSAKEYS "
+                "modulus 4096 exportable"
+            ),
+        )
 
     def test_generate_crypto_key_5(self):
-        result = generate_crypto_key(self.device, 'rsa', None, '4096', None, True, 30)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        self.assert_generate_crypto_key(
+            key_type="rsa",
+            key_label=None,
+            modulus="4096",
+            key_size=None,
+            exportable=True,
+            expected_command=(
+                "crypto key generate rsa modulus 4096 exportable"
+            ),
+        )
 
     def test_generate_crypto_key_6(self):
-        result = generate_crypto_key(self.device, 'rsa', None, None, None, True, 30)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        self.assert_generate_crypto_key(
+            key_type="rsa",
+            key_label=None,
+            modulus=None,
+            key_size=None,
+            exportable=True,
+            expected_command="crypto key generate rsa exportable",
+        )
 
     def test_generate_crypto_key_7(self):
-        result = generate_crypto_key(self.device, 'rsa', 'RSAKEYS', None, None, True, 30)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        self.assert_generate_crypto_key(
+            key_type="rsa",
+            key_label="RSAKEYS",
+            modulus=None,
+            key_size=None,
+            exportable=True,
+            expected_command=(
+                "crypto key generate rsa label RSAKEYS exportable"
+            ),
+        )
 
     def test_generate_crypto_key_8(self):
-        result = generate_crypto_key(self.device, 'rsa', None, '4096', None, False, 30)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        self.assert_generate_crypto_key(
+            key_type="rsa",
+            key_label=None,
+            modulus="4096",
+            key_size=None,
+            exportable=False,
+            expected_command="crypto key generate rsa modulus 4096",
+        )
 
     def test_generate_crypto_key_9(self):
-        result = generate_crypto_key(self.device, 'rsa', None, None, None, False, 30)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        self.assert_generate_crypto_key(
+            key_type="rsa",
+            key_label=None,
+            modulus=None,
+            key_size=None,
+            exportable=False,
+            expected_command="crypto key generate rsa",
+        )
 
     def test_generate_crypto_key_10(self):
-        result = generate_crypto_key(self.device, 'rsa', 'RSAKEYS', None, None, False, 30)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        self.assert_generate_crypto_key(
+            key_type="rsa",
+            key_label="RSAKEYS",
+            modulus=None,
+            key_size=None,
+            exportable=False,
+            expected_command="crypto key generate rsa label RSAKEYS",
+        )
 
     def test_generate_crypto_key_11(self):
-        result = generate_crypto_key(self.device, 'rsa', 'RSAKEYS', '4096', None, False, 30)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        self.assert_generate_crypto_key(
+            key_type="rsa",
+            key_label="RSAKEYS",
+            modulus="4096",
+            key_size=None,
+            exportable=False,
+            expected_command=(
+                "crypto key generate rsa label RSAKEYS modulus 4096"
+            ),
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()

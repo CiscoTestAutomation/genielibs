@@ -797,20 +797,23 @@ def configure_monitor_capture(
     cmd = f"monitor capture {capture_name} match {match_type} interface {interface} {direction}"
     if file_location:
         cmd += f" file location {file_location}"
-    if file_size:
-        cmd += f" size {file_size}"
+        if file_size:
+            cmd += f" size {file_size}"
     if buffer_size:
-        cmd += f" buffer-size {buffer_size}"
+        cmd += f" buffer size {buffer_size}"
+    limit_opts = ""
     if duration:
-        cmd += f" limit duration {duration}"
+        limit_opts += f" duration {duration}"
     if packets:
-        cmd += f" packets {packets}"
+        limit_opts += f" packets {packets}"
     if packet_len:
-        cmd += f" packet-len {packet_len}"
+        limit_opts += f" packet-len {packet_len}"
     if capture_frequency:
-        cmd += f" every {capture_frequency}"
+        limit_opts += f" every {capture_frequency}"
     if pps:
-        cmd += f" pps {pps}"
+        limit_opts += f" pps {pps}"
+    if limit_opts:
+        cmd += f" limit{limit_opts}"
     try:
         device.execute(cmd)
     except SubCommandFailure as e:
@@ -2098,4 +2101,38 @@ def unconfigure_flow_monitor_cache_inactive_timeout(device, monitor_name, inacti
         raise SubCommandFailure(
             f"Could not unconfigure cache timeout inactive on flow monitor "
             f"{monitor_name}. Error:\n{e}"
+        )
+
+
+def unconfigure_ipv6_flow_monitor_on_interface(
+    device, interface, monitor_name, sampler_name, direction
+):
+    """Unconfigure IPv6 flow monitor with sampler on an interface
+
+    Args:
+        device (`obj`): Device object
+        interface (`str`): Interface name (e.g., 'Te3/1/2')
+        monitor_name (`str`): IPv6 flow monitor name (e.g., 'm6out')
+        sampler_name (`str`): Sampler name user defined
+            (e.g., 'sampler_random')
+        direction (`str`): Apply Flow Monitor on input/output traffic
+            (eg. 'input/output')
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: Failed unconfiguring IPv6 flow monitor with
+            sampler on subinterface
+    """
+    cmd = [
+        f"interface {interface}",
+        f"no ipv6 flow monitor {monitor_name} sampler {sampler_name} "
+        f"{direction}"
+    ]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure ipv6 flow monitor {monitor_name} "
+            f"sampler {sampler_name} {direction} on {interface}. "
+            f"Error:\n{e}"
         )

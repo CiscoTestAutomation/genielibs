@@ -304,10 +304,85 @@ def change_power_cycler_state(device, powercycler, state, outlets):
     _disconnect_powercycler(powercycler)
 
 
+def _get_directory_file_details(parsed_dir_output):
+    """Return the direct dir file details mapping when it is available."""
+    directory_data = parsed_dir_output.get('dir', {})
+    if not isinstance(directory_data, dict):
+        return None
+
+    directory_path = directory_data.get('dir')
+    file_details = directory_data.get(directory_path, {}).get('files')
+
+    return file_details if isinstance(file_details, dict) else None
+
+
+def _get_directory_entries_with_dq(parsed_dir_output):
+    """Return legacy Dq-based file entries for non IOS/IOSXE parser shapes."""
+    dq = Dq(parsed_dir_output)
+    file_list = []
+
+    for file in dq.get_values('files'):
+        size = 0
+        size_values = dq.contains(file).get_values('size')
+        if size_values:
+            size = int(size_values[0])
+        file_list.append((file, size))
+
+    return file_list, []
+
+
+def _is_directory_entry(entry_name, file_details=None):
+    """Return whether a parsed dir entry represents a directory."""
+    entry_details = (file_details or {}).get(entry_name, {})
+    return (str(entry_name).endswith('/') or
+            (entry_details.get('permissions', '') or '').startswith('d'))
+
+
+def _get_entry_size(entry_name, file_details=None):
+    """Return a parsed dir entry size as an int."""
+    entry_details = (file_details or {}).get(entry_name, {})
+    return int(entry_details.get('size', 0) or 0)
+
+
+def _get_directory_entries(parsed_dir_output):
+    """Return direct file and directory lists from parsed dir output."""
+    file_details = _get_directory_file_details(parsed_dir_output)
+    if file_details is None:
+        return _get_directory_entries_with_dq(parsed_dir_output)
+
+    file_list = []
+    directory_list = []
+    for entry_name in file_details:
+        entry_size = _get_entry_size(entry_name, file_details)
+        # Directory entries have "d" permissions in IOS-XE dir output, e.g.
+        #   326402  drwx  4096  Jul 13 2026 14:12:29 +00:00  .installer
+        if _is_directory_entry(entry_name, file_details):
+            directory_list.append(entry_name)
+        else:
+            file_list.append((entry_name, entry_size))
+    return file_list, directory_list
+
+
+def _get_sorted_directory_entries(parsed_dir_output, directory_list=None):
+    """Return directory entries in recursive cleanup order."""
+    if directory_list is None:
+        _, directory_list = _get_directory_entries(parsed_dir_output)
+    directory_details = _get_directory_file_details(parsed_dir_output) or {}
+    # IOS-XE dir output is timestamp ordered and interleaves entries:
+    #   326443  drwx  4096   Jul 13 2026 14:12:27 +00:00  acm
+    #   326485  -rw-  0      Jul 13 2026 14:03:59 +00:00  dope_hist
+    #   489719  drwx  77824  Jul 13 2026 07:23:23 +00:00  core
+    # Use parsed entry size as the cleanup order, independent of dir order.
+    return sorted(
+        directory_list,
+        key=lambda directory: (
+            -_get_entry_size(directory, directory_details),
+            directory))
+
 
 def _free_up_disk_space(device, destination, required_size, skip_deletion,
     protected_files, compact=False, min_free_space_percent=None,
-    dir_output=None, allow_deletion_failure=False):
+    dir_output=None, allow_deletion_failure=False, recursive=False):
 
     '''Delete files to create space on device except protected files
     Args:
@@ -325,6 +400,10 @@ def _free_up_disk_space(device, destination, required_size, skip_deletion,
         dir_output ('str'): Output of 'dir' command
                             if not provided, executes the cmd on device
         allow_deletion_failure (bool, optional): Allow the deletion of a file to silently fail. Defaults to False
+        recursive (bool, optional): When True, recursively clean directory
+                                    contents before top level files. When False,
+                                    directory entries are skipped. Defaults to
+                                    False.
     Returns:
          True if there is enough space after the operation, False otherwise
     '''
@@ -396,32 +475,68 @@ def _free_up_disk_space(device, destination, required_size, skip_deletion,
         # convert to set for O(1) lookup
         protected_files = set(protected_files)
         parsed_dir_out = device.parse('dir {}'.format(destination), output=dir_out)
-        dq = Dq(parsed_dir_out)
+
+        file_list, directory_list = _get_directory_entries(parsed_dir_out)
+        if recursive:
+            directory_list = _get_sorted_directory_entries(
+                parsed_dir_out, directory_list)
+        else:
+            # Do not pass directory entries to the platform deletion API when
+            # recursive cleanup is disabled.
+            directory_list = []
 
         # turn parsed dir output to a list of files for sorting
         # Large files are given priority when deleting
-        file_list = []
         running_image_list = []
-        for file in dq.get_values('files'):
+        not_protected_file_list = []
+        for file, size in file_list:
             # separate running image from other files
             if any(file in image for image in running_images):
-                running_image_list.append((file, int(dq.contains(file).get_values('size')[0])))
+                running_image_list.append((file, size))
             else:
-                file_list.append((file, int(dq.contains(file).get_values('size')[0])))
+                not_protected_file_list.append((file, size))
 
-        file_list.sort(key=lambda x: x[1], reverse=True)
+        not_protected_file_list.sort(key=lambda x: x[1], reverse=True)
 
         # add running images to the end so they are deleted as a last resort
-        file_list.extend(running_image_list)
+        file_list = not_protected_file_list + running_image_list
         log.debug('file_list: {fl}'.format(fl=file_list))
 
-        for file, size in file_list:
-            device.api.delete_unprotected_files(directory=destination,
-                                                protected=protected_files,
-                                                files_to_delete=[file],
-                                                dir_output=dir_out,
-                                                allow_failure=allow_deletion_failure,
-                                                destination=destination)
+        # Recurse into directories before deleting top-level files. The
+        # platform API removes contents but leaves directory entries intact.
+        if recursive:
+            log.debug(
+                'directory_list: {directories}'.format(
+                    directories=directory_list))
+            for directory_name in directory_list:
+                device.api.delete_unprotected_files(
+                    directory=destination,
+                    protected=protected_files,
+                    files_to_delete=[directory_name],
+                    dir_output=dir_out,
+                    allow_failure=allow_deletion_failure,
+                    destination=destination,
+                    recursive=True,
+                    stop_check=lambda: device.api.verify_enough_disk_space(
+                        required_size, destination))
+
+                if device.api.verify_enough_disk_space(
+                        required_size, destination):
+                    log.info(
+                        "Verified there is enough space on the device after "
+                        "deleting unprotected files.")
+                    return True
+
+        # If directory cleanup was skipped or insufficient, delete top-level
+        # files next. Running images remain last as a fallback.
+        for file, _ in file_list:
+            device.api.delete_unprotected_files(
+                directory=destination,
+                protected=protected_files,
+                files_to_delete=[file],
+                dir_output=dir_out,
+                allow_failure=allow_deletion_failure,
+                destination=destination)
 
             if device.api.verify_enough_disk_space(required_size, destination):
                 log.info("Verified there is enough space on the device after "
@@ -436,12 +551,12 @@ def _free_up_disk_space(device, destination, required_size, skip_deletion,
 @functools.wraps(_free_up_disk_space)
 def free_up_disk_space(device, destination, required_size, skip_deletion,
     protected_files, compact=False, min_free_space_percent=None,
-    dir_output=None, allow_deletion_failure=False):
+    dir_output=None, allow_deletion_failure=False, recursive=False):
 
     free_up_result = _free_up_disk_space(
         device, destination, required_size, skip_deletion,
         protected_files, compact, min_free_space_percent,
-        dir_output, allow_deletion_failure
+        dir_output, allow_deletion_failure, recursive
     )
 
     if hasattr(device, 'swap_roles'):
@@ -450,7 +565,7 @@ def free_up_disk_space(device, destination, required_size, skip_deletion,
             free_up_result_other = _free_up_disk_space(
                 device, destination, required_size, skip_deletion,
                 protected_files, compact, min_free_space_percent,
-                dir_output, allow_deletion_failure
+                dir_output, allow_deletion_failure, recursive
             )
         finally:
             device.swap_roles()

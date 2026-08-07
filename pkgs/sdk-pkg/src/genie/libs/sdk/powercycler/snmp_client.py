@@ -62,6 +62,12 @@ async def _resolve_transport(transport):
     return transport
 
 
+async def _close_snmp_engine(snmp_engine):
+    await py_asyncio.sleep(0)
+    snmp_engine.close_dispatcher()
+    await py_asyncio.sleep(0)
+
+
 def get_cmd_sync(*args, **kwargs):
     async def _runner():
         resolved_args = list(args)
@@ -70,7 +76,7 @@ def get_cmd_sync(*args, **kwargs):
         try:
             return await get_cmd(*resolved_args, **kwargs)
         finally:
-            snmp_engine.close_dispatcher()
+            await _close_snmp_engine(snmp_engine)
 
     return _run_coroutine_sync(_runner())
 
@@ -83,7 +89,7 @@ def set_cmd_sync(*args, **kwargs):
         try:
             return await set_cmd(*resolved_args, **kwargs)
         finally:
-            snmp_engine.close_dispatcher()
+            await _close_snmp_engine(snmp_engine)
 
     return _run_coroutine_sync(_runner())
 
@@ -308,6 +314,34 @@ class SNMPv3Client(object):
         self.auth = auth
         self.log = log
 
+    def _log_command_type_error(self, operation, error):
+        if not self.auth:
+            missing = [
+                'username', 'security_level', 'auth_protocol',
+                'auth_key', 'priv_protocol', 'priv_key',
+            ]
+        else:
+            missing = []
+            if not getattr(self.auth, 'userName', None):
+                missing.append('username')
+            if not getattr(self.auth, 'authentication_key', None):
+                missing.append('auth_key')
+            if not getattr(self.auth, 'privacy_key', None):
+                missing.append('priv_key')
+
+        self.log.error(
+            "SNMPv3 %s failed for %s:%s with %s. Missing credential values "
+            "detected: %s. Check username, security_level, auth_protocol, "
+            "auth_key, priv_protocol, and priv_key. Credential values are "
+            "not logged.",
+            operation,
+            self.host,
+            self.port,
+            error,
+            ', '.join(missing) or 'none at the client boundary',
+            exc_info=True,
+        )
+
     def snmp_get(self, oid, *more_oids):
 
         """ Performs a SNMP get operation
@@ -324,19 +358,23 @@ class SNMPv3Client(object):
 
         # Create command generator
         snmp_engine = SnmpEngine()
-        cmd_response = get_cmd_sync(
-            snmp_engine,
-            self.auth,
-            create_transport(
-                UdpTransportTarget,
-                (self.host, self.port),
-                timeout=3,
-                retries=3,
-            ),
-            ContextData(),
-            ObjectType(ObjectIdentity(oid)),
-            *more_oid_obj
-        )
+        try:
+            cmd_response = get_cmd_sync(
+                snmp_engine,
+                self.auth,
+                create_transport(
+                    UdpTransportTarget,
+                    (self.host, self.port),
+                    timeout=3,
+                    retries=3,
+                ),
+                ContextData(),
+                ObjectType(ObjectIdentity(oid)),
+                *more_oid_obj
+            )
+        except TypeError as error:
+            self._log_command_type_error('GET', error)
+            raise
 
         # Fetch the values
         if cmd_response:
@@ -389,18 +427,22 @@ class SNMPv3Client(object):
 
         # Create command generator
         snmp_engine = SnmpEngine()
-        error_indication, error_status, error_index, var_binds = set_cmd_sync(
-            snmp_engine,
-            self.auth,
-            create_transport(
-                UdpTransportTarget,
-                (self.host, self.port),
-                timeout=3,
-                retries=3,
-            ),
-            ContextData(),
-            ObjectType(ObjectIdentity(oid), value_class(value))
-        )
+        try:
+            error_indication, error_status, error_index, var_binds = set_cmd_sync(
+                snmp_engine,
+                self.auth,
+                create_transport(
+                    UdpTransportTarget,
+                    (self.host, self.port),
+                    timeout=3,
+                    retries=3,
+                ),
+                ContextData(),
+                ObjectType(ObjectIdentity(oid), value_class(value))
+            )
+        except TypeError as error:
+            self._log_command_type_error('SET', error)
+            raise
 
         # Predefine our results list
         results = []

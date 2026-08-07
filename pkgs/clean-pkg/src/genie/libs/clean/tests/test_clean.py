@@ -7,6 +7,7 @@ from unittest import mock
 from functools import partial
 
 from genie.libs.clean.clean import StageSection, BaseStage, CleanTestcase, REUSE_LIMIT_MSG
+from genie.libs.clean.recovery.recovery import RecoveryOutcome
 from genie.libs.clean.stages.image_handler import BaseImageHandler
 from genie.conf.base import Device
 from genie.abstract.package import AbstractTree
@@ -119,6 +120,9 @@ def clean_json():
     return AbstractTree.from_json(source_json)
 
 class TestCleanTestcase(unittest.TestCase):
+    class Connect(BaseStage):
+        schema = {}
+
     class SomeStage(BaseStage):
         schema = {}
 
@@ -322,10 +326,81 @@ class TestCleanTestcase(unittest.TestCase):
         self.assertEqual('stage SomeStage(2)', str(next(iterator)))
         self.assertEqual('stage SomeStage(3)', str(next(iterator)))
 
-    @mock.patch('genie.libs.clean.clean.load_clean_json', mock.Mock(side_effect=clean_json))
-    @mock.patch('genie.libs.clean.stages.stages.SomeStage', SomeStage, create=True)
-    def test_iter_device_recovery_processor(self):
+    @mock.patch('genie.libs.clean.clean.load_clean_json',
+                mock.Mock(return_value={}))
+    @mock.patch('genie.libs.clean.clean.get_clean_function',
+                mock.Mock(return_value=Connect))
+    def test_iter_connect_recovery_defers_result_rollup(self):
 
+        self.device.clean = {
+            'Connect': {},
+            'device_recovery': {
+                'golden_image': [
+                    'golden.bin'
+                ]
+            },
+            'order': ['Connect']
+        }
+
+        clean_testcase = CleanTestcase(
+            device=self.device,
+            global_stage_reuse_limit=self.global_stage_reuse_limit)
+
+        iterator = iter(clean_testcase)
+        stage = next(iterator)
+
+        self.assertEqual(clean_testcase.device_recovery_processor,
+                         stage.function.__processors__.post[0])
+        self.assertFalse(stage.result_rollup)
+
+        stage.result = results.Errored
+        stage.result = results.Passx
+        clean_testcase.parameters.setdefault(
+            'recovery_outcomes', {})[stage.uid] = RecoveryOutcome(
+                stage_uid=stage.uid,
+                attempted=True,
+                result=results.Passx,
+                continue_clean=True)
+
+        with self.assertRaises(StopIteration):
+            next(iterator)
+
+        self.assertEqual(results.Passx, clean_testcase.result)
+
+    @mock.patch('genie.libs.clean.clean.load_clean_json',
+                mock.Mock(return_value={}))
+    @mock.patch('genie.libs.clean.clean.get_clean_function',
+                mock.Mock(return_value=Connect))
+    def test_iter_connect_without_recovery_outcome_preserves_error(self):
+        self.device.clean = {
+            'Connect': {},
+            'device_recovery': {
+                'golden_image': [
+                    'golden.bin'
+                ]
+            },
+            'order': ['Connect']
+        }
+
+        clean_testcase = CleanTestcase(
+            device=self.device,
+            global_stage_reuse_limit=self.global_stage_reuse_limit)
+
+        iterator = iter(clean_testcase)
+        stage = next(iterator)
+        stage.result = results.Errored
+
+        with self.assertRaises(StopIteration):
+            next(iterator)
+
+        self.assertEqual(results.Errored, clean_testcase.result)
+
+    @mock.patch('genie.libs.clean.clean.aetest')
+    @mock.patch('genie.libs.clean.clean.load_clean_json',
+                mock.Mock(side_effect=clean_json))
+    @mock.patch('genie.libs.clean.stages.stages.SomeStage',
+                SomeStage, create=True)
+    def test_iter_device_recovery_preserves_stage_error(self, mocked_aetest):
         self.device.clean = {
             'SomeStage': {},
             'device_recovery': {
@@ -340,11 +415,16 @@ class TestCleanTestcase(unittest.TestCase):
             device=self.device,
             global_stage_reuse_limit=self.global_stage_reuse_limit)
 
+        mocked_aetest.executer.goto = None
         iterator = iter(clean_testcase)
         stage = next(iterator)
+        self.assertTrue(stage.result_rollup)
+        stage.result = results.Errored
 
-        self.assertEqual(clean_testcase.device_recovery_processor,
-                         stage.function.__processors__.post[0])
+        with self.assertRaises(StopIteration):
+            next(iterator)
+
+        self.assertEqual(results.Errored, clean_testcase.result)
 
 
     @mock.patch('genie.libs.clean.clean.load_clean_json', mock.Mock(side_effect=clean_json))
@@ -455,6 +535,180 @@ class TestCleanTestcase(unittest.TestCase):
 
         self.assertEqual(results.Blocked, mocked_aetest.executer.goto_result)
         self.assertEqual([['SomeStage has failed', str]], mocked_aetest.executer.goto)
+
+    @mock.patch('genie.libs.clean.clean.aetest')
+    @mock.patch('genie.libs.clean.clean.load_clean_json', mock.Mock(side_effect=clean_json))
+    @mock.patch('genie.libs.clean.stages.stages.SomeStage', SomeStage, create=True)
+    @mock.patch('genie.libs.clean.stages.stages.SomeOtherStage', SomeOtherStage, create=True)
+    def test_iter_recovery_continue_preserves_stage_result(self, mocked_aetest):
+        self.device.clean = {
+            'SomeStage': {},
+            'SomeOtherStage': {},
+            'order': ['SomeStage', 'SomeOtherStage']
+        }
+
+        clean_testcase = CleanTestcase(
+            device=self.device,
+            global_stage_reuse_limit=self.global_stage_reuse_limit)
+
+        mocked_aetest.executer.goto = None
+        iterator = iter(clean_testcase)
+
+        stage = next(iterator)
+        stage.result = results.Failed
+        clean_testcase.parameters.setdefault(
+            'recovery_outcomes', {})[stage.uid] = RecoveryOutcome(
+                stage_uid=stage.uid,
+                attempted=True,
+                result=results.Passx,
+                continue_clean=True)
+
+        next_stage = next(iterator)
+
+        self.assertEqual(results.Failed, stage.result)
+        self.assertEqual(results.Failed, clean_testcase.result)
+        self.assertEqual('SomeOtherStage', next_stage.uid)
+        self.assertIsNone(mocked_aetest.executer.goto)
+
+    @mock.patch('genie.libs.clean.clean.aetest')
+    @mock.patch('genie.libs.clean.clean.load_clean_json', mock.Mock(side_effect=clean_json))
+    @mock.patch('genie.libs.clean.stages.stages.SomeStage', SomeStage, create=True)
+    @mock.patch('genie.libs.clean.stages.stages.SomeOtherStage', SomeOtherStage, create=True)
+    def test_iter_recovery_continue_preserves_errored_stage_result(
+            self, mocked_aetest):
+        self.device.clean = {
+            'SomeStage': {},
+            'SomeOtherStage': {},
+            'order': ['SomeStage', 'SomeOtherStage']
+        }
+
+        clean_testcase = CleanTestcase(
+            device=self.device,
+            global_stage_reuse_limit=self.global_stage_reuse_limit)
+
+        mocked_aetest.executer.goto = None
+        iterator = iter(clean_testcase)
+
+        stage = next(iterator)
+        stage.result = results.Errored
+        clean_testcase.parameters.setdefault(
+            'recovery_outcomes', {})[stage.uid] = RecoveryOutcome(
+                stage_uid=stage.uid,
+                attempted=True,
+                result=results.Passx,
+                continue_clean=True)
+
+        next_stage = next(iterator)
+
+        self.assertEqual(results.Errored, stage.result)
+        self.assertEqual(results.Errored, clean_testcase.result)
+        self.assertEqual('SomeOtherStage', next_stage.uid)
+        self.assertIsNone(mocked_aetest.executer.goto)
+
+    @mock.patch('genie.libs.clean.clean.aetest')
+    @mock.patch('genie.libs.clean.clean.load_clean_json', mock.Mock(side_effect=clean_json))
+    @mock.patch('genie.libs.clean.stages.stages.SomeStage', SomeStage, create=True)
+    def test_iter_recovery_termination_marks_clean_flow(self, mocked_aetest):
+        self.device.clean = {
+            'SomeStage': {},
+            'order': ['SomeStage']
+        }
+
+        clean_testcase = CleanTestcase(
+            device=self.device,
+            global_stage_reuse_limit=self.global_stage_reuse_limit)
+
+        iterator = iter(clean_testcase)
+
+        stage = next(iterator)
+        stage.result = results.Passed
+        clean_testcase.parameters.setdefault(
+            'recovery_outcomes', {})[stage.uid] = RecoveryOutcome(
+                stage_uid=stage.uid,
+                attempted=True,
+                result=results.Passed,
+                reason='Device recovered after SomeStage; clean terminated',
+                terminate_clean=True,
+                block_following_sections=True,
+                clean_flow_result=results.Blocked)
+
+        with self.assertRaises(StopIteration):
+            next(iterator)
+
+        self.assertEqual(results.Passed, stage.result)
+        self.assertEqual(results.Blocked, clean_testcase.result)
+        self.assertEqual(results.Blocked, mocked_aetest.executer.goto_result)
+        self.assertEqual(
+            [['Device recovered after SomeStage; clean terminated', str]],
+            mocked_aetest.executer.goto)
+
+    @mock.patch('genie.libs.clean.clean.aetest')
+    @mock.patch('genie.libs.clean.clean.load_clean_json', mock.Mock(side_effect=clean_json))
+    @mock.patch('genie.libs.clean.stages.stages.SomeStage', SomeStage, create=True)
+    def test_iter_recovery_termination_preserves_failed_stage(self, mocked_aetest):
+        self.device.clean = {
+            'SomeStage': {},
+            'order': ['SomeStage']
+        }
+
+        clean_testcase = CleanTestcase(
+            device=self.device,
+            global_stage_reuse_limit=self.global_stage_reuse_limit)
+
+        iterator = iter(clean_testcase)
+
+        stage = next(iterator)
+        stage.result = results.Failed
+        clean_testcase.parameters.setdefault(
+            'recovery_outcomes', {})[stage.uid] = RecoveryOutcome(
+                stage_uid=stage.uid,
+                attempted=True,
+                result=results.Passed,
+                reason='Device recovered after SomeStage; clean terminated',
+                terminate_clean=True,
+                block_following_sections=True,
+                clean_flow_result=results.Blocked)
+
+        with self.assertRaises(StopIteration):
+            next(iterator)
+
+        self.assertEqual(results.Failed, stage.result)
+        self.assertEqual(results.Failed, clean_testcase.result)
+        self.assertEqual(results.Blocked, mocked_aetest.executer.goto_result)
+
+    @mock.patch('genie.libs.clean.clean.aetest')
+    @mock.patch('genie.libs.clean.clean.load_clean_json', mock.Mock(side_effect=clean_json))
+    @mock.patch('genie.libs.clean.stages.stages.SomeStage', SomeStage, create=True)
+    def test_iter_recovery_termination_preserves_errored_stage(self, mocked_aetest):
+        self.device.clean = {
+            'SomeStage': {},
+            'order': ['SomeStage']
+        }
+
+        clean_testcase = CleanTestcase(
+            device=self.device,
+            global_stage_reuse_limit=self.global_stage_reuse_limit)
+
+        iterator = iter(clean_testcase)
+
+        stage = next(iterator)
+        stage.result = results.Errored
+        clean_testcase.parameters.setdefault(
+            'recovery_outcomes', {})[stage.uid] = RecoveryOutcome(
+                stage_uid=stage.uid,
+                attempted=True,
+                result=results.Passed,
+                reason='Device recovered after SomeStage; clean terminated',
+                terminate_clean=True,
+                block_following_sections=True,
+                clean_flow_result=results.Blocked)
+
+        with self.assertRaises(StopIteration):
+            next(iterator)
+
+        self.assertEqual(results.Errored, stage.result)
+        self.assertEqual(results.Errored, clean_testcase.result)
+        self.assertEqual(results.Blocked, mocked_aetest.executer.goto_result)
 
     @mock.patch('genie.libs.clean.clean.log')
     @mock.patch('genie.libs.clean.clean.load_clean_json', mock.Mock(side_effect=clean_json))

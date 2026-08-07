@@ -1,6 +1,6 @@
 import time
 from unicon.eal.dialogs import Statement, Dialog
-import logging 
+import logging
 
 logger = logging.getLogger(__name__)
 
@@ -10,35 +10,35 @@ from unicon.core.errors import SubCommandFailure
 # Genie
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
 
-def configure_crypto_pki_server(device, 
+def configure_crypto_pki_server(device,
                                 server_name=None,
                                 password=None,
-                                auto_rollover_time=None, 
-                                cdp_url_type=None, 
+                                auto_rollover_time=None,
+                                cdp_url_type=None,
                                 cdp_url_ip_path=None,
                                 crl_file_name=None,
-                                database_archive_type=None, 
-                                archive_password=None, 
-                                database_level=None, 
-                                database_url_server=None, 
-                                database_ip_path=None, 
-                                database_url_storage_location=None, 
-                                database_url_publish=False, 
-                                eku_options=None, 
-                                grant_mode=None, 
+                                database_archive_type=None,
+                                archive_password=None,
+                                database_level=None,
+                                database_url_server=None,
+                                database_ip_path=None,
+                                database_url_storage_location=None,
+                                database_url_publish=False,
+                                eku_options=None,
+                                grant_mode=None,
                                 grant_rollover_cert=None,
                                 grant_rollover_ca_cert=None,
                                 grant_rollover_ra_cert=None,
-                                grant_tp_list=None, 
-                                grant_trustpoint=None, 
-                                hash_type=None, 
-                                issuer_name=None, 
-                                ca_cert_life=None, 
+                                grant_tp_list=None,
+                                grant_trustpoint=None,
+                                hash_type=None,
+                                issuer_name=None,
+                                ca_cert_life=None,
                                 cert_life=None,
-                                crl_life=None, 
-                                enrol_req_life=None, 
-                                mode=None, 
-                                mode_ra_transparent=False, 
+                                crl_life=None,
+                                enrol_req_life=None,
+                                mode=None,
+                                mode_ra_transparent=False,
                                 serial_number=None,
                                 enrollment_ip=None,
                                 enrollment_path=None,
@@ -154,7 +154,7 @@ def configure_crypto_pki_server(device,
 
     if kwargs:
         from genie.libs.sdk.apis.iosxe.eaptls.configure import configure_crypto_pki_server as eaptls_configure_crypto_pki_server
-        return eaptls_configure_crypto_pki_server(device=device, server_name=server_name, issuer_name=issuer_name, 
+        return eaptls_configure_crypto_pki_server(device=device, server_name=server_name, issuer_name=issuer_name,
                                                   password=password, **kwargs)
 
     dialog = Dialog([
@@ -198,7 +198,7 @@ def configure_crypto_pki_server(device,
             server_config.append(f"rsakeypair {server_name} {key_len}")
         if hash_type:
             server_config.append(f"hash {hash_type}")
-    
+
     if mode and enrollment_ip and enrollment_path:
         server_config.append(f"crypto pki trustpoint {server_name}")
         server_config.append(f"enroll url http://{enrollment_ip}:{port}/{enrollment_path}")
@@ -212,7 +212,7 @@ def configure_crypto_pki_server(device,
     server_config.append(f"crypto pki server {server_name}")
     if auto_rollover_time:
         server_config.append(f"auto-rollover {auto_rollover_time}")
-    
+
     if cdp_url_type and cdp_url_ip_path and crl_file_name:
         server_config.append(f"cdp-url {cdp_url_type}://{cdp_url_ip_path}/{crl_file_name}.crl")
     if ECDSA_cdp_url:
@@ -277,25 +277,25 @@ def configure_crypto_pki_server(device,
         server_config.append(f"database url crl {crl_storage_location}")
     if eku_options:
         server_config.append(f"eku {eku_options}")
-    
+
     if grant_mode:
         server_config.append(f"grant {grant_mode}")
 
     if grant_rollover_cert:
         server_config.append(f"grant auto rollover {grant_rollover_cert}")
-    
+
     if grant_rollover_ca_cert:
         server_config.append(f"grant auto rollover ca-cert")
-    
+
     if grant_rollover_ra_cert:
         server_config.append(f"grant auto rollover ra-cert")
-    
+
     if grant_tp_list:
         server_config.append(f"grant auto tp-list {grant_tp_list}")
-            
+
     if grant_trustpoint:
         server_config.append(f"grant auto trustpoint {grant_trustpoint}")
-        
+
     if hash_type:
         server_config.append(f"hash {hash_type}")
 
@@ -322,11 +322,11 @@ def configure_crypto_pki_server(device,
 
     if serial_number:
         server_config.append(f"serial-number {serial_number}")
-   
+
     device.configure(server_config, error_pattern=[f'{issuer_name} is not a valid subject name'])
     time.sleep(20)
 
-    error_patterns = ['Please set clock calender-valid or enable NTP', 'Error in receiving Certificate Authority certificate', 
+    error_patterns = ['Please set clock calender-valid or enable NTP', 'Error in receiving Certificate Authority certificate',
                           'Failed to authenticate the Certificate Authority']
     command = [f'crypto pki server {server_name}', 'no shut']
 
@@ -407,7 +407,7 @@ def configure_trustpoint(device,
                       rsa_key_size1=None,
                       auto_enroll_timer = None,
                       enrollment_profile = None):
-    
+
     '''
     configure crypto pki trustpoint
     Args:
@@ -418,7 +418,7 @@ def configure_trustpoint(device,
             rsa_key_size ('int'): rsa_key_size value to be used for rsakeypair generation
         optional:
             rsa_key_size1 ('int'): secondary RSA key size value (used when two RSA keypairs are configured)
-            rsa_key_usage ('bool'): used to configure rsakeypair 
+            rsa_key_usage ('bool'): used to configure rsakeypair
             auto_enroll_regen ('string'): used for auto-enroll regenerate configuration
             auto_enroll ('bool'): auto enroll needs to be configured or not
             auto_enroll_timer ('int'): used to configure auto-enroll timer
@@ -430,7 +430,7 @@ def configure_trustpoint(device,
             auth_username_subjectname_opt ('string'): used to configure authorization username subject name option
             auto_enroll_regen_timer ('int'): used for auto enroll regenerate timer configuration
             auto_trigger ('bool'): if auto trigger needs to be configured
-            ca_type ('string'): used to select enrollment CA server type and config 
+            ca_type ('string'): used to select enrollment CA server type and config
             ca_ip ('string'): enrollment url ip-address
             certificate_chain_location ('string'): location for storing the certificate chain (e.g., bootflash:, tftp:)
             chain_valid_count ('bool'): used chain valid count with value configuration
@@ -452,7 +452,7 @@ def configure_trustpoint(device,
             fingerprint ('string'): used to configure fingerprint configuration
             fqdn_value ('string'): used to configure fully-qualified domain name
             hash_value ('string'): used to configure hash algorithm to be used
-            http_proxy ('string'): used to configure http proxy 
+            http_proxy ('string'): used to configure http proxy
             ip_address ('string'): if none variable is set ip address with none option will be configured \
                                     else specified ip address will be getting configured
             ip_ext ('string'): used to configure ip-extension
@@ -479,16 +479,19 @@ def configure_trustpoint(device,
             is_ec_key ('bool'): used for EC key pair
             scepencrypt ('string'): used to configure SCEP encryption type (e.g., 3DES, AES)
             chain_validation_continue_tp_name ('string'): specifies another trustpoint name to continue chain validation with
-    Returns: 
+    Returns:
         None
     Raises:
         SubCommandFailure
     '''
-    
+    if tp_name is None:
+        raise ValueError("tp_name is required")
+
     logger.debug("configuring crypto pki trustpoint")
-    tp_config = []    
+    tp_config = []
     tp_config.append(f"crypto pki trustpoint {tp_name}")
-    tp_config.append(f"revocation-check {revoke_check}")
+    if revoke_check is not None:
+        tp_config.append(f"revocation-check {revoke_check}")
     if is_ec_key:
         tp_config.append(f"eckeypair {tp_name}")
     elif rsa_key_size:
@@ -554,7 +557,7 @@ def configure_trustpoint(device,
             tp_config.append(f"enrollment url http://{ca_ip}:80 ")
     if enrollment_url_path is not None:
         tp_config.append(f"enrollment url {enrollment_url_path}")
-    if fingerprint is not None: 
+    if fingerprint is not None:
         tp_config.append(f"fingerprint {fingerprint}")
     if fqdn_value is not None:
         if fqdn_value == "none":
@@ -593,9 +596,9 @@ def configure_trustpoint(device,
             tp_config.append(f"revocation-check {revocation_check}")
     if root_config is not None:
         tp_config.append(f"root {root_config}")
-    if rsa_key_usage:      
+    if rsa_key_usage:
        tp_config.append(f"rsakeypair {tp_name} {rsa_key_size} {rsa_key_size}")
-    if rsa_key_usage and rsa_key_size1:      
+    if rsa_key_usage and rsa_key_size1:
        tp_config.append(f"rsakeypair {tp_name} {rsa_key_size} {rsa_key_size1}")
     if ser_number is not None:
         if ser_number ==  "none":
@@ -624,7 +627,7 @@ def configure_trustpoint(device,
         tp_config.append(f"scepencrypt {scepencrypt}")
     if exit_flag:
         tp_config.append("exit")
-    
+
     error_patterns = ["The command you have entered is available in the IOS.sh",
                         "% Authorization list  does not exist",
                         "is not a valid subject name",
@@ -639,7 +642,6 @@ def configure_trustpoint(device,
                 "Error:\n{error}".format(error=e)
         )
     )
-
 
 def configure_crypto_pki_profile(device,
                       prof_name,
@@ -672,16 +674,16 @@ def configure_crypto_pki_profile(device,
          no_config ('string'): used to unconfigure specific subcommands under the profile
          reenrollment_url ('string'): URL used for reenrollment of certificates
          vrf ('string'): VRF name used for enrollment connectivity
-    Returns: 
+    Returns:
         None
     Raises:
         SubCommandFailure
     '''
 
-    
+
     logger.debug("configuring crypto pki profile enrollment")
 
-    tp_config = [f"crypto pki profile enrollment {prof_name}"]   
+    tp_config = [f"crypto pki profile enrollment {prof_name}"]
 
     if method_est:
         tp_config.append("method-est")
@@ -717,10 +719,10 @@ def configure_crypto_pki_profile(device,
 
     if exit_flag:
         tp_config.append("exit")
-    
+
     error_patterns = ["The command you have entered is available in the IOS.sh",
                         ]
-    
+
     try:
         device.configure(tp_config, error_pattern = error_patterns)
     except SubCommandFailure as e:
@@ -907,7 +909,7 @@ def configure_pki_authenticate(device,
         Args:
             device ('obj'): Device object
             tp_name ('str'): Name of the trsutpoint
-            
+
         Returns:
             None
         Raises:
@@ -922,7 +924,7 @@ def configure_pki_authenticate(device,
                 ])
 
     logger.debug("Configuring crypto pki authenticate server")
-    
+
     error_patterns = ["CA server trustpoint is not known",
                        "% Please delete your existing CA certificate first.",
                        "% You must use 'no crypto pki trustpoint <trustpoint-name>' to delete the CA certificate",
@@ -982,7 +984,7 @@ def configure_pki_import(device,
             SubCommandFailure
     '''
 
-    
+
     logger.debug("Configuring crypto pki import")
     dialog = Dialog([
         Statement(pattern=r'.*Source filename \[.*?\]\?\s*$',
@@ -1053,7 +1055,7 @@ def configure_pki_import(device,
         elif pem_option == 'terminal':
             import_config = (
                 f"crypto pki import {tp_name} pem terminal password {file_password}")
-    
+
     try:
         device.configure(import_config, reply=dialog,
                          error_pattern=error_patterns)
@@ -1202,7 +1204,7 @@ def change_pki_server_state(device,
             )
         )
     return True
-    
+
 def configure_pki_authenticate_certificate(device, certificate, label_name):
     """ Pastes certificate on device
         Args:
@@ -1217,7 +1219,7 @@ def configure_pki_authenticate_certificate(device, certificate, label_name):
     def cert_key_handler(spawn, data):
         spawn.sendline(data)
         spawn.sendline('quit')
-    
+
     dialog = Dialog(
                 [
                     Statement(
@@ -1233,7 +1235,7 @@ def configure_pki_authenticate_certificate(device, certificate, label_name):
                         continue_timer=False
                     ),
                     Statement(
-                        r".*Do you accept this certificate\? \[yes/no\]:.*", 
+                        r".*Do you accept this certificate\? \[yes/no\]:.*",
                         action="sendline(yes)", loop_continue=True
                     ),
                 ]
@@ -1247,7 +1249,7 @@ def configure_pki_authenticate_certificate(device, certificate, label_name):
             "Could not Paste certificate on device "
             "Error: {error}".format(error=e)
             )
-    
+
 def configure_no_pki_enroll(device, tp_name):
     '''
         Configuring crypto pki enroll
@@ -1313,7 +1315,7 @@ def configure_crypto_pki_download_crl(
 
     if trustpoint_name:
         cmds.append(f"crypto pki crl download trustpoint {trustpoint_name}")
-        
+
 
     if url:
         if not http_or_ldap_url:
@@ -1339,13 +1341,13 @@ def configure_crypto_pki_download_crl(
                 "Monday", "Tuesday", "Wednesday", "Thursday",
                 "Friday", "Saturday", "Sunday","Mon","Tue","Wed","Thu","Fri","Sat","Sun"
             }
-        
+
             if day not in valid_days:
                 raise ValueError("`day` must be one of Monday to Sunday when `time` is specified")
-        
+
             if not hh_mm:
                 raise ValueError("`hh_mm` must be provided when `time` is specified")
-        
+
             cmd = f"crypto pki crl download schedule time {day} {hh_mm}"
             cmds.append(cmd)
 
@@ -1399,7 +1401,7 @@ def unconfigure_crypto_pki_download_crl(
 
     if trustpoint_name:
         cmds.append(f"no crypto pki crl download trustpoint {trustpoint_name}")
-        
+
     if url:
         if not http_or_ldap_url:
             raise ValueError("http_or_ldap_url must be provided if url=True")
@@ -1441,7 +1443,7 @@ def unconfigure_crypto_pki_download_crl(
         return device.configure(cmds)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to unconfigure CRL download: {e}")
-    
+
 
 def configure_trustpool_clean(device):
     """
@@ -1485,7 +1487,7 @@ def remove_pki_certificate_chain(device, tpname):
 
     if not tpname:
         raise ValueError("server_name must be provided and non-empty")
-    
+
     error_pattern = [f"Certificate server '{tpname}' is not known"]
 
     dialog = Dialog([
@@ -1503,8 +1505,8 @@ def remove_pki_certificate_chain(device, tpname):
     except SubCommandFailure as e:
         logger.error("Failed to remove cert chain")
         raise SubCommandFailure(f"Could not unconfigure certificate chain for '{tpname}': {e}")
-        
-        
+
+
 def configure_crypto_pki_crl_request(device, ca_name):
     """
         Execute 'crypto pki crl request <CA_NAME>' command.
@@ -1561,13 +1563,13 @@ def configure_crypto_isakmp_profile(
             SubCommandFailure: If configuration fails
     """
     cmds = []
-    cmds.append(f"crypto isakmp profile {profile_name}") 
+    cmds.append(f"crypto isakmp profile {profile_name}")
 
     if ca_trustpoint and ca_trustpoint_name:
         cmds.append(f"ca trust-point {ca_trustpoint_name}")
     if match_certificate and certificate_name:
         cmds.append(f"match certificate {certificate_name}")
-    
+
     try:
         device.configure(cmds)
     except SubCommandFailure as e:
@@ -1618,8 +1620,8 @@ def unconfigure_crypto_pki_http_max_buffer_size(device):
         device.configure(cmds)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to unconfigure crypto pki http max buffer size: {e}")
-        
-def configure_trustpool_policy(device, source_interface=None, vrf_name=None, ca_bundle_url=None, 
+
+def configure_trustpool_policy(device, source_interface=None, vrf_name=None, ca_bundle_url=None,
                              ca_bundle_urls=None, revocation_check=None, storage_path=None,
                              chain_validation=None, auto_update=None):
     """
@@ -1640,7 +1642,7 @@ def configure_trustpool_policy(device, source_interface=None, vrf_name=None, ca_
         ValueError: If neither ca_bundle_url nor ca_bundle_urls is provided
         Exception: If command execution fails on the device
     """
-    
+
     # Normalize URLs to a list for consistent processing
     urls_to_configure = []
     if ca_bundle_url:
@@ -1652,7 +1654,7 @@ def configure_trustpool_policy(device, source_interface=None, vrf_name=None, ca_
             urls_to_configure.extend(ca_bundle_urls)
         else:
             raise ValueError("ca_bundle_urls must be a string or list of strings")
-    
+
     # Remove duplicates while preserving order
     seen = set()
     unique_urls = []
@@ -1660,7 +1662,7 @@ def configure_trustpool_policy(device, source_interface=None, vrf_name=None, ca_
         if url not in seen:
             seen.add(url)
             unique_urls.append(url)
-    
+
     dialog = Dialog([
         Statement(pattern=r'.*bytes*',
             action='sendline(yes)',
@@ -1675,21 +1677,21 @@ def configure_trustpool_policy(device, source_interface=None, vrf_name=None, ca_
             loop_continue=True,
             continue_timer=False)
     ])
-    
+
     cmds = []
     cmds.append("crypto pki trustpool policy")
-    
+
     # Add all CA bundle URLs
     for url in unique_urls:
         cmds.append(f"cabundle url {url}")
-    
+
     # Add optional configurations
     if source_interface:
         cmds.append(f"source interface {source_interface}")
-    
+
     if vrf_name:
         cmds.append(f"vrf {vrf_name}")
-    
+
     if revocation_check:
         if revocation_check.lower() in ['crl', 'none', 'ocsp']:
             if revocation_check.lower() == 'none':
@@ -1700,22 +1702,22 @@ def configure_trustpool_policy(device, source_interface=None, vrf_name=None, ca_
                 cmds.append("revocation ocsp")
         else:
             raise ValueError("revocation_check must be 'crl', 'none', or 'ocsp'")
-    
+
     if storage_path:
         cmds.append(f"storage {storage_path}")
-    
+
     if chain_validation is True:
         cmds.append("chain-validation")
     elif chain_validation is False:
         cmds.append("no chain-validation")
-    
+
     if auto_update is True:
         cmds.append("auto-update")
     elif auto_update is False:
         cmds.append("no auto-update")
-    
+
     error_patterns = ['failed', 'error', 'invalid']
-    
+
     try:
         logger.info(f"Configuring trustpool policy with {len(unique_urls)} CA bundle URL(s)")
         device.configure(cmds, reply=dialog, error_pattern=error_patterns)
@@ -1740,7 +1742,7 @@ def unconfigure_trustpool_policy(device):
         device.configure(cmds, timeout=60)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to unconfigure trustpool policy: {e}")
-         
+
 def configure_pki_vrf_trustpoint(device, trustpoint, vrf_name):
     """
     Configure IP VRF and bind it under a PKI trustpoint.
@@ -1791,11 +1793,11 @@ def unconfigure_pki_vrf_trustpoint(device, trustpoint, vrf_name):
         device.configure(cmds)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to unconfigure PKI trustpoint {trustpoint} or remove VRF {vrf_name}: {e}")
- 
+
 def configure_crypto_pki_export_pkcs12_terminal(device, tp_name, password):
     """
     Exports a PKCS#12 certificate bundle to the terminal.
-    This method uses the `crypto pki export <trustpoint> pkcs12 terminal password <pwd>` 
+    This method uses the `crypto pki export <trustpoint> pkcs12 terminal password <pwd>`
     command to print/export the PKCS#12 data directly to the terminal.
     Args:
         device: Device connection object (pyATS/unicon object) used to send commands.
@@ -1841,7 +1843,7 @@ def crypto_pki_trustpool_import(device, ca_bundle=False):
         device.configure(cmds, reply=dialog, error_pattern=error_patterns)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to import trustpool CA bundle: {e}")
-    
+
 def remove_grant_auto(device, wait_time=10):
     '''
     Remove the "grant auto" configuration from the currently configured crypto pki server.
@@ -1888,7 +1890,7 @@ def remove_grant_auto(device, wait_time=10):
 
     try:
         server_state = op['server'][str(server_name[0])]['status']
-        
+
         if server_state == 'enabled':
             try:
                 device.api.change_pki_server_state(server_name[0], "shutdown")
@@ -1901,10 +1903,10 @@ def remove_grant_auto(device, wait_time=10):
             f"crypto pki server {server_name[0]}",
             "no grant auto"
         ]
-        
+
         error_pattern = ["% Please delete your existing CA certificate first."]
         logger.info(server_config)
-        
+
         try:
             device.configure(server_config, reply=dialog, error_pattern=error_pattern)
         except SubCommandFailure as e:
@@ -1931,17 +1933,17 @@ def remove_grant_auto(device, wait_time=10):
         except Exception as e:
             logger.error(f"Failed to verify server state after configuration: {e}")
             return False
-            
+
     except Exception as e:
         logger.error(f"Unexpected error during PKI server configuration: {e}")
         return False
 
 
- 
+
 def import_pkcs12_tftp(device, tftp_ip, file_name, tp_name, format_type, password):
     """
     Imports a PKCS#12 certificate bundle into a Cisco device from a TFTP server.
-    This function uses the `crypto pki import` command to import a PKCS#12 
+    This function uses the `crypto pki import` command to import a PKCS#12
     file over TFTP into a specified trustpoint on the device.
     Args:
         device: Device connection object (pyATS/unicon object) used to send commands.
@@ -1951,18 +1953,18 @@ def import_pkcs12_tftp(device, tftp_ip, file_name, tp_name, format_type, passwor
         format_type (str): File format type (e.g., 'pkcs12').
         password (str): Password for the PKCS#12 file.
     Returns:
-        bool: 
+        bool:
             - True if the import operation succeeded.
             - False if the operation failed.
     Raises:
         ValueError: If password is less than 8 characters long.
     """
 
-    
+
     try:
         dialog = Dialog([
             Statement(pattern=r'.*Address or name of remote host', action=f'sendline({tftp_ip})',
-                      loop_continue=True, continue_timer=False),         
+                      loop_continue=True, continue_timer=False),
             Statement(pattern=r'.*Source filename', action=f'sendline({file_name})',
                       loop_continue=True, continue_timer=False),
             Statement(pattern=r'.*Do you really want to replace them', action=f'sendline(yes)',
@@ -1989,17 +1991,17 @@ def import_pkcs12_tftp(device, tftp_ip, file_name, tp_name, format_type, passwor
 def export_pkcs12_tftp(device, tftp_ip, file_name, tp_name, format_type):
     """
         Exports a PKCS#12 certificate bundle from a Cisco device to a TFTP server.
-    
-        This function uses the `crypto pki export` command to export a PKCS#12 file 
+
+        This function uses the `crypto pki export` command to export a PKCS#12 file
         over TFTP from a specified trustpoint on the device.
-    
+
         Args:
             device: Device connection object (pyATS/unicon object) used to send commands.
             tftp_ip (str): IP address of the TFTP server where the PKCS#12 file will be saved.
             file_name (str): Destination file name for the PKCS#12 bundle on the TFTP server.
             tp_name (str): Trustpoint name from which the certificate is exported.
             format_type (str): File format type (e.g., 'pkcs12').
-    
+
         Returns:
             bool:
                 - True if the export operation succeeded.
@@ -2103,7 +2105,7 @@ def unconfigure_crypto_pki_certificate_map(device, map_name, sequence):
         device.configure(cmds)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to unconfigure crypto pki certificate map {map_name}: {e}")
-        
+
 def configure_pki_export_advanced(device,
                                 tp_name,
                                 export_type,
@@ -2303,7 +2305,7 @@ def change_pki_certificate_hash(device, hash_algorithm=None):
             True/False
     """
     logger.info(f"Configuring PKI certificate hash algorithm: {hash_algorithm or 'default'}")
-    
+
     try:
         config_commands = []
         if hash_algorithm:

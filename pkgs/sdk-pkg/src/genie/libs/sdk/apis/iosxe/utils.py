@@ -10,6 +10,8 @@ from pyats.async_ import Pcall
 
 # Genie
 from genie.libs.sdk.apis.utils import get_config_dict
+from genie.libs.sdk.apis.execute import (
+    free_up_disk_space as generic_free_up_disk_space)
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
 from genie.utils.timeout import Timeout
 from genie.libs.parser.iosxe.ping import Ping
@@ -22,6 +24,48 @@ from ats.log.utils import banner
 
 
 log = logging.getLogger(__name__)
+
+
+def free_up_disk_space(device, destination, required_size, skip_deletion,
+    protected_files, compact=False, min_free_space_percent=None,
+    dir_output=None, allow_deletion_failure=False):
+    """ Delete unprotected IOS XE files and recursively clean directories.
+
+        Directories are processed before top level files by deleting their
+        unprotected contents rather than deleting the directory itself.
+
+        Args:
+            device ('obj'): Device object
+            destination ('str'): Destination directory, i.e bootflash:/
+            required_size ('int'): Check if enough space to fit given size in
+                bytes. If this number is negative it will be assumed the
+                required size is not available.
+            skip_deletion ('bool'): Only performs checks, no deletion
+            protected_files ('list'): List of file patterns that wont be
+                deleted
+            compact ('bool'): Compact option for n9k, used for size
+                estimation, default False
+            min_free_space_percent ('int'): Minimum acceptable free disk space
+                %. Optional
+            dir_output ('str'): Output of 'dir' command if not provided,
+                executes the cmd on device
+            allow_deletion_failure ('bool', optional): Allow the deletion of a
+                file to silently fail. Defaults to False
+        Returns:
+            True if there is enough space after the operation, False otherwise
+    """
+    return generic_free_up_disk_space(
+        device=device,
+        destination=destination,
+        required_size=required_size,
+        skip_deletion=skip_deletion,
+        protected_files=protected_files,
+        compact=compact,
+        min_free_space_percent=min_free_space_percent,
+        dir_output=dir_output,
+        allow_deletion_failure=allow_deletion_failure,
+        recursive=True,
+    )
 
 
 def delete_local_file(device, path, file, timeout=60):
@@ -1529,6 +1573,7 @@ def get_show_output_section(device, command, filter, target=None):
 
     return (result,output)
 
+
 def clear_port_security(device,interface=None):
     """ clear port-security all
         Args:
@@ -1809,7 +1854,9 @@ def request_system_shell(device, switch_type=None, processor_slot=None, uname=Fa
         if exit:
             device.execute('exit', reply=exit_dialog)
     except SubCommandFailure as e:
-        raise SubCommandFailure(f"failed to enter system shell""Error:\n{e}")
+        raise SubCommandFailure(
+            f"failed to enter system shell. Error:\n{e}"
+        )
     return output
 
 def btdecode_grep(device, file_path, search_string, timeout=60):
@@ -1954,6 +2001,40 @@ def clear_pppoe_all(device):
         device.execute("clear pppoe all", reply=dialog)
     except SubCommandFailure as e:
         raise SubCommandFailure(f'Could not clear counters on {device}. Error:\n{e}')
+
+
+def clear_pppoe_int(device, interface):
+    """ clear pppoe int
+        Args:
+            device ('obj'): Device object
+            interface ('str'): Interface to clear PPPoE sessions on
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info("clear pppoe int {interface} on {device}".format(
+        interface=interface,
+        device=device,
+    ))
+
+    dialog = Dialog([
+        Statement(
+            pattern=r'\[confirm\].*',
+            action='sendline(\r)',
+            loop_continue=True,
+            continue_timer=False,
+        )
+    ])
+
+    try:
+        device.execute(
+            "clear pppoe int {interface}".format(interface=interface),
+            reply=dialog,
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not clear pppoe on {interface}. Error:\n{e}')
+
 
 def clear_pdm_steering_policy(device):
     """ clear pdm steering policy
@@ -2423,3 +2504,27 @@ def hw_module_session(device, subslot, uname=False, exit=True, command=None, tim
         raise SubCommandFailure(f"Failed to execute hw-module session for subslot {subslot}. Error:\n{e}")
 
     return output
+
+
+def get_show_output(device, command, target=None):
+    """ Execute a show command on the active or standby RP.
+        Args:
+            device (`obj`): Device object
+            command (`str`): show command
+            target (`str`, optional): Target RP (e.g. 'standby'). Defaults to None
+        Returns:
+            bool,output('str') : True/False, command output based on the output
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        if target:
+            output = device.execute(command, target=target)
+        else:
+            output = device.execute(command)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not execute '{command}' on {device}. Error:\n{e}".format(
+                command=command, device=device.name, e=e))
+
+    return (bool(output), output)

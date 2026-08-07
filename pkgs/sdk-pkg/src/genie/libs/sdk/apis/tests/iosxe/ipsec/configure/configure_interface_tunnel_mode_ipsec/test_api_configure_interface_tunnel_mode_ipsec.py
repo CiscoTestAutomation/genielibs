@@ -1,35 +1,37 @@
-import os
 import unittest
-from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.ipsec.configure import configure_interface_tunnel_mode_ipsec
+from unittest import TestCase
+from unittest.mock import Mock
+
+from genie.libs.sdk.apis.iosxe.ipsec.configure import (
+    configure_interface_tunnel_mode_ipsec,
+)
 
 
-class TestConfigureInterfaceTunnelModeIpsec(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          stack3-nyquist-1:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: router
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['stack3-nyquist-1']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureInterfaceTunnelModeIpsec(TestCase):
 
     def test_configure_interface_tunnel_mode_ipsec(self):
-        result = configure_interface_tunnel_mode_ipsec(self.device, 'Gi1/0/10')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.state_machine.current_state = "enable"
+        device.configure.return_value = None
+
+        result = configure_interface_tunnel_mode_ipsec(
+            device,
+            "Gi1/0/10",
+        )
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once()
+
+        sent_commands = device.configure.call_args.args[0]
+        self.assertIsInstance(sent_commands, list)
+        self.assertEqual(
+            sent_commands,
+            [
+                "interface Gi1/0/10",
+                "tunnel mode ipsec ipv4",
+            ],
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()

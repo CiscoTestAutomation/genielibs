@@ -55,3 +55,22 @@ def execute_simulator_radius_request_coa(device, profile_num,
         raise SubCommandFailure(
             f"Failed to execute simulator radius request coa. Error: {e}"
         )
+
+
+def execute_show_simulator_radius_server_all(device):
+    """Execute ``show simulator radius server all`` on device.
+
+        Args:
+            device (`obj`): Device object
+        Returns:
+            str: Command output
+        Raises:
+            SubCommandFailure
+    """
+    command = "show simulator radius server all"
+    try:
+        return device.execute(command)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to execute {command}. Error: {e}"
+        )

@@ -184,8 +184,15 @@ def configure_vpdn_group(
     accept_local_name=None,
     initiate_to_entries=None,
     busy_timeout=None,
+    request_dialout=None,
+    accept_dialout=None,
+    multihop_hostname=None,
+    source_ip=None,
+    vpn_vrf=None,
+    terminate_from_hostname=None,
     src_ip=None,
     lcp_reneg_type=None,
+    tunnel_retransmit_retries=None,
 ):
     """Configure VPDN and optional VPDN group subcommands.
 
@@ -213,8 +220,18 @@ def configure_vpdn_group(
             Each item can be a string IP, ``(ip, priority)``, or
             ``{'ip': ip, 'priority': priority}``
         busy_timeout ('str'): Value for ``l2tp tunnel busy timeout``
-        src_ip ('str', optional): source-ip
-        lcp_reneg_typ ('str', optional): lcp renegotiation type (ie always or on-mismatch)
+        request_dialout ('str', optional): Value for ``request dialout``
+        accept_dialout ('str', optional): Value for ``accept dialout``
+        multihop_hostname ('str', optional): Value for ``multihop hostname``
+            under ``request-dialin``
+        source_ip ('str', optional): Value for ``source-ip``
+        vpn_vrf ('str', optional): Value for ``vpn vrf``
+        terminate_from_hostname ('str', optional): Value for
+            ``terminate-from hostname``
+        src_ip ('str', optional): Value for ``source-ip``
+        lcp_reneg_type ('str', optional): Value for ``lcp renegotiation``
+        tunnel_retransmit_retries ('str'): Value for
+            ``l2tp tunnel retransmit retries``
 
     Returns:
         None
@@ -241,10 +258,19 @@ def configure_vpdn_group(
         [
             request_dialin,
             accept_dialin,
+            request_dialout is not None,
+            accept_dialout is not None,
             tunnel_hello_interval is not None,
             tunnel_password is not None,
             tunnel_receive_window is not None,
             busy_timeout is not None,
+            multihop_hostname is not None,
+            source_ip is not None,
+            vpn_vrf is not None,
+            terminate_from_hostname is not None,
+            src_ip is not None,
+            lcp_reneg_type is not None,
+            tunnel_retransmit_retries is not None,
             request_dialin and (resolved_request_local_name is not None),
             accept_dialin and (resolved_accept_local_name is not None),
         ]
@@ -264,16 +290,38 @@ def configure_vpdn_group(
     if vpdn_group_number is not None:
         cli.append("vpdn-group {group}".format(group=vpdn_group_number))
 
-        if src_ip:
-            cli.append(f'source-ip {src_ip}')
+        if request_dialout is not None:
+            cli.append("request dialout {request_dialout}".format(
+                request_dialout=request_dialout
+            ))
 
-        if lcp_reneg_type:
-            cli.append(f'lcp renegotiation {lcp_reneg_type}')
+        if accept_dialout is not None:
+            cli.append("accept dialout {accept_dialout}".format(
+                accept_dialout=accept_dialout
+            ))
+
+        if src_ip is not None:
+            cli.append("source-ip {src_ip}".format(src_ip=src_ip))
+
+        if lcp_reneg_type is not None:
+            cli.append(
+                "lcp renegotiation {lcp_reneg_type}".format(
+                    lcp_reneg_type=lcp_reneg_type
+                )
+            )
+
+        local_name_configured = False
 
         if request_dialin:
             cli.append("request-dialin")
             if protocol is not None:
                 cli.append("protocol {protocol}".format(protocol=protocol))
+            if multihop_hostname is not None:
+                cli.append(
+                    "multihop hostname {hostname}".format(
+                        hostname=multihop_hostname
+                    )
+                )
             if domain is not None:
                 cli.append("domain {domain}".format(domain=domain))
             cli.extend(
@@ -289,6 +337,7 @@ def configure_vpdn_group(
                         local_name=resolved_request_local_name
                     )
                 )
+                local_name_configured = True
 
         if accept_dialin:
             cli.append("accept-dialin")
@@ -306,11 +355,39 @@ def configure_vpdn_group(
                         local_name=resolved_accept_local_name
                     )
                 )
+                local_name_configured = True
+
+        if not request_dialin and request_dialout is not None:
+            cli.extend(
+                _build_initiate_to_commands(
+                    initiate_to=initiate_to,
+                    initiate_to_entries=initiate_to_entries,
+                )
+            )
+
+        if source_ip is not None and source_ip != src_ip:
+            cli.append("source-ip {source_ip}".format(source_ip=source_ip))
+        if vpn_vrf is not None:
+            cli.append("vpn vrf {vpn_vrf}".format(vpn_vrf=vpn_vrf))
+        if local_name is not None and not local_name_configured:
+            cli.append("local name {local_name}".format(local_name=local_name))
+        if terminate_from_hostname is not None:
+            cli.append(
+                "terminate-from hostname {hostname}".format(
+                    hostname=terminate_from_hostname
+                )
+            )
 
         if tunnel_hello_interval is not None:
             cli.append(
                 "l2tp tunnel hello {interval}".format(
                     interval=tunnel_hello_interval
+                )
+            )
+        if tunnel_retransmit_retries is not None:
+            cli.append(
+                "l2tp tunnel retransmit retries {retries}".format(
+                    retries=tunnel_retransmit_retries
                 )
             )
         if tunnel_password is not None:
@@ -524,6 +601,107 @@ def unconfigure_vpdn_group_l2tp_tunnel_busy_timeout(
         raise SubCommandFailure(
             "Failed to unconfigure l2tp tunnel busy timeout under vpdn-group "
             "{vpdn_group_number} on {device}. Error:\n{error}".format(
+                vpdn_group_number=vpdn_group_number,
+                device=getattr(device, "name", device),
+                error=e,
+            )
+        ) from e
+
+
+def configure_vpdn_group_l2tp_tunnel_retransmit_retries(
+    device, vpdn_group_number, retransmit_retries, check_existing=True
+):
+    """Configure ``l2tp tunnel retransmit retries`` under a VPDN group.
+
+    Args:
+        device ('obj'): Device object
+        vpdn_group_number ('str'): VPDN group name or number
+        retransmit_retries ('str'): Retransmit retries value to configure
+        check_existing ('bool', optional): When True, skip configuration if
+            the exact line already exists
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure: Failed to configure retransmit retries or retrieve
+            running-config
+    """
+
+    cli = "l2tp tunnel retransmit retries {retries}".format(
+        retries=retransmit_retries
+    )
+
+    if check_existing and _has_vpdn_group_config_line(device, vpdn_group_number, cli):
+        log.debug(
+            "%s is already configured under vpdn-group %s on %s",
+            cli,
+            vpdn_group_number,
+            device.name,
+        )
+        return
+
+    try:
+        device.configure(
+            ["vpdn-group {group}".format(group=vpdn_group_number), cli]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure l2tp tunnel retransmit retries under "
+            "vpdn-group {vpdn_group_number} on {device}. Error:\n{error}".format(
+                vpdn_group_number=vpdn_group_number,
+                device=getattr(device, "name", device),
+                error=e,
+            )
+        ) from e
+
+
+def unconfigure_vpdn_group_l2tp_tunnel_retransmit_retries(
+    device, vpdn_group_number, retransmit_retries, check_existing=True
+):
+    """Unconfigure ``l2tp tunnel retransmit retries`` under a VPDN group.
+
+    Args:
+        device ('obj'): Device object
+        vpdn_group_number ('str'): VPDN group name or number
+        retransmit_retries ('str'): Retransmit retries value to unconfigure
+        check_existing ('bool', optional): When True, skip unconfiguration if
+            the exact line is not present
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure: Failed to unconfigure retransmit retries or retrieve
+            running-config
+    """
+
+    cli = "l2tp tunnel retransmit retries {retries}".format(
+        retries=retransmit_retries
+    )
+
+    if check_existing and not _has_vpdn_group_config_line(
+        device, vpdn_group_number, cli
+    ):
+        log.debug(
+            "%s is not configured under vpdn-group %s on %s",
+            cli,
+            vpdn_group_number,
+            device.name,
+        )
+        return
+
+    try:
+        device.configure(
+            [
+                "vpdn-group {group}".format(group=vpdn_group_number),
+                "no {cli}".format(cli=cli),
+            ]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to unconfigure l2tp tunnel retransmit retries under "
+            "vpdn-group {vpdn_group_number} on {device}. Error:\n{error}".format(
                 vpdn_group_number=vpdn_group_number,
                 device=getattr(device, "name", device),
                 error=e,

@@ -92,10 +92,7 @@ class SetBootVariable(unittest.TestCase):
         # And we want the execute method to be mocked with device console output.
         self.device.execute = Mock(return_value = data['dir bootflash:/'])
 
-        def mock_execute(*args, **kwargs):
-            assert args == ('puts [open "bootflash:/packages.conf" w+] {}',)
-
-        self.device.tclsh = mock_execute
+        self.device.api.create_empty_file = Mock()
 
         # And we want the execute_set_boot_variable api to be mocked.
         # This simulates the pass case.
@@ -105,6 +102,8 @@ class SetBootVariable(unittest.TestCase):
         self.cls.set_boot_variable(
             steps=steps, device=self.device
         )
+        self.device.api.create_empty_file.assert_called_once_with(
+            'bootflash:/', 'packages.conf', overwrite=False)
         # Check that the result is expected
         self.assertEqual(Passed, steps.details[0].result)
 
@@ -128,10 +127,7 @@ class SetBootVariable(unittest.TestCase):
         # And we want the execute method to be mocked with device console output.
         self.device.execute = Mock(return_value = data['dir bootflash:/'])
 
-        def mock_execute(*args, **kwargs):
-            assert args == ('puts [open "bootflash:/packages.conf" w+] {}',)
-
-        self.device.tclsh = mock_execute
+        self.device.api.create_empty_file = Mock()
 
         # And we want the execute_set_boot_variable api to raise an exception when called.
         # This simulates the fail case.
@@ -143,6 +139,8 @@ class SetBootVariable(unittest.TestCase):
                 steps=steps, device=self.device
             )
 
+        self.device.api.create_empty_file.assert_called_once_with(
+            'bootflash:/', 'packages.conf', overwrite=False)
         # Check the overall result is as expected
         self.assertEqual(Failed, steps.details[0].result)
         
@@ -166,10 +164,7 @@ class SetBootVariable(unittest.TestCase):
         # And we want the execute method to be mocked with device console output.
         self.device.execute = Mock(return_value = data['dir bootflash:/'])
 
-        def mock_execute(*args, **kwargs):
-            assert args == ('puts [open "bootflash:/packages.conf" w+] {}',)
-
-        self.device.tclsh = mock_execute
+        self.device.api.create_empty_file = Mock()
 
         # And we want the execute_set_boot_variable
         self.device.api.execute_set_boot_variable = Mock()
@@ -178,6 +173,8 @@ class SetBootVariable(unittest.TestCase):
                 steps=steps, device=self.device
             )
 
+        self.device.api.create_empty_file.assert_called_once_with(
+            'bootflash:/', 'packages.conf', overwrite=False)
         # Check the overall result is as expected
         self.assertEqual(Passed, steps.details[0].result)
 
@@ -452,7 +449,102 @@ class TestInstallImage(unittest.TestCase):
             )
         device.reload.assert_has_calls([expected_reload_call])
         self.assertEqual(Passed, steps.details[0].result)
-        
+
+    @patch('genie.libs.clean.stages.iosxe.stages.Dialog')
+    def test_iosxe_install_image_success_before_reload_timeout(self, dialog):
+        reload_dialog = Mock()
+        dialog.return_value = reload_dialog
+        steps = Steps()
+        cls = InstallImage()
+        cls.history = MagicMock()
+        cls.new_boot_var = 'image.bin'
+
+        device = Mock()
+        device.spawn = Mock()
+        device.reload = Mock()
+        device.parse = Mock(return_value={
+                                 'location': {
+                                     'Switch 1': {
+                                         'pkg_state': {
+                                             1: {'type': 'IMG',
+                                                 'state': 'C',
+                                                 'filename_version': '17.17.01.0.207986'}},
+                                         'auto_abort_timer': 'inactive'
+                                         }}})
+
+        device.api.get_running_image = Mock(return_value='old_image.bin')
+        device.api.collect_install_log = Mock()
+        device.execute = Mock(side_effect=[
+            Exception("SUCCESS: install_add_activate_commit\nreboot: Restarting system"),
+            "SUCCESS:",
+        ])
+
+        cls.install_image(steps=steps, device=device, images=['sftp://server/image.bin'])
+
+        device.api.collect_install_log.assert_not_called()
+        expected_execute_call = [
+            call('install add file sftp://server/image.bin activate commit prompt-level none',
+                 reply=reload_dialog,
+                 append_error_pattern=['FAILED:'],
+                 timeout=500),
+            call('install commit')
+        ]
+        device.execute.assert_has_calls(expected_execute_call)
+        device.reload.assert_called_once_with(
+            '',
+            reload_creds='default',
+            prompt_recovery=True,
+            error_pattern=['FAILED:.*?$'],
+            device_recovery=False,
+            timeout=500,
+            reply=reload_dialog,
+        )
+        self.assertEqual(Passed, steps.details[0].result)
+        self.assertEqual(Passed, steps.details[1].result)
+
+    @patch('genie.libs.clean.stages.iosxe.stages.Dialog')
+    def test_iosxe_install_image_reload_dialog_matches_c9350_quick_reload(self, dialog):
+        reload_dialog = Mock()
+        dialog.return_value = reload_dialog
+        steps = Steps()
+        cls = InstallImage()
+        cls.history = MagicMock()
+        cls.new_boot_var = 'image.bin'
+
+        device = Mock()
+        device.spawn = Mock()
+        device.reload = Mock()
+        device.parse = Mock(return_value={
+                                 'location': {
+                                     'Switch 1': {
+                                         'pkg_state': {
+                                             1: {'type': 'IMG',
+                                                 'state': 'C',
+                                                 'filename_version': '17.17.01.0.207986'}},
+                                         'auto_abort_timer': 'inactive'
+                                         }}})
+
+        device.api.get_running_image = Mock(return_value='old_image.bin')
+        device.execute = Mock(side_effect=[
+            "SUCCESS: install_add_activate_commit",
+            "SUCCESS:",
+        ])
+
+        cls.install_image(steps=steps, device=device, images=['sftp://server/image.bin'])
+
+        check_reload_statements = dialog.call_args_list[1][0][0]
+        check_reload_patterns = [statement.pattern for statement in check_reload_statements]
+        c9350_quick_reload_outputs = [
+            "R0/0: pvp: Process manager is exiting: reload fru action requested",
+            "Chassis 1 reloading, reason - Reload Command",
+            "Chassis 1 reloading firmware, reason - Reload Firmware Command",
+        ]
+
+        for output in c9350_quick_reload_outputs:
+            self.assertTrue(
+                any(re.match(pattern, output) for pattern in check_reload_patterns),
+                f"No reload dialog pattern matched {output!r}")
+
     @patch('genie.libs.clean.stages.iosxe.stages.Dialog')
     def test_iosxe_install_image_pass_retries_not_enough_space(self, dialog):
         reload_dialog = Mock()
@@ -504,8 +596,10 @@ iso   rp 0 0   rp_base cat9k-2.pkg'''
                 reply=reload_dialog,
             )
         device.reload.assert_has_calls([expected_reload_call])
-        device.api.free_up_disk_space.assert_called_with(destination='', required_size=5000,
-                                                         protected_files=['image.bin'], allow_deletion_failure=True, skip_deletion=False)
+        device.api.free_up_disk_space.assert_called_with(
+            destination='', required_size=5120,
+            protected_files=['image.bin'], allow_deletion_failure=True,
+            skip_deletion=False)
         device.api.get_running_image.assert_called_once()
         self.assertEqual(Passed, steps.details[0].result)
 

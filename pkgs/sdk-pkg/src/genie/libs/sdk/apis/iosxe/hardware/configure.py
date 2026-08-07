@@ -52,11 +52,12 @@ def unconfigure_400g_mode_for_port_group(device, slot, port_group):
                 .format(device=device, error=e)
         )
 
-def configure_400g_mode_port_group_range(device, slot):
+def configure_400g_mode_port_group_range(device, slot,timeout=100):
     """ enable 400g mode range conversion on Metaluna LC
         Args:
             device (`obj`): Device object
             slot (`int`): Metaluna slot
+            timeout('int'): time to configure the group mode 
 
         Returns:
             None
@@ -66,18 +67,19 @@ def configure_400g_mode_port_group_range(device, slot):
     """
 
     try:
-        device.configure('hw-module slot {slot} port-group range 1-2 mode 400G'.format(slot=slot))
+        device.configure(f'hw-module slot {slot} port-group range 1-2 mode 400G',timeout=timeout)
     except SubCommandFailure as e:
         raise SubCommandFailure(
             "Could not configure mode conversion on {device}. Error:\n{error}"
                 .format(device=device, error=e)
         )
 
-def unconfigure_400g_mode_port_group_range(device, slot):
+def unconfigure_400g_mode_port_group_range(device, slot,timeout=100):
     """ disable 400g mode range conversion on Metaluna LC
         Args:
             device (`obj`): Device object
             slot (`int`): Metaluna slot
+            timeout('int'): time to unconfigure the group mode 
 
         Returns:
             None
@@ -87,7 +89,7 @@ def unconfigure_400g_mode_port_group_range(device, slot):
     """
 
     try:
-        device.configure('no hw-module slot {slot} port-group range 1-2 mode 400G'.format(slot=slot))
+        device.configure(f'no hw-module slot {slot} port-group range 1-2 mode 400G',timeout=timeout)
     except SubCommandFailure as e:
         raise SubCommandFailure(
             "Could not configure mode conversion on {device}. Error:\n{error}"

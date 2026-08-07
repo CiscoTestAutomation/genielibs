@@ -3,12 +3,14 @@ from unittest.mock import Mock
 
 from genie.libs.sdk.apis.iosxe.vpdn.configure import (
     configure_vpdn_group_l2tp_tunnel_busy_timeout,
+    configure_vpdn_group_l2tp_tunnel_retransmit_retries,
     configure_vpdn_group_local_name,
     configure_vpdn_group_session_limit,
     configure_vpdn_logging_dead_cache,
     configure_vpdn_multihop,
     configure_vpdn_session_limit,
     unconfigure_vpdn_group_l2tp_tunnel_busy_timeout,
+    unconfigure_vpdn_group_l2tp_tunnel_retransmit_retries,
     unconfigure_vpdn_group_session_limit,
     unconfigure_vpdn_logging_dead_cache,
     unconfigure_vpdn_multihop,
@@ -249,6 +251,42 @@ class TestConfigureVpdnGroupL2tpTunnelBusyTimeout(unittest.TestCase):
         device.configure.assert_not_called()
 
 
+class TestConfigureVpdnGroupL2tpTunnelRetransmitRetries(unittest.TestCase):
+
+    def test_configure_when_missing(self):
+        device = Mock()
+        device.api.get_running_config_dict.return_value = {
+            "vpdn-group 11": {
+                "accept-dialin": {},
+            }
+        }
+
+        result = configure_vpdn_group_l2tp_tunnel_retransmit_retries(
+            device, "11", 5
+        )
+
+        self.assertIsNone(result)
+        device.api.get_running_config_dict.assert_called_once_with()
+        device.configure.assert_called_once_with(
+            ["vpdn-group 11", "l2tp tunnel retransmit retries 5"]
+        )
+
+    def test_skip_when_present(self):
+        device = Mock()
+        device.api.get_running_config_dict.return_value = {
+            "vpdn-group 11": {
+                "l2tp tunnel retransmit retries 5": {},
+            }
+        }
+
+        result = configure_vpdn_group_l2tp_tunnel_retransmit_retries(
+            device, "11", 5
+        )
+
+        self.assertIsNone(result)
+        device.configure.assert_not_called()
+
+
 class TestUnconfigureVpdnGroupSessionLimit(unittest.TestCase):
 
     def test_unconfigure_when_present(self):
@@ -306,6 +344,41 @@ class TestUnconfigureVpdnGroupL2tpTunnelBusyTimeout(unittest.TestCase):
         }
 
         result = unconfigure_vpdn_group_l2tp_tunnel_busy_timeout(device, "11", 60)
+
+        self.assertIsNone(result)
+        device.configure.assert_not_called()
+
+
+class TestUnconfigureVpdnGroupL2tpTunnelRetransmitRetries(unittest.TestCase):
+
+    def test_unconfigure_when_present(self):
+        device = Mock()
+        device.api.get_running_config_dict.return_value = {
+            "vpdn-group 11": {
+                "l2tp tunnel retransmit retries 5": {},
+            }
+        }
+
+        result = unconfigure_vpdn_group_l2tp_tunnel_retransmit_retries(
+            device, "11", 5
+        )
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once_with(
+            ["vpdn-group 11", "no l2tp tunnel retransmit retries 5"]
+        )
+
+    def test_skip_when_missing(self):
+        device = Mock()
+        device.api.get_running_config_dict.return_value = {
+            "vpdn-group 11": {
+                "accept-dialin": {},
+            }
+        }
+
+        result = unconfigure_vpdn_group_l2tp_tunnel_retransmit_retries(
+            device, "11", 5
+        )
 
         self.assertIsNone(result)
         device.configure.assert_not_called()

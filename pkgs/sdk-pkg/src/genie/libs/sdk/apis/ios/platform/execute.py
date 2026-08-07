@@ -17,6 +17,7 @@ from genie.metaparser.util.exceptions import SchemaEmptyParserError
 # Unicon
 from unicon.eal.dialogs import Statement, Dialog
 from unicon.core.errors import StateMachineError
+from unicon.core.errors import SubCommandFailure
 
 # Logger
 
@@ -249,3 +250,27 @@ def execute_card_OIR(device, card_number):
         log.info("Successfully executed 'hw-module subslot <slot> oir power-cycle'")
     else:
         raise Exception("Failed to execute 'hw-module subslot <slot> oir power-cycle'")
+
+
+def execute_test_pppoe(device, initiator_sessions, responder_sessions, interface, timeout=60):
+    """ Execute test pppoe command
+        Args:
+            device (`obj`): Device object
+            initiator_sessions (`str`): Number of initiator sessions
+            responder_sessions (`str`): Number of responder sessions
+            interface (`str`): Interface name (e.g., GigabitEthernet0/2)
+            timeout (`int`, optional): Max time in seconds allowed for command execution.
+                Defaults to 60.
+        Returns:
+            Command output
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(f"Executing test pppoe {initiator_sessions} {responder_sessions} {interface} on {device}")
+
+    cmd = f"test pppoe {initiator_sessions} {responder_sessions} {interface}"
+
+    try:
+        return device.execute(cmd, timeout=timeout)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not execute test pppoe command on {device}. Error:\n{e}')

@@ -43,7 +43,7 @@ class TestDeleteFiles(unittest.TestCase):
         # Check if the API was called with the matching location and filename regex
         expected_pattern = fnmatch.translate('*.bin')
         self.device.api.delete_files.assert_has_calls(
-            [call(locations=['/home/cisco'], filenames=[expected_pattern], timeout=500)])
+            [call(locations=['/home/cisco'], filenames=[expected_pattern], timeout=3600)])
 
     def test_delete_files_regex(self):
         steps = Steps()
@@ -63,7 +63,7 @@ class TestDeleteFiles(unittest.TestCase):
 
         # Check if the API was called with the matching location and filename regex
         self.device.api.delete_files.assert_has_calls([
-            call(locations=['/home/cisco'], filenames=['.*.bin'], timeout=500)])
+            call(locations=['/home/cisco'], filenames=['.*.bin'], timeout=3600)])
 
     def test_delete_files_empty_or_missing_directory(self):
         steps = Steps()

@@ -132,3 +132,60 @@ def get_mac_table_entries(device):
                 mac_entries['interfaces'].append(interfaces)
 
     return mac_entries
+
+
+def get_mac_address_table_aging_time(device):
+    """
+    Get mac address table aging time of device
+        Args:
+            device ('obj'): Device object
+        Returns:
+            Dict with mac address table aging time
+    """
+    try:
+        return device.parse('show mac address-table aging-time')
+    except SchemaEmptyParserError as e:
+        log.debug('Could not get device mac address-table aging-time, '
+                  f'Error: {e}')
+        return None
+
+
+def get_mac_address_table(device, interface=None, vlan=None):
+    """
+    Get mac address table of device
+        Args:
+            device ('obj'): Device object
+            interface ('str'): Interface name
+            vlan ('int'): vlan id
+        Returns:
+            Dict with mac address table
+    """
+    cmd = 'show mac address-table'
+    if interface is not None:
+        cmd += f' interface {interface}'
+    if vlan is not None:
+        cmd += f' vlan {vlan}'
+    try:
+        return device.parse(cmd)
+    except SchemaEmptyParserError as e:
+        log.debug(f'Could not get device mac address-table, Error: {e}')
+        return None
+
+
+def get_mac_address_table_count(device, vlan=None):
+    """
+    Get mac address table count of device
+        Args:
+            device ('obj'): Device object
+            vlan ('int'): vlan id
+        Returns:
+            Dict with mac address table count
+    """
+    cmd = 'show mac address-table count'
+    if vlan is not None:
+        cmd += f' vlan {vlan}'
+    try:
+        return device.parse(cmd)
+    except SchemaEmptyParserError as e:
+        log.debug(f'Could not get device mac address-table count, Error: {e}')
+        return None

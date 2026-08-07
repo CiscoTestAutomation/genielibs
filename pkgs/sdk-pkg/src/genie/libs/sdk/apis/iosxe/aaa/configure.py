@@ -607,7 +607,7 @@ def unconfigure_radius_attribute_6(device):
         )
 
 
-def configure_any_radius_server(device, server_name, addr_type, address, authport, acctport, secret):
+def configure_any_radius_server(device, server_name, addr_type, address, authport, acctport, secret, non_standard=False):
 
     """ Configure radius server on device
     Args:
@@ -618,18 +618,23 @@ def configure_any_radius_server(device, server_name, addr_type, address, authpor
         authport (`int`): Auth port
         acctport (`int`): Acct port
         secret (`str`): ISE Secret key
+        non_standard (`bool`, optional): Configure non-standard attribute support.
+            Defaults to False.
     Return:
         None
     Raise:
         SubCommandFailure: Failed configuring
     """
+    cmd = [
+        "radius server {server_name}".format(server_name=server_name),
+        "address {addr_type} {address} auth-port {authport} acct-port {acctport}".\
+            format(addr_type=addr_type,address=address,authport=authport,acctport=acctport),
+    ]
+    if non_standard:
+        cmd.append("non-standard")
+    cmd.append("key {secret}".format(secret=secret))
     try:
-        device.configure([
-            "radius server {server_name}".format(server_name=server_name),
-            "address {addr_type} {address} auth-port {authport} acct-port {acctport}".\
-                format(addr_type=addr_type,address=address,authport=authport,acctport=acctport),
-            "key {secret}".format(secret=secret)
-        ])
+        device.configure(cmd)
     except SubCommandFailure:
         raise SubCommandFailure(
             'Could not configure radius server {server_name}'.format(server_name=server_name)
@@ -4249,4 +4254,42 @@ def unconfigure_aaa_accounting(
         raise SubCommandFailure(
             f"Failed to unconfigure aaa accounting {acct_type}. "
             f"Error: {e}"
+        )
+
+
+def configure_aaa_group_server_radius(device, server_group, server_name=None,
+                                      source_interface=None, vrf=None,
+                                      unconfigure_vrf=False):
+    """ Configure aaa group server radius on device
+    Args:
+        device (`obj`): Device object
+        server_group (`str`): AAA group server radius name
+        server_name (`str`, optional): Radius server name. Defaults to None.
+        source_interface (`str`, optional): IP radius source interface.
+            Defaults to None.
+        vrf (`str`, optional): VRF name for ip vrf forwarding. Defaults to None.
+        unconfigure_vrf (`bool`, optional): Remove the ip vrf forwarding line
+            instead of adding it. Defaults to False.
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    cmd = ["aaa group server radius {server_group}".format(server_group=server_group)]
+    if server_name:
+        cmd.append("server name {server_name}".format(server_name=server_name))
+    if source_interface:
+        cmd.append("ip radius source-interface {source_interface}".format(
+            source_interface=source_interface))
+    if vrf:
+        if unconfigure_vrf:
+            cmd.append("no ip vrf forwarding {vrf}".format(vrf=vrf))
+        else:
+            cmd.append("ip vrf forwarding {vrf}".format(vrf=vrf))
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure aaa group server radius {server_group}. "
+            "Error: {e}".format(server_group=server_group, e=e)
         )

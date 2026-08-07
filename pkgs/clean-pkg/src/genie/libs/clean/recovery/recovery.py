@@ -4,10 +4,11 @@
 import re
 import time
 import logging
+from dataclasses import dataclass
 
 # pyATS
 from pyats.async_ import pcall
-from pyats.results import Passed
+from pyats.results import Blocked, Failed, Passed, Passx
 from pyats.log.utils import banner
 
 from unicon.eal.dialogs import Statement
@@ -24,6 +25,71 @@ from genie.metaparser.util.schemaengine import Optional, Or
 log = logging.getLogger(__name__)
 
 CONTINUE_RECOVERY = ['Connect']
+
+
+@dataclass
+class RecoveryOutcome:
+    stage_uid: str
+    attempted: bool = False
+    result: object = None
+    reason: str = None
+    data: object = None
+    continue_clean: bool = False
+    terminate_clean: bool = False
+    block_following_sections: bool = False
+    clean_flow_result: object = None
+    from_exception: Exception = None
+
+
+def _process_recovery_outcome(
+        section,
+        *,
+        processor,
+        processor_result,
+        reason=None,
+        section_result=None,
+        clean_block_result=Blocked,
+        from_exception=None,
+        **kwargs):
+    if processor is None:
+        raise RuntimeError(
+            "Device recovery result reporting requires an AEtest processor")
+
+    # Store the recovery decision for CleanTestcase flow control.
+    outcome = RecoveryOutcome(
+        stage_uid=section.uid,
+        result=processor_result,
+        reason=reason,
+        from_exception=from_exception,
+        **kwargs)
+    section.parent.parameters.setdefault(
+        'recovery_outcomes', {})[section.uid] = outcome
+
+    # Block remaining stages before the processor signal can raise.
+    if outcome.block_following_sections:
+        section.parent.parameters['clean_block'] = {
+            'active': True,
+            'reason': reason,
+            'result': clean_block_result,
+        }
+
+    # Update the stage result before the processor signal can raise.
+    if section_result is not None:
+        section.result = section_result.clone(reason)
+
+    # Keep processor reporting separate from Clean result rollup.
+    processor.result_rollup = False
+
+    processor_args = {}
+    if reason is not None:
+        processor_args['reason'] = reason
+    if from_exception is not None:
+        processor_args['from_exception'] = from_exception
+
+    getattr(processor, str(processor_result))(**processor_args)
+
+    return outcome
+
 
 def _disconnect_reconnect(device):
 
@@ -200,6 +266,8 @@ def recovery_processor(
         post_recovery_configuration=None,
         connection_timeout=45,
         configure_console_speed=True,
+        *,
+        processor=None,
         ):
 
     '''
@@ -289,6 +357,9 @@ def recovery_processor(
     after:
         None
     '''
+    if processor is not None:
+        processor.result_rollup = False
+
     # If connect stage was not done, don't check recovery
     if 'Connect' not in section.parent.history:
         return
@@ -387,8 +458,18 @@ Recovery Steps:
         except Exception as e:
             # Could not recover the device!
             log.error(banner("*** Terminating Genie Clean ***"))
-            section.parent.parameters['block_section'] = True
-            section.failed(from_exception=e)
+            reason = "Recovery has failed to restore the device - Blocking clean"
+            _process_recovery_outcome(
+                section,
+                processor=processor,
+                processor_result=Failed,
+                reason=reason,
+                attempted=True,
+                terminate_clean=True,
+                block_following_sections=True,
+                clean_flow_result=Failed,
+                from_exception=e)
+            return
 
         if post_recovery_configuration:
             log.info('Applying post recovery configuration to the device')
@@ -398,18 +479,37 @@ Recovery Steps:
         # Did not fail to recover but still terminate clean because the stage
         # was not in CONTINUE_RECOVERY.
         log.error(banner("*** Terminating Genie Clean ***"))
-        section.parent.parameters['block_section'] = True
-        section.failed("Device '{d}' has been recovered - "
-                       "Terminating clean".format(d=device.name))
+        reason = "Device '{d}' has been recovered - Terminating clean".format(
+            d=device.name)
+        _process_recovery_outcome(
+            section,
+            processor=processor,
+            processor_result=Passed,
+            reason=reason,
+            attempted=True,
+            terminate_clean=True,
+            block_following_sections=True,
+            clean_flow_result=Blocked)
+        return
 
     if recovery_is_required:
-        section.passx("Device has been recovered. Continuing with pyATS Clean.")
+        reason = "Device has been recovered. Continuing with pyATS Clean."
+        _process_recovery_outcome(
+            section,
+            processor=processor,
+            processor_result=Passx,
+            reason=reason,
+            attempted=True,
+            continue_clean=True,
+            section_result=Passx)
+        return
     else:
         log.info(f'Device {device.name} is still connected. No need to recover the device.')
 
 def block_section(section):
-    if section.parent.parameters.get('block_section'):
-        section.blocked('Recovery has failed to restore the device - Blocking clean')
+    block = section.parent.parameters.get('clean_block')
+    if block and block.get('active'):
+        section.blocked(block['reason'])
 
 def bring_to_any_state(connection, connection_timeout):
     '''Bring connection to any state

@@ -32,6 +32,9 @@ def free_up_disk_space(device, destination, required_size, skip_deletion,
     Returns:
          True if there is enough space after the operation, False otherwise
     '''
-    return multi_rp_free_up_disk_space(device, destination, required_size, skip_deletion,
-                                protected_files, compact=False, min_free_space_percent=None,
-                                dir_output=None, allow_deletion_failure=False)
+    return multi_rp_free_up_disk_space(
+        device, destination, required_size, skip_deletion,
+        protected_files, compact=compact,
+        min_free_space_percent=min_free_space_percent,
+        dir_output=dir_output,
+        allow_deletion_failure=allow_deletion_failure)

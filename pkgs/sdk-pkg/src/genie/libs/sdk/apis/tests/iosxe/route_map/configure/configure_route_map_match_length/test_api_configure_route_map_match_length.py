@@ -1,35 +1,24 @@
-import os
 import unittest
-from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.route_map.configure import configure_route_map_match_length
+from unittest.mock import Mock
+from genie.libs.sdk.apis.iosxe.route_map.configure import (
+    configure_route_map_match_length
+)
 
 
 class TestConfigureRouteMapMatchLength(unittest.TestCase):
 
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          stack3-nyquist-1:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: router
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['stack3-nyquist-1']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
+    def test_configure_route_map_match_length(self):
+        device = Mock()
+
+        result = configure_route_map_match_length(
+            device,
+            'green',
+            332,
+            4533
         )
 
-    def test_configure_route_map_match_length(self):
-        result = configure_route_map_match_length(self.device, 'green', 332, 4533)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        self.assertEqual(result, None)
+        self.assertEqual(
+            device.configure.mock_calls[0].args,
+           (['route-map green', 'match length 332 4533'],)
+        )

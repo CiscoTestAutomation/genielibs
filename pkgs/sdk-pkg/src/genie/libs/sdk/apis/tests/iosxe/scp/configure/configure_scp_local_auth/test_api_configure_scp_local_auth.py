@@ -1,34 +1,30 @@
 import unittest
-from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.scp.configure import configure_scp_local_auth
+from unittest.mock import Mock
+from genie.libs.sdk.apis.iosxe.scp.configure import (
+    configure_scp_local_auth
+)
 
 
 class TestConfigureScpLocalAuth(unittest.TestCase):
 
-    @classmethod
-    def setUpClass(self):
-        testbed = """
-        devices:
-          FUGAZI:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: iosxe
-            type: iosxe
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['FUGAZI']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
+    def test_configure_scp_local_auth(self):
+        device = Mock()
+
+        result = configure_scp_local_auth(
+            device,
+            'admin',
+            'Bgl11lab@123',
+            True
         )
 
-    def test_configure_scp_local_auth(self):
-        result = configure_scp_local_auth(self.device, 'admin', 'Bgl11lab@123', True)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        self.assertEqual(result, None)
+        self.assertEqual(
+            device.configure.mock_calls[0].args,
+            (['aaa new-model',
+              'aaa authentication login default local',
+              'aaa authorization exec default local',
+              'line vty 0 4',
+              'transport input ssh',
+              'username admin password Bgl11lab@123',
+              'ip scp server enable'],)
+        )

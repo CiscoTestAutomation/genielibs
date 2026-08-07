@@ -2623,3 +2623,65 @@ def unconfigure_pseudowire_class(
             "Could not unconfigure pseudowire class {pw_class}. Error:\n{error}"\
                 .format(pw_class=pw_class, error=e)
         )
+
+def configure_mpls_bgp_forwarding(device, interface):
+    """Configure MPLS BGP forwarding on interface
+
+    Args:
+        device (obj): Device object
+        interface (str): Interface name
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure
+    """
+    log.info(
+        "Configuring MPLS BGP forwarding on {interface} on {device}".format(
+            interface=interface, device=device.name
+        )
+    )
+
+    try:
+        device.configure([
+            "interface {interface}".format(interface=interface),
+            "mpls bgp forwarding"
+        ])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure MPLS BGP forwarding on interface {interface}. "
+            "Error:\n{error}".format(interface=interface, error=e
+            )
+        )
+
+def unconfigure_mpls_bgp_forwarding(device, interface):
+    """Remove MPLS BGP forwarding from interface
+
+    Args:
+        device (obj): Device object
+        interface (str): Interface name
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure
+    """
+    log.info(
+        "Removing MPLS BGP forwarding from {interface} on {device}".format(
+            interface=interface, device=device.name
+        )
+    )
+
+    try:
+        device.configure([
+            "interface {interface}".format(interface=interface),
+            "no mpls bgp forwarding"
+        ])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not remove MPLS BGP forwarding from interface {interface}. "
+            "Error:\n{error}".format(interface=interface, error=e
+            )
+        )

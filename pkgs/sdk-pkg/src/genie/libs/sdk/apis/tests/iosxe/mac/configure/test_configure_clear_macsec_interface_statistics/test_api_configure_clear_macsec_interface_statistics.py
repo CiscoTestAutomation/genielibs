@@ -9,6 +9,6 @@ class TestConfigureClearMacsecInterfaceStatistics(TestCase):
         self.device = Mock()
         configure_clear_macsec_interface_statistics(self.device, intf='GigabitEthernet1')
         self.assertEqual(
-            self.device.configure.mock_calls[0].args,
+            self.device.execute.mock_calls[0].args,
             ('clear macsec statistics interface GigabitEthernet1',)
         )

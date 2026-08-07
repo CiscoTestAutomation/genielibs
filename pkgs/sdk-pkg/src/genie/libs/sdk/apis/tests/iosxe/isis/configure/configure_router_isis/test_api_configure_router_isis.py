@@ -1,55 +1,162 @@
-import os
 import unittest
-from pyats.topology import loader
+from unittest import TestCase
+from unittest.mock import Mock
+
 from genie.libs.sdk.apis.iosxe.isis.configure import configure_router_isis
 
 
-class TestConfigureRouterIsis(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          stack3-nyquist-1:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: router
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['stack3-nyquist-1']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureRouterIsis(TestCase):
 
     def test_configure_router_isis(self):
-        result = configure_router_isis(self.device, 'test', '49.1290.0000.0011.00', 'Gi1/0/4', 'wide', 'Gi1/0/4', 'level-1')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.state_machine.current_state = "enable"
+        device.configure.return_value = None
+
+        result = configure_router_isis(
+            device,
+            "test",
+            "49.1290.0000.0011.00",
+            "Gi1/0/4",
+            "wide",
+            "Gi1/0/4",
+            "level-1",
+        )
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once()
+
+        sent_commands = device.configure.call_args.args[0]
+        self.assertIsInstance(sent_commands, list)
+        self.assertEqual(
+            sent_commands,
+            [
+                "router isis test",
+                "net 49.1290.0000.0011.00",
+                "router-id Gi1/0/4",
+                "metric-style wide",
+                "mpls traffic-eng router-id Gi1/0/4",
+                "mpls traffic-eng level-1",
+            ],
+        )
 
     def test_configure_router_isis_1(self):
-        result = configure_router_isis(self.device, 'test', None, 'Gi1/0/4', 'wide', 'Gi1/0/4', 'level-1')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.state_machine.current_state = "enable"
+        device.configure.return_value = None
+
+        result = configure_router_isis(
+            device,
+            "test",
+            None,
+            "Gi1/0/4",
+            "wide",
+            "Gi1/0/4",
+            "level-1",
+        )
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once()
+
+        sent_commands = device.configure.call_args.args[0]
+        self.assertIsInstance(sent_commands, list)
+        self.assertEqual(
+            sent_commands,
+            [
+                "router isis test",
+                "router-id Gi1/0/4",
+                "metric-style wide",
+                "mpls traffic-eng router-id Gi1/0/4",
+                "mpls traffic-eng level-1",
+            ],
+        )
 
     def test_configure_router_isis_2(self):
-        result = configure_router_isis(self.device, 'test', None, None, 'wide', 'Gi1/0/4', 'level-1')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.state_machine.current_state = "enable"
+        device.configure.return_value = None
+
+        result = configure_router_isis(
+            device,
+            "test",
+            None,
+            None,
+            "wide",
+            "Gi1/0/4",
+            "level-1",
+        )
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once()
+
+        sent_commands = device.configure.call_args.args[0]
+        self.assertIsInstance(sent_commands, list)
+        self.assertEqual(
+            sent_commands,
+            [
+                "router isis test",
+                "metric-style wide",
+                "mpls traffic-eng router-id Gi1/0/4",
+                "mpls traffic-eng level-1",
+            ],
+        )
 
     def test_configure_router_isis_3(self):
-        result = configure_router_isis(self.device, 'test', None, None, None, 'Gi1/0/4', 'level-1')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.state_machine.current_state = "enable"
+        device.configure.return_value = None
+
+        result = configure_router_isis(
+            device,
+            "test",
+            None,
+            None,
+            None,
+            "Gi1/0/4",
+            "level-1",
+        )
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once()
+
+        sent_commands = device.configure.call_args.args[0]
+        self.assertIsInstance(sent_commands, list)
+        self.assertEqual(
+            sent_commands,
+            [
+                "router isis test",
+                "mpls traffic-eng router-id Gi1/0/4",
+                "mpls traffic-eng level-1",
+            ],
+        )
 
     def test_configure_router_isis_4(self):
-        result = configure_router_isis(self.device, 'test', None, None, None, None, 'level-1')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.state_machine.current_state = "enable"
+        device.configure.return_value = None
+
+        result = configure_router_isis(
+            device,
+            "test",
+            None,
+            None,
+            None,
+            None,
+            "level-1",
+        )
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once()
+
+        sent_commands = device.configure.call_args.args[0]
+        self.assertIsInstance(sent_commands, list)
+        self.assertEqual(
+            sent_commands,
+            [
+                "router isis test",
+                "mpls traffic-eng level-1",
+            ],
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()

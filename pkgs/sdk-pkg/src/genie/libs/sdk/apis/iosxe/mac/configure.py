@@ -727,28 +727,49 @@ def unconfigure_interface_mka_pre_share_key(device, interface, key_name):
         )
 
 
-def configure_macsec_key_chain(device, keychain_name, key, key_string):
-    """ Configure macsec key chain
+def configure_macsec_key_chain(device, keychain_name, key, key_string,
+                               mka_policy_name=None, mka_cipher=None,
+                               key_server_priority=None):
+    """ Configure macsec key chain with optional MKA policy
+
+        On platforms where 'mka policy' is configured from within the
+        'key chain ... macsec' context (e.g. ACE/Cat9K access switches),
+        provide mka_policy_name to have the policy configured inline.
+        This avoids 'Invalid input' errors that occur when trying to
+        configure 'mka policy' at global config level on such platforms.
 
         Args:
             device (`obj`): device object
             keychain_name (`str`): key chain name
             key (`int`): key id
             key_string (`str`): key string
+            mka_policy_name (`str`, optional): MKA policy name to configure
+                within the keychain context. Default: None
+            mka_cipher (`str`, optional): MACsec cipher suite, e.g.
+                'gcm-aes-128'. Used with mka_policy_name. Default: None
+            key_server_priority (`str`, optional): Key server priority value.
+                Used with mka_policy_name. Default: None
         Return:
             None
         Raises:
             SubCommandFailure: Failed configuring device
     """
     try:
-        device.configure(
-            [
-                "key chain {} macsec".format(keychain_name),
-                "key {}".format(key),
-                "key-string {}".format(key_string),
-                "exit",
-            ]
-        )
+        configs = [
+            "key chain {} macsec".format(keychain_name),
+            "key {}".format(key),
+            "key-string {}".format(key_string),
+            "exit",
+        ]
+        if mka_policy_name:
+            configs.append("mka policy {}".format(mka_policy_name))
+            if mka_cipher:
+                configs.append("macsec {}".format(mka_cipher))
+            if key_server_priority:
+                configs.append(
+                    "key-server priority {}".format(key_server_priority)
+                )
+        device.configure(configs)
     except SubCommandFailure:
         raise SubCommandFailure(
             f"Failed to configure MACsec key chain {keychain_name} key {key} on device {device.name}"
@@ -764,14 +785,14 @@ def configure_clear_macsec_interface_statistics(device, intf):
         Return:
             None
         Raises:
-            SubCommandFailure: Failed configuring device
+            SubCommandFailure: Failed executing on device
     """
-    cfg_cmd = f"clear macsec statistics interface {intf}"
+    cmd = f"clear macsec statistics interface {intf}"
     try:
-        device.configure(cfg_cmd)
+        device.execute(cmd)
     except SubCommandFailure:
         raise SubCommandFailure(
-            f"Failed to configure {cfg_cmd} on device {device.name}"
+            f"Failed to execute {cmd} on device {device.name}"
         )
 
 

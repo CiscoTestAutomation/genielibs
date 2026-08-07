@@ -1,17 +1,66 @@
-"""Common execute functions for IOS XE simulator."""
+"""Execute CLI functions for IOS XE simulator."""
 
-# Python
-import logging
-
-# Unicon
 from unicon.core.errors import SubCommandFailure
 
-log = logging.getLogger(__name__)
+
+def execute_clear_simulator_radius_request(device):
+    """Execute ``clear simulator radius request all``.
+
+        Args:
+            device ('obj'): Device object
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure: Failed to execute command
+    """
+
+    command = "clear simulator radius request all"
+
+    try:
+        device.execute(command)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not execute '{command}' on {device}. Error:\n{error}".format(
+                command=command,
+                device=device,
+                error=e,
+            )
+        ) from e
 
 
-def execute_simulator_radius_request_coa(device, profile_num,
-                                         client_ip=None, host_ip=None):
-    """ Execute simulator radius CoA request on device
+def execute_clear_simulator_radius_testcase(device):
+    """Execute ``clear simulator radius testcase all``.
+
+        Args:
+            device ('obj'): Device object
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure: Failed to execute command
+    """
+
+    command = "clear simulator radius testcase all"
+
+    try:
+        device.execute(command)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not execute '{command}' on {device}. Error:\n{error}".format(
+                command=command,
+                device=device,
+                error=e,
+            )
+        ) from e
+
+
+def execute_simulator_radius_request_coa(
+    device, profile_num, client_ip=None, host_ip=None
+):
+    """Execute simulator radius CoA request on device.
 
         Args:
             device (`obj`): Device object
@@ -25,12 +74,20 @@ def execute_simulator_radius_request_coa(device, profile_num,
         Raises:
             SubCommandFailure
     """
-    cmd = f"simulator radius request 1 coa {profile_num}"
+    command = "simulator radius request 1 coa {profile_num}".format(
+        profile_num=profile_num
+    )
     if client_ip and host_ip:
-        cmd += f" client {client_ip} host {host_ip}"
+        command += " client {client_ip} host {host_ip}".format(
+            client_ip=client_ip,
+            host_ip=host_ip,
+        )
+
     try:
-        device.execute(cmd)
+        device.execute(command)
     except SubCommandFailure as e:
         raise SubCommandFailure(
-            f"Failed to execute simulator radius request coa. Error: {e}"
-        )
+            "Failed to execute simulator radius request coa. Error: {error}".format(
+                error=e
+            )
+        ) from e

@@ -1069,7 +1069,7 @@ json_decoded_multiple_key = {
             'name': 'oc-ietf-interfaces:interfaces'
           },
           {
-            'name': 'oc-ietf-interfaces:interface',
+            'name': 'oc-interface',
             'key':
             {
               'name': 'TenGigabitEthernet1/0/1'
@@ -1094,7 +1094,7 @@ json_decoded_multiple_key = {
             'name': 'oc-ietf-interfaces:interfaces'
           },
           {
-            'name': 'oc-ietf-interfaces:interface',
+            'name': 'oc-interface',
             'key':
             {
               'name': 'TenGigabitEthernet1/0/1'
@@ -1118,7 +1118,7 @@ json_decoded_multiple_key = {
           {'name': 'oc-ietf-interfaces:interfaces'
           },
           {
-            'name': 'oc-ietf-interfaces:interface',
+            'name': 'oc-interface',
             'key':
             {
               'name': 'TenGigabitEthernet1/0/2'
@@ -1143,7 +1143,7 @@ json_decoded_multiple_key = {
             'name': 'oc-ietf-interfaces:interfaces'
           },
           {
-            'name': 'oc-ietf-interfaces:interface',
+            'name': 'oc-interface',
             'key':
             {
               'name': 'TenGigabitEthernet1/0/2'

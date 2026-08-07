@@ -2831,7 +2831,7 @@ def remove_port_channel_interface(device, port_channel):
     """
 
     try:
-        device.configure("no interface Port-channel {port_channel}".format(
+        device.configure("no interface Port-channel{port_channel}".format(
             port_channel=port_channel))
     except SubCommandFailure as e:
         raise SubCommandFailure(
@@ -4522,27 +4522,43 @@ def configure_interface_switchport_pvlan_mapping(device, interface, mode, primar
 
 def configure_virtual_template(device,
     virtual_template_number,
-    unnumbered_interface,
+    unnumbered_interface=None,
     auth=False,
     authentication=None,
     mss=False,
     load_delay=False,
     mss_size=0,
     load_delay_interval=0,
-    mtu='',
-    ipv6_mtu='',
+    mtu=None,
+    ipv6_mtu=None,
     no_ip_redirects=False,
     no_peer_ip=False,
     pool_name=None,
     ipv6_pool_name=None,
     mpls_ip=False,
-    mpls_encap=None):
+    mpls_encap=None,
+    no_ppp_authentication=False,
+    pap_username=None,
+    pap_password=None,
+    pap_password_type=None,
+    chap_hostname=None,
+    chap_password=None,
+    chap_password_type=None,
+    negotiated=False,
+    pool_local=False,
+    chap_password_encryption="0",
+    chap_splitnames=False,
+    timeout_ncp=None,
+    timeout_idle=None,
+    no_logging_event_link_status=False,
+    no_ip_address=False,
+    vrf_name=None):
     """ Configure virtual-template interface
 
         Args:
             device (`obj`): Device object
             virtual_template_number ('int') : virtual template number
-            unnumbered_interface (`str`): Interface name
+            unnumbered_interface (`str`, optional): Interface name
             auth('bool', optional): check for authentication
             authentication ('str', optional) : PAP, CHAP
             mtu ('str', optional) : mtu value
@@ -4550,12 +4566,28 @@ def configure_virtual_template(device,
             mss_size('int', optional): Maximum segment size
             load_delay('bool', optional):load_delay check
             load_delay_interval('int', optional): load delay
+            negotiated ('bool', optional): configure ip address negotiated
             no_ip_redirects('bool', optional): no ip redirects option
             no_peer_ip('bool', optional): no peer ip default option
             pool_name('string', optional): peer default ip address pool <pool_name>
+            pool_local ('bool', optional): use local keyword with peer default ip address pool
             ipv6_pool_name('string', optional): peer default ipv6 pool <ipv6_pool_name>
             mpls_ip('boolean', optional): configures mpls ip
             mpls_encap('str', optional): mpls encapsulation
+            no_ppp_authentication ('bool', optional): no ppp authentication
+            pap_username ('str', optional): ppp pap sent-username
+            pap_password ('str', optional): ppp pap password
+            pap_password_type ('str', optional): ppp pap password type
+            chap_hostname ('str', optional): ppp chap hostname
+            chap_password ('str', optional): ppp chap password
+            chap_password_type ('str', optional): ppp chap password type
+            chap_password_encryption ('str', optional): ppp chap password encryption type
+            chap_splitnames ('bool', optional): configure ppp chap splitnames
+            timeout_ncp ('str' or 'int', optional): ppp timeout ncp value
+            timeout_idle ('str' or 'int', optional): ppp timeout idle value
+            no_logging_event_link_status ('bool', optional): no logging event link-status
+            no_ip_address ('bool', optional): configure no ip address
+            vrf_name ('str', optional): ip vrf forwarding name
         For the arguments that are optional, the default value is None.
 
         Returns:
@@ -4569,23 +4601,61 @@ def configure_virtual_template(device,
 
     cli = []
     cli.append(f"interface Virtual-Template {virtual_template_number}")
-    cli.append(f"ip unnumbered {unnumbered_interface}")
+    if vrf_name:
+        cli.append(f"ip vrf forwarding {vrf_name}")
+    if unnumbered_interface:
+        cli.append(f"ip unnumbered {unnumbered_interface}")
+    if no_ip_address:
+        cli.append("no ip address")
+    if negotiated:
+        cli.append("ip address negotiated")
+    if no_logging_event_link_status:
+        cli.append("no logging event link-status")
+    if no_ppp_authentication:
+        cli.append("no ppp authentication")
     if auth:
         cli.append(f"ppp authentication {authentication}")
+    if pap_username:
+        command = f"ppp pap sent-username {pap_username} password"
+        if pap_password_type is not None:
+            command += f" {pap_password_type}"
+        if pap_password is not None:
+            command += f" {pap_password}"
+        cli.append(command)
+    if chap_hostname:
+        cli.append(f"ppp chap hostname {chap_hostname}")
+    if chap_password is not None:
+        command = "ppp chap password"
+        password_type = (
+            chap_password_type
+            if chap_password_type is not None
+            else chap_password_encryption
+        )
+        if password_type is not None:
+            command += f" {password_type}"
+        command += f" {chap_password}"
+        cli.append(command)
+    if chap_splitnames:
+        cli.append("ppp chap splitnames")
+    if timeout_ncp is not None:
+        cli.append(f"ppp timeout ncp {timeout_ncp}")
+    if timeout_idle is not None:
+        cli.append(f"ppp timeout idle {timeout_idle}")
     if mss:
         cli.append(f"ip tcp adjust-mss {mss_size}")
     if load_delay:
         cli.append(f"load-interval {load_delay_interval}")
-    if len(mtu) != 0:
+    if mtu is not None and str(mtu):
         cli.append(f"mtu {mtu}")
-    if len(ipv6_mtu) != 0:
+    if ipv6_mtu is not None and str(ipv6_mtu):
         cli.append(f"ipv6 mtu {ipv6_mtu}")
     if no_ip_redirects:
         cli.append("no ip redirects")
     if no_peer_ip:
         cli.append("no peer default ip address")
     if pool_name:
-        cli.append(f"peer default ip address pool {pool_name}")
+        local = "local " if pool_local else ""
+        cli.append(f"peer default ip address pool {local}{pool_name}")
     if ipv6_pool_name:
         cli.append(f"peer default ipv6 pool {ipv6_pool_name}")
     if mpls_ip and mpls_encap:
@@ -4600,13 +4670,42 @@ def configure_virtual_template(device,
             f"Could not configure virtual-template interface on device. Error:\n{e}"
         )
 
-def unconfigure_virtual_template(device, virtual_template_number):
+def unconfigure_virtual_template(device,
+    virtual_template_number,
+    unnumbered_interface=None,
+    negotiated=False,
+    pool_name=None,
+    pool_local=False,
+    ipv6_pool_name=None,
+    chap_hostname=None,
+    chap_password=None,
+    chap_password_type=None,
+    chap_password_encryption="0",
+    chap_splitnames=False,
+    timeout_ncp=None,
+    timeout_idle=None,
+    logging_event_link_status=False,
+    vrf_name=None):
 
-    """ Configure virtual-template interface
+    """ Unconfigure virtual-template interface
 
         Args:
             device (`obj`): Device object
             virtual_template_number ('int') : virtual template number
+            unnumbered_interface (`str`, optional): remove ip unnumbered interface
+            negotiated ('bool', optional): remove ip address negotiated
+            pool_name('string', optional): remove peer default ip address pool <pool_name>
+            pool_local ('bool', optional): use local keyword with peer default ip address pool
+            ipv6_pool_name('string', optional): remove peer default ipv6 pool <ipv6_pool_name>
+            chap_hostname ('str', optional): remove ppp chap hostname
+            chap_password ('str', optional): remove ppp chap password
+            chap_password_type ('str', optional): ppp chap password type
+            chap_password_encryption ('str', optional): ppp chap password encryption type
+            chap_splitnames ('bool', optional): remove ppp chap splitnames
+            timeout_ncp ('str' or 'int', optional): remove ppp timeout ncp value
+            timeout_idle ('str' or 'int', optional): remove ppp timeout idle value
+            logging_event_link_status ('bool', optional): configure logging event link-status
+            vrf_name ('str', optional): remove ip vrf forwarding name
 
         Returns:
             None
@@ -4618,8 +4717,56 @@ def unconfigure_virtual_template(device, virtual_template_number):
     if not device.is_connected():
         connect_device(device=device)
 
-    cli = []
-    cli.append(f"no interface Virtual-Template {virtual_template_number}")
+    partial_unconfigure = any([
+        unnumbered_interface,
+        negotiated,
+        pool_name,
+        ipv6_pool_name,
+        chap_hostname,
+        chap_password is not None,
+        chap_splitnames,
+        timeout_ncp is not None,
+        timeout_idle is not None,
+        logging_event_link_status,
+        vrf_name,
+    ])
+
+    if not partial_unconfigure:
+        cli = [f"no interface Virtual-Template {virtual_template_number}"]
+    else:
+        cli = [f"interface Virtual-Template {virtual_template_number}"]
+        if vrf_name:
+            cli.append(f"no ip vrf forwarding {vrf_name}")
+        if unnumbered_interface:
+            cli.append(f"no ip unnumbered {unnumbered_interface}")
+        if negotiated:
+            cli.append("no ip address")
+        if pool_name:
+            local = "local " if pool_local else ""
+            cli.append(f"no peer default ip address pool {local}{pool_name}")
+        if ipv6_pool_name:
+            cli.append(f"no peer default ipv6 pool {ipv6_pool_name}")
+        if chap_hostname:
+            cli.append(f"no ppp chap hostname {chap_hostname}")
+        if chap_password is not None:
+            command = "no ppp chap password"
+            password_type = (
+                chap_password_type
+                if chap_password_type is not None
+                else chap_password_encryption
+            )
+            if password_type is not None:
+                command += f" {password_type}"
+            command += f" {chap_password}"
+            cli.append(command)
+        if chap_splitnames:
+            cli.append("no ppp chap splitnames")
+        if timeout_ncp is not None:
+            cli.append(f"no ppp timeout ncp {timeout_ncp}")
+        if timeout_idle is not None:
+            cli.append(f"no ppp timeout idle {timeout_idle}")
+        if logging_event_link_status:
+            cli.append("logging event link-status")
 
     try:
         device.configure(cli)
@@ -9049,7 +9196,14 @@ def configure_dialer_interface(device,
         ipcp_route=False,
         down_vintf=False,
         mtu_adaptive=False,
-        ipcp_address=False):
+        ipcp_address=False,
+        ip_unnumbered=None,
+        remote_name=None,
+        dialer_string=None,
+        dialer_vpdn=False,
+        dialer_in_band=False,
+        dialer_aaa=False,
+        authentication_callin=True):
     """ Configure Dialer interface
         Args:
             device (`obj`): Device object
@@ -9067,6 +9221,14 @@ def configure_dialer_interface(device,
             down_vintf ('boolean' optional): dialer down-with-vInterface
             mtu_adaptive ('boolean' optional): ppp mtu adaptive
             ipcp_address ('boolean' optional): ppp ipcp address required
+            ip_unnumbered ('str', optional): ip unnumbered interface
+            remote_name ('str', optional): dialer remote-name
+            dialer_string ('str', optional): dialer string
+            dialer_vpdn ('bool', optional): configure dialer vpdn
+            dialer_in_band ('bool', optional): configure dialer in-band
+            dialer_aaa ('bool', optional): configure dialer aaa
+            authentication_callin ('bool', optional): append callin to
+                ppp authentication. Defaults to True for backward compatibility
         For the arguments that are optional, the default value is None.
         Returns:
             None
@@ -9079,11 +9241,30 @@ def configure_dialer_interface(device,
 
     cli = []
     cli.append(f"interface {dialer_intf}")
-    cli.append(f"encapsulation {encap}")
+    if ip_unnumbered:
+        cli.append(f"ip unnumbered {ip_unnumbered}")
+    if encap:
+        cli.append(f"encapsulation {encap}")
     cli.append(f"no shutdown")
-    cli.append(f"dialer pool {pool_num}")
-    cli.append(f"ip address {ip_add}")
-    cli.append(f"ppp authentication {auth_type} callin")
+    if remote_name:
+        cli.append(f"dialer remote-name {remote_name}")
+    if dialer_string:
+        cli.append(f"dialer string {dialer_string}")
+    if dialer_vpdn:
+        cli.append("dialer vpdn")
+    if pool_num:
+        cli.append(f"dialer pool {pool_num}")
+    if dialer_in_band:
+        cli.append("dialer in-band")
+    if dialer_aaa:
+        cli.append("dialer aaa")
+    if ip_add:
+        cli.append(f"ip address {ip_add}")
+    if auth_type:
+        auth_cmd = f"ppp authentication {auth_type}"
+        if authentication_callin:
+            auth_cmd += " callin"
+        cli.append(auth_cmd)
     if dialer_group:
         cli.append(f"dialer-group {dialer_group}")
     if chap_hostname:
@@ -12052,7 +12233,7 @@ def configure_virtual_ppp(device,
             load_interval ('int', optional): load delay
             chap_hname ('str', optional): chap hostname
             chap_pass ('str', optional): chap password
-            pass_encryption_type ('int', optional): chap password encryption type 
+            pass_encryption_type ('int', optional): chap password encryption type
             pap_uname ('str', optional): pap username
             pap_pass ('str', optional): pap password
             pw_config ('str', optional): pseudowire config
@@ -12163,4 +12344,81 @@ def unconfigure_virtual_ppp(device,
     except SubCommandFailure as error:
         raise SubCommandFailure(
             f"Could not unconfigure Virtual-PPP{ppp_num}. Error:\n{error}"
+        )
+
+def configure_system_debounce_link_up_timer_doppler(device, interface_name, link_up_timer):
+    """ Config system debounce timer on Device
+    Args:
+        device ('obj'): Device object
+        linkup_timer ('str'): link up timer
+        interface ('str'): Interface to configure
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring system debounce timer
+    """
+
+    log.debug("Configure system debounce link-up timer")
+
+    try:
+        device.configure(
+            f"interface {interface_name}\n"
+            f"link debounce time {link_up_timer}"
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure System debounce link-up timer, Error:\n{e}"
+        )
+
+
+def unconfigure_system_debounce_link_up_timer_doppler(device, interface_name):
+    """ Unconfig system debounce timer on Device
+    Args:
+        device ('obj'): Device object
+        interface ('str'): Interface to configure
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed unconfiguring system debounce timer
+    """
+
+    log.debug("Unconfigure system debounce link-up timer")
+
+    try:
+        device.configure(
+            f"interface {interface_name}\n"
+            f"no link debounce time"
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure System debounce link-up timer, Error:\n{e}"
+        )
+
+def configure_interface_ip_address_no_shutdown(device, interface, ip_address, mask):
+    """ Configure ip address on interface and bring it up
+
+        Args:
+            device ('obj'): Device object
+            interface ('str'): Interface name
+            ip_address ('str'): IP address
+            mask ('str'): Subnet mask
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [
+        f"interface {interface}",
+        f"ip address {ip_address} {mask}",
+        "no shutdown",
+    ]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure ip address {ip_address} {mask} "
+            f"on interface {interface} with no shutdown on device "
+            f"{device.name}. Error: {e}"
         )

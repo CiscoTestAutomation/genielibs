@@ -345,3 +345,77 @@ def get_running_config_section_attr44(device, option):
     m = re.search(r"radius-server.*(attribute).*(44).*(extend-with-addr)".format(option), output)
 
     return m
+
+
+def get_show_access_session_mac_detail(device, mac):
+    """Get show access-session mac detail output
+
+    Args:
+        device ('obj'): device object
+        mac ('str'): mac address
+    Returns:
+        Dictionary
+    Raises:
+        None
+    """
+    cli = f"show access-session mac {mac} details"
+    try:
+        out = device.parse(cli)
+    except SchemaEmptyParserError as e:
+        log.debug(f"Parse {cli} with error: {e}")
+        return {}
+    return out
+
+
+def get_show_access_session_interface_detail(device, interface):
+    """Get show access-session interface detail output
+
+    Args:
+        device ('obj'): device object
+        interface ('str'): interface name
+    Returns:
+        Dictionary
+    Raises:
+        None
+    """
+    cli = f"show access-session interface {interface} details"
+    try:
+        out = device.parse(cli)
+    except SchemaEmptyParserError as e:
+        log.debug(f"Parse {cli} with error: {e}")
+        return {}
+    return out
+
+
+def get_access_session_interface_mac_detail(device, interface, mac):
+    """Get show access-session interface detail output for specific mac
+
+    Args:
+        device ('obj'): device object
+        interface ('str'): interface name
+        mac ('str'): mac address
+    Returns:
+        Dictionary
+    Raises:
+        None
+    """
+    out = get_show_access_session_interface_detail(device, interface)
+    return out.get('interfaces', {}).get(interface, {}).get(
+        'mac_address', {}).get(mac, {})
+
+
+def get_access_sessions_interface_count(device, interface):
+    """Get interface access sessions count
+
+    Args:
+        device ('obj'): device object
+        interface ('str'): interface name
+    Returns:
+        Integer: access sessions count
+    Raises:
+        None
+    """
+    out = get_show_access_session_interface_detail(device, interface)
+    count = len(out.get('interfaces', {}).get(interface, {}).get(
+        'mac_address', {}))
+    return count

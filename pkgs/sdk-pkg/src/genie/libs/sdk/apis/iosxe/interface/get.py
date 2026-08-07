@@ -1726,3 +1726,31 @@ def get_object_manager_error_object(device, sw_num):
         )
         return ""
     return output
+
+
+def get_show_interface_output(device, interface):
+    """Get show interface output
+
+        Args:
+            device ('obj'): Device object
+            interface ('str'): Interface name
+        Returns:
+            Dictionary with show interface output
+        Raises:
+            None
+    """
+    try:
+        intf_output_raw = device.execute(
+            f'show interfaces {interface}')
+    except SubCommandFailure as e:
+        log.debug(f"Could not execute show interface: {e}")
+        return None
+
+    try:
+        intf_output = device.parse(
+            f'show interfaces {interface}', output=intf_output_raw)
+    except SchemaEmptyParserError as e:
+        log.debug(f"Could not parse show interface: {e}")
+        return None
+
+    return intf_output

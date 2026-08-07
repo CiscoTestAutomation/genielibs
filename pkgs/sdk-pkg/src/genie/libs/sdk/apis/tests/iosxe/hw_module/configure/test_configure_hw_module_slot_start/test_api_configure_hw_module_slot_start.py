@@ -10,6 +10,6 @@ class TestConfigureHwModuleSlotStart(TestCase):
         slot = 2
         configure_hw_module_slot_start(self.device, slot=slot)
         self.assertEqual(
-            self.device.configure.mock_calls[0].args,
+            self.device.execute.mock_calls[0].args,
             ('hw-module slot 2 start',)
         )

@@ -671,6 +671,43 @@ def configure_management_netconf(device,
     device.configure(netconf_config)
 
 
+def configure_management_restconf(device,
+                                   source_interface=None,
+                                   secure=True):
+    '''
+    Configure device for management via RESTCONF.
+
+    Args:
+        device ('obj'):  device object
+        source_interface ('str'): management interface (optional)
+        secure ('bool'): use HTTPS instead of HTTP (default: True)
+
+    Returns:
+        None
+    '''
+    management = getattr(device, 'management', {})
+
+    source_interface = source_interface or management.get('interface')
+
+    restconf_config = []
+
+    # Enable HTTP/HTTPS server
+    if secure:
+        restconf_config.append('ip http secure-server')
+    else:
+        restconf_config.append('ip http server')
+
+    # Enable RESTCONF
+    restconf_config.append('restconf')
+
+    # Configure source interface if specified
+    if source_interface:
+        restconf_config.append(f'ip http client source-interface {source_interface}')
+
+    if restconf_config:
+        device.configure(restconf_config)
+
+
 def configure_management_protocols(device,
                                    protocols=None):
     '''
@@ -746,6 +783,7 @@ def configure_management_master_key(device, key_length=8):
     output = device.configure(
         f'key config-key password-encrypt {key}',
         reply=old_key_dialog,
+        timeout=120,
     )
 
     if 'Old key:' in str(output):
@@ -1268,6 +1306,24 @@ def unconfigure_management_netconf(device):
         device.configure(netconf_config)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to unconfigure netconf-yang on device {device}. Error:\n{e}")
+
+
+def unconfigure_management_restconf(device):
+    '''
+    Unconfigure device for management via RESTCONF.
+
+    Args:
+        device ('obj'):  device object
+
+    Returns:
+        None
+    '''
+    restconf_config = ['no restconf']
+    try:
+        device.configure(restconf_config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure restconf on device {device}. Error:\n{e}")
+
 
 def configure_management_gnmi(device,
                               enable=True,

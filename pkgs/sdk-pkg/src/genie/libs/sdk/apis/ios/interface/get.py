@@ -58,3 +58,41 @@ def get_interface_ipv4_address(device, interface):
     if ip_dict:
         ip = list(ip_dict)[0]
     return ip
+
+
+def get_interface_ip_address(device, interface, address_family=None):
+    """ Get interface ip_address from device
+
+        Args:
+            device ('obj'): Device object
+            interface ('str'): Interface to get address
+            address_family ('str'): Used only for junos api
+
+        Returns:
+            None
+            interface ip_address ('str')
+
+        Raises:
+            None
+    """
+    log.debug(
+        "Getting interface address for %s on %s",
+        interface, device.name,
+    )
+    cmd = "show ip interface brief {i}".format(i=interface)
+    try:
+        out = device.parse(cmd)
+    except SubCommandFailure:
+        log.debug("Invalid command")
+        return
+    except Exception as e:
+        log.debug("Failed to parse '%s': %s", cmd, e)
+        return
+
+    if interface not in out.get("interface", {}):
+        return
+    intf_data = out["interface"][interface]
+    address = intf_data.get("ip_address")
+    if not address or address == "unassigned":
+        return
+    return address

@@ -1,7 +1,7 @@
 import unittest
 import threading
 from types import SimpleNamespace
-from unittest.mock import patch, call
+from unittest.mock import patch, call, MagicMock
 from unittest.mock import Mock, ANY
 
 from pyats.topology import loader
@@ -13,6 +13,7 @@ from genie.libs.sdk.apis.execute import (
     _change_power_cycler_config_state,
 )
 from genie.libs.sdk.apis.utils import get_power_cyclers
+from genie.libs.sdk.powercycler.base import PowerCycler
 
 
 class TestExecutePowerCyclerApis(unittest.TestCase):
@@ -365,6 +366,50 @@ devices:
         self.assertEqual(disconnected, ['powercycler', 'proxy'])
 
 
+class TestPowerCyclerProxyRelayFailures(unittest.TestCase):
+
+    def _powercycler_with_proxy(self, proxy_dev):
+        pc = object.__new__(PowerCycler)
+        pc.host = '192.0.2.10'
+        pc.port = 161
+        pc.proxy = 'proxy'
+        pc.testbed = SimpleNamespace(
+            devices={'proxy': proxy_dev},
+            servers={'proxy': object()})
+        pc.device = SimpleNamespace(api=MagicMock())
+        return pc
+
+    def test_proxy_connect_successful_relay_setup(self):
+        proxy_dev = MagicMock()
+        proxy_dev.api.start_socat_relay.return_value = ('2000', '1234')
+        proxy_dev.api.get_remote_ip.return_value = '198.51.100.10'
+        pc = self._powercycler_with_proxy(proxy_dev)
+
+        host, port = pc.proxy_connect()
+
+        self.assertEqual(host, '198.51.100.10')
+        self.assertEqual(port, '2000')
+        self.assertEqual(pc.proxy_port, '2000')
+        self.assertEqual(pc.socat_pid, '1234')
+        proxy_dev.connect.assert_called_once_with()
+        proxy_dev.api.start_socat_relay.assert_called_once_with(
+            '192.0.2.10', 161, protocol='UDP4')
+        proxy_dev.api.get_remote_ip.assert_called_once_with()
+
+    def test_proxy_connect_reports_start_socat_none_without_typeerror(self):
+        proxy_dev = MagicMock()
+        proxy_dev.api.start_socat_relay.return_value = None
+        pc = self._powercycler_with_proxy(proxy_dev)
+
+        with self.assertRaisesRegex(
+                Exception, 'Could not setup port relay via proxy'):
+            pc.proxy_connect()
+
+        proxy_dev.connect.assert_called_once_with()
+        proxy_dev.api.start_socat_relay.assert_called_once_with(
+            '192.0.2.10', 161, protocol='UDP4')
+
+
 class TestExecutePowerCyclerApis_2(unittest.TestCase):
     """
     To test the raritan-px2 powercycler snmpv3 implementation
@@ -533,8 +578,15 @@ devices:
         """
         device = loader.load(testbed).devices["FW-9800-7"]
 
-        with self.assertRaisesRegex(ValueError, "SNMPv3 powercycler requires a username"):
-            get_power_cyclers(device)
+        with self.assertLogs(
+            "genie.libs.sdk.powercycler.base", level="ERROR"
+        ) as logs:
+            with self.assertRaisesRegex(
+                ValueError, "SNMPv3 powercycler requires a username"
+            ):
+                get_power_cyclers(device)
+
+        self.assertIn("missing: username", logs.output[0])
 
     def test_snmpv3_requires_username(self):
         testbed = """

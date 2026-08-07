@@ -1,34 +1,22 @@
 import unittest
-from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.routing.configure import configure_tftp_source_interface
+from unittest.mock import Mock
+from genie.libs.sdk.apis.iosxe.routing.configure import (
+    configure_tftp_source_interface
+)
 
 
 class TestConfigureTftpSourceInterface(unittest.TestCase):
 
-    @classmethod
-    def setUpClass(self):
-        testbed = """
-        devices:
-          9300-5:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: single_rp
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['9300-5']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
+    def test_configure_tftp_source_interface(self):
+        device = Mock()
+
+        result = configure_tftp_source_interface(
+            device,
+            'GigabitEthernet0/0'
         )
 
-    def test_configure_tftp_source_interface(self):
-        result = configure_tftp_source_interface(self.device, 'GigabitEthernet0/0')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        self.assertEqual(result, None)
+        self.assertEqual(
+            device.configure.mock_calls[0].args,
+            ('ip tftp source-interface GigabitEthernet0/0',)
+        )

@@ -251,13 +251,19 @@ def configure_ospf_passive_interface(device, interface, ospf_process_id):
             )
         ) from e
 
-def remove_ospf_passive_interface(device, interface, ospf_process_id):
+def remove_ospf_passive_interface(
+    device,
+    interface,
+    ospf_process_id,
+    vrf_name=None,
+):
     """Remove passive interface
 
         Args:
             device (`obj`): Device object
             ospf_process_id (`int`): OSPF process id
             interface (`list`): interfaces to configure
+            vrf_name (`str`, optional): VRF name
             ex.)
                 interface = ['tenGigabitEthernet0/4/0']
 
@@ -267,30 +273,37 @@ def remove_ospf_passive_interface(device, interface, ospf_process_id):
         Raises:
             SubCommandFailure
     """
-    config = ["router ospf {}".format(ospf_process_id)]
+    config = [
+        "router ospf {}{}".format(
+            ospf_process_id,
+            " vrf {}".format(vrf_name) if vrf_name else "",
+        )
+    ]
 
     if not isinstance(interface, list):
         interface = [interface]
 
     for intf in interface:
         config.append(
-            "no passive-interface {}".format(Common.convert_intf_name(intf))
+            "no passive-interface {}".format(
+                Common.convert_intf_name(intf)
+            )
         )
 
     try:
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(
-            "Failed in removing passive interfaces {interface}"
-            "with OSPF process id {ospf_process_id}"
-            " on device {device}, Error: {e}".format(
+            "Failed in removing passive interfaces {interface} "
+            "with OSPF process id {ospf_process_id} "
+            "vrf {vrf_name} on device {device}, Error: {e}".format(
                 interface=interface,
                 ospf_process_id=ospf_process_id,
+                vrf_name=vrf_name,
                 device=device.name,
                 e=str(e),
             )
         ) from e
-
 
 def configure_ospf_cost(device, interface, ospf_cost):
     """configure ospf cost
@@ -903,7 +916,7 @@ def redistribute_route_map_under_ospf(device, ospf_process_id, route_map_name,
         )
 
 
-def configure_ospf_routing_on_interface(device, interface, ospf_process_id,
+def configure_ospf_routing_on_interface(device, interface, ospf_process_id, # noqa: F811
         areaid):
     """ Configures ospf and ip routing on Interface
 
@@ -969,7 +982,7 @@ def configure_ip_prefix_list(device, prefix_list_name, seq, ip_address, subnet_i
             )
         )
 
-def unconfigure_ospf_on_device(device, ospf_process_id, vrf_name=None):
+def unconfigure_ospf_on_device(device, ospf_process_id, vrf_name=None): # noqa: F811
     """ Unconfigures ospf and ip routing on device
 
         Args:
@@ -1083,7 +1096,7 @@ def configure_route_map(device, route_map_name, permit, prefix_list_name=None, a
         )
 
 
-def configure_ospf_network_point(device, interface):
+def configure_ospf_network_point(device, interface): # noqa: F811
     """configure ospf point to point network
 
         Args:
@@ -1141,7 +1154,7 @@ def unconfigure_route_map(device, route_map_name, permit=None):
             )
         )
 
-def configure_ospf_bfd(device, interface):
+def configure_ospf_bfd(device, interface): # noqa: F811
     """configure ospf ip bfd
 
         Args:
@@ -1213,7 +1226,7 @@ def unconfigure_ospf_vrf_on_device(
         Raises:
             SubCommandFailure: Failed executing configure commands
     """
-    
+
     cmd = "no router ospf {ospf_process_id}".format(
         ospf_process_id=ospf_process_id)
     if vrf:
@@ -2039,7 +2052,7 @@ def configure_router_ospf_redistribute_internal_external(device, process_id, red
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Failed to configure router redistribute ospf with {redistribute_ospf_route}. Error:\n{e}")
-       
+
 
 def configure_ipv6_ospf_router_id(device, process_id, ospf_ip):
     """configure router-id under ipv6 ospf process
@@ -2062,10 +2075,10 @@ def configure_ipv6_ospf_router_id(device, process_id, ospf_ip):
 
 
 def unconfigure_ospf_from_interface(device, interface, ospf_process_id, area_id):
-    """ unconfigure ospf from interface 
+    """ unconfigure ospf from interface
         Args:
             device (`obj`): device to execute on
-            interface('str'): interface name            
+            interface('str'): interface name
             ospf_process_id (`int`): In range (1-65535)
             area_id('int'):In range (0-4294967295)
     Return:
@@ -2074,12 +2087,12 @@ def unconfigure_ospf_from_interface(device, interface, ospf_process_id, area_id)
             SubCommandFailure
     """
     cmd = [f'interface {interface}',
-           f'no ip ospf {ospf_process_id} area {area_id}']   
+           f'no ip ospf {ospf_process_id} area {area_id}']
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(
-            f"Failed to unconfigure ospf from interface Error:\n{e}")        
+            f"Failed to unconfigure ospf from interface Error:\n{e}")
 
 def configure_ospfv3_ipsec_ah(device, pid, areaid, spi, method, ah_key, ah_key_type=None):
     '''
@@ -2619,7 +2632,7 @@ def configure_ospfv3_network_range(device, pid, router_id, address_family=None,
     if area and network_range:
         config.append(f'area {area} range {network_range}')
     if bfd_all:
-        config.append('bfd all-interfaces')        
+        config.append('bfd all-interfaces')
     try:
         device.configure(config)
     except SubCommandFailure as e:
@@ -2675,7 +2688,7 @@ def configure_ospf_redistributed_eigrp_metric(device, ospf_process_id, eigrp_as,
        config.append(f'redistribute eigrp {eigrp_as} metric-type {metric} subnets')
     else:
        config.append(f'redistribute eigrp {eigrp_as}')
-    
+
     try:
         device.configure(config)
     except SubCommandFailure as e:
@@ -2693,7 +2706,7 @@ def configure_snmp_if_index_on_ospfv3_process_id(device, ospf_process_id):
             SubCommandFailure: Failed to configure snmp if index on ospfv3 process id
     """
     log.debug("configure snmp interface index on OSPFv3 process id")
-    cmd = [f"ipv6 router ospf {ospf_process_id}", 
+    cmd = [f"ipv6 router ospf {ospf_process_id}",
            f"interface-id snmp-if-index"]
     try:
         device.configure(cmd)
@@ -2714,7 +2727,7 @@ def redistribute_route_metric_vrf_green(device, ospf_process_id,vrf_name,
             vrf_name ('str'): Ospf vrf name
             bgp_asn('int'): BGP as Autonomous system number
             ospf_metric ('int'): Metric for redistributed routes
-            
+
         Returns:
             None
         Raises:
@@ -2724,12 +2737,12 @@ def redistribute_route_metric_vrf_green(device, ospf_process_id,vrf_name,
            f"redistribute static metric {ospf_metric}",
            f"redistribute connected metric {ospf_metric}",
            f"redistribute bgp {bgp_asn} metric {ospf_metric}"
-           ]    
+           ]
 
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
-        raise SubCommandFailure(f"Failed to redistribute metric under ospf. Error:\n{e}")        
+        raise SubCommandFailure(f"Failed to redistribute metric under ospf. Error:\n{e}")
 
 
 def redistribute_bgp_on_ospfv3(device, pid, type, as_num):
@@ -2748,7 +2761,7 @@ def redistribute_bgp_on_ospfv3(device, pid, type, as_num):
               f"redistribute bgp {as_num}", "exit-address-family"]
     try:
         device.configure(config)
-        
+
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to redistribute bgp on ospfv3 {device}, Error: {e}"
         )
@@ -2767,7 +2780,7 @@ def unconfigure_ipv6_router_ospf(device, ospf_process_id):
     try:
         device.configure(f"no ipv6 router ospf {ospf_process_id}")
     except SubCommandFailure as e:
-        raise SubCommandFailure("Failed in configuring, Please verify") from e 
+        raise SubCommandFailure("Failed in configuring, Please verify") from e
 
 def configure_ospfv3_network_type(device, interface, network_type):
     """Configure OSPFv3 network type on the specified interface
@@ -2805,7 +2818,7 @@ def configure_ospfv3_interface(device, interface, process_id):
             SubCommandFailure
     """
     try:
-        cmd = [f"interface {interface}", 
+        cmd = [f"interface {interface}",
         f"ospfv3 {process_id}"]
         device.configure(cmd)
 
@@ -2813,7 +2826,7 @@ def configure_ospfv3_interface(device, interface, process_id):
         raise SubCommandFailure(
             f"Failed to configure OSPFv3 on interface {interface}. Error:\n{e}"
         )
-    
+
 def configure_ospf_vrf_lite(device, ospf_process_id, vrf_name):
     """Configure vrf-lite capabilty for OSPF process.
         Args:
@@ -2826,7 +2839,7 @@ def configure_ospf_vrf_lite(device, ospf_process_id, vrf_name):
             SubCommandFailure
     """
     try:
-        cmd = [f"router ospf {ospf_process_id} vrf {vrf_name}", 
+        cmd = [f"router ospf {ospf_process_id} vrf {vrf_name}",
         f"capability vrf-lite"]
         device.configure(cmd)
 
@@ -2834,7 +2847,7 @@ def configure_ospf_vrf_lite(device, ospf_process_id, vrf_name):
         raise SubCommandFailure(
             f"Failed to configure vrf-lite capability for OSPF process {ospf_process_id}. Error:\n{e}"
         )
-    
+
 def configure_ospf_retransmit_interval(device, interface, interval):
     """Configure OSPF retransmit-interval on an interface
 
@@ -2858,7 +2871,7 @@ def configure_ospf_retransmit_interval(device, interface, interval):
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Failed to configure OSPF retransmit-interval {interval} on {interface} on device {device.name}. Error: {e}"
-        )  
+        )
 
 def configure_ospfv3_max_path(device, pid, path_num):
     """configure ospfv3 max path limit
@@ -2880,4 +2893,4 @@ def configure_ospfv3_max_path(device, pid, path_num):
     try:
         device.configure(config)
     except SubCommandFailure as e:
-        raise SubCommandFailure(f"Failed to configure ospfv3 max path limit. Error:\n{e}")  
+        raise SubCommandFailure(f"Failed to configure ospfv3 max path limit. Error:\n{e}")

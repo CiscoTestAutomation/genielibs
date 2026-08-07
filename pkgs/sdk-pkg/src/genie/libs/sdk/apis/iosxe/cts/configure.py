@@ -996,7 +996,7 @@ def configure_ip_role_based_acl(
         if dst_port_type and dst_port_range_start and dst_port_range_end:
             sub_cmnd += f' {dst_port_type} range {dst_port_range_start} {dst_port_range_end}'
         if log:
-            sub_cmnd += f' {log}'            
+            sub_cmnd += f' {log}'
     cmd.append(sub_cmnd)
     try:
         device.configure(cmd)
@@ -1179,7 +1179,7 @@ def configure_interface_cts_role_based_sgt_map(device, interface, vlan, sgt):
         )
 
 def unconfigure_interface_cts_role_based_sgt_map(device, interface, vlan, sgt):
-    """ Unconfigure interface cts role-based sgt-map 
+    """ Unconfigure interface cts role-based sgt-map
         Args:
             device ('obj'): device to use
             interface ('str'): interface to unconfigure
@@ -1287,7 +1287,7 @@ def unconfigure_cts_sxp_default_password(device):
         raise SubCommandFailure(
             "Could not unconfigure default CTS SXP password.Error:\n{}".format(str(e))
         )
-    
+
 def configure_cts_sxp_connection(device, ip_address, mode='both'):
     """ Configure CTS SXP connection
         Args:
@@ -1341,7 +1341,7 @@ def clear_cts_environment_data(device):
         device.execute('clear cts environment-data')
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not clear CTS environment-data. Error:\n {e}")
-    
+
 def unconfigure_device_sgt(device):
     """ Unconfigure Device SGT
         Args:
@@ -1495,7 +1495,7 @@ def clear_cts_pac_all(device):
         raise SubCommandFailure(
             f"Failed to clear all CTS PACs. Error: {str(e)}"
         )
-        
+
 def configure_cts_sxp_connection_peer(device, peer_ip, source_ip, password='default',
                                       mode='local', direction='both', vrf=None,
                                       hold_time=False, min_time=None, max_time=None):
@@ -1538,7 +1538,7 @@ def configure_cts_sxp_connection_peer(device, peer_ip, source_ip, password='defa
         raise SubCommandFailure(
             f"Failed to configure CTS SXP connection peer on device {device.name}. Error:\n{e}"
         )
-        
+
 def configure_cts_sxp_list_option(device, list_type, list_name, option_type, option_value):
     """
     Configure CTS SXP export-list or import-list with vrf or binding-source-type
@@ -1624,7 +1624,7 @@ def configure_cts_sxp_export_import_group_option(device, role, group_name, list_
         raise SubCommandFailure(
             f"Failed to configure CTS SXP export-import-group {role} {group_name} on device {device.name}. Error:\n{e}"
         )
-        
+
 def configure_role_based_access_list(device, acl_name, ip_type, permission):
     """
     Configure role-based access-list
@@ -1668,7 +1668,7 @@ def configure_cts_role_based_sgt_map_vrf(device, vrf, ip_address, sgt):
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Failed to configure CTS role-based SGT map on device {device.name}. Error:\n{e}"
-        )		
+        )
 
 def unconfigure_cts_role_based_sgt_map_vrf(device, vrf, ip_address, sgt):
     """
@@ -1717,7 +1717,7 @@ def unconfigure_cts_sxp_export_import_group_option(device, role, group_name):
             f"Failed to unconfigure CTS SXP export-import-group {role} {group_name} on device {device.name}. Error:\n{e}"
         )
 
-def unconfigure_cts_sxp_connection_peer(device, peer_ip, source_ip, password='default', 
+def unconfigure_cts_sxp_connection_peer(device, peer_ip, source_ip, password='default',
                                         mode='local', direction='both',vrf=None,
                                         hold_time=False, min_time=None, max_time=None):
     """
@@ -1732,7 +1732,7 @@ def unconfigure_cts_sxp_connection_peer(device, peer_ip, source_ip, password='de
         vrf ('str', optional): VRF name
         hold_time ('bool', optional): Enable hold-time configuration. Default is False
         min_time ('int', optional): Minimum hold-time (for listener mode)
-        max_time ('int', optional): Maximum hold-time (for speaker and listener modes)        
+        max_time ('int', optional): Maximum hold-time (for speaker and listener modes)
     Returns:
         None
     Raises:
@@ -1740,7 +1740,7 @@ def unconfigure_cts_sxp_connection_peer(device, peer_ip, source_ip, password='de
     """
     cmd = f"no cts sxp connection peer {peer_ip} source {source_ip} password {password} mode {mode} {direction}"
     if vrf:
-        cmd += f" vrf {vrf}"   
+        cmd += f" vrf {vrf}"
 
     if hold_time:
         if direction.lower() == 'speaker' and max_time is not None:
@@ -1793,4 +1793,42 @@ def unconfigure_cts_sxp_node_id(device, id_type, address):
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Failed to unconfigure CTS SXP node-id {id_type} {address} on device {device.name}. Error:\n{e}"
-        )    
+        )
+
+def unconfigure_cts_policy_server_optional_parameters(device, server_name):
+    """
+    unconfigure optional CTS policy-server parameters
+    (retransmit, timeout, content-type) to revert them
+    to default values
+
+    Args:
+        device (obj): Device object
+        server_name (str): Name of the policy server
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure: Failed to unconfigure CTS
+            policy-server optional parameters
+    """
+    log.debug(
+        "unconfiguring optional parameters for CTS "
+        f"policy-server: {server_name}"
+    )
+    cmds = [
+        f"cts policy-server name {server_name}",
+        "no retransmit",
+        "no timeout",
+        "no content-type json"
+    ]
+    try:
+        device.configure(cmds)
+    except SubCommandFailure as e:
+        log.debug(
+            f"Failed to unconfigure optional parameters: {e}"
+        )
+        raise SubCommandFailure(
+            "Could not unconfigure optional parameters for "
+            f"policy-server {server_name}. Error:\n{e}"
+        )

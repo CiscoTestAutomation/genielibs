@@ -2,8 +2,10 @@
 import logging
 import os
 
-from genie.libs.sdk.apis.execute import free_up_disk_space as generic_free_up_disk_space
-from genie.utils import Dq
+from genie.libs.sdk.apis.execute import (
+    _get_directory_entries,
+    _get_sorted_directory_entries,
+)
 
 log = logging.getLogger(__name__)
 
@@ -101,42 +103,71 @@ def free_up_disk_space(device, destination, required_size, skip_deletion,
         else:
             log.info(f"Deleting unprotected files to free up some space on {dest}")
             parsed_dir_out = device.parse(f'dir {dest}', output=dir_out)
-            dq = Dq(parsed_dir_out)
+            file_list, directory_list = _get_directory_entries(parsed_dir_out)
+            directory_list = _get_sorted_directory_entries(
+                parsed_dir_out, directory_list)
             # turn parsed dir output to a list of files for sorting
             # Large files are given priority when deleting
-            file_list = []
             running_image_list = []
-            for file in dq.get_values('files'):
+            not_protected_file_list = []
+            for file, size in file_list:
                 # separate running image from other files
                 if any(file in image for image in running_images):
-                    running_image_list.append((file, int(dq.contains(file).get_values('size')[0])))
+                    running_image_list.append((file, size))
                 else:
-                    file_list.append((file, int(dq.contains(file).get_values('size')[0])))
+                    not_protected_file_list.append((file, size))
                     
-            file_list.sort(key=lambda x: x[1], reverse=True)
+            not_protected_file_list.sort(key=lambda x: x[1], reverse=True)
             
             # add running images to the end so they are deleted as a last resort
-            file_list.extend(running_image_list)
+            file_list = not_protected_file_list + running_image_list
             log.debug(f'file_list: {file_list}')
 
-            for file, size in file_list:
+            # Recurse into directories before deleting top-level files. The
+            # platform API removes contents but leaves directory entries intact.
+            log.debug(f'directory_list: {directory_list}')
+            for directory_name in directory_list:
+                device.api.delete_unprotected_files(
+                    directory=dest,
+                    protected=dest_protected_files,
+                    files_to_delete=[directory_name],
+                    dir_output=dir_out,
+                    allow_failure=allow_deletion_failure,
+                    destination=dest,
+                    recursive=True,
+                    stop_check=lambda: device.api.verify_enough_disk_space(
+                        required_size, dest))
 
-                device.api.delete_unprotected_files(directory=dest,
-                                                    protected=dest_protected_files,
-                                                    files_to_delete=[file],
-                                                    dir_output=dir_out,
-                                                    allow_failure=allow_deletion_failure,
-                                                    destination=dest)
-
-                if device.api.verify_enough_disk_space(required_size, dest):
-                    log.info("Verified there is enough space on the device after "
-                            "deleting unprotected files.")
+                if device.api.verify_enough_disk_space(
+                        required_size, dest):
+                    log.info(
+                        "Verified there is enough space on the device "
+                        "after deleting unprotected files.")
                     break
             else:
-                # Exhausted list of files - still not enough space
-                log.error('There is still not enough space on the device after '
+                # If directory cleanup was insufficient, delete top-level
+                # files next. Running images remain last as a fallback.
+                for file, _ in file_list:
+
+                    device.api.delete_unprotected_files(
+                        directory=dest,
+                        protected=dest_protected_files,
+                        files_to_delete=[file],
+                        dir_output=dir_out,
+                        allow_failure=allow_deletion_failure,
+                        destination=dest)
+
+                    if device.api.verify_enough_disk_space(
+                            required_size, dest):
+                        log.info(
+                            "Verified there is enough space on the device "
+                            "after deleting unprotected files.")
+                        break
+                else:
+                    log.error(
+                        'There is still not enough space on the device after '
                         'deleting unprotected files.')
-                return False
+                    return False
 
     log.info("Sufficient space available on all members")
     return True
