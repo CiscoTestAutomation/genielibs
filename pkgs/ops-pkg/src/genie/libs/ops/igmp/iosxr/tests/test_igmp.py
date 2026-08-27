@@ -125,5 +125,34 @@ class test_igmp(unittest.TestCase):
         # Verify Ops was created successfully
         self.assertEqual(igmp.info, IgmpOutput.IgmpOpsOutputSourceList)
 
+    def test_learn_vrf_with_no_igmp_data(self):
+        # Regression test for issue #186: a vrf that exists on the device
+        # (per 'show vrf all detail') but has no igmp-enabled interfaces at
+        # all used to crash learn() with KeyError. Per the issue's expected
+        # behaviour, such a vrf should still show up in the output as an
+        # empty entry, not be dropped from it.
+        self.maxDiff = None
+        igmp = Igmp(device=self.device)
+
+        igmp.maker.outputs[ShowVrfAllDetail] = {'': IgmpOutput.ShowVrfAllDetail_EmptyVRF}
+        igmp.maker.outputs[ShowIgmpInterface] = {"{'vrf':''}": IgmpOutput.ShowIgmpInterface}
+        igmp.maker.outputs[ShowIgmpInterface]["{'vrf':'zEmptyVRF'}"] = {}
+        igmp.maker.outputs[ShowIgmpSummary] = {"{'vrf':''}": IgmpOutput.ShowIgmpSummary}
+        igmp.maker.outputs[ShowIgmpSummary]["{'vrf':'zEmptyVRF'}"] = {}
+        igmp.maker.outputs[ShowIgmpGroupsDetail] = {"{'vrf':''}": IgmpOutput.ShowIgmpGroupsDetail}
+        igmp.maker.outputs[ShowIgmpGroupsDetail]["{'vrf':'zEmptyVRF'}"] = {}
+
+        # Learn the feature - this used to raise KeyError: 'zEmptyVRF'
+        igmp.learn()
+
+        # The vrf with real igmp data is still learned normally
+        self.assertIn('default', igmp.info['vrfs'])
+        self.assertIn('Loopback0', igmp.info['vrfs']['default']['interfaces'])
+
+        # The vrf with no igmp-enabled interfaces still shows up, empty,
+        # instead of being dropped from the output entirely
+        self.assertIn('zEmptyVRF', igmp.info['vrfs'])
+        self.assertEqual(igmp.info['vrfs']['zEmptyVRF'], {'interfaces': {}})
+
 if __name__ == '__main__':
     unittest.main()
