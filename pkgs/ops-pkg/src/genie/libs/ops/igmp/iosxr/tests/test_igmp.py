@@ -27,8 +27,6 @@ class test_igmp(unittest.TestCase):
                 # Create a mock connection to get output for parsing
         self.device_connection = Mock(device=self.device)
         self.device.connectionmgr.connections['cli'] = self.device_connection
-        # Set outputs
-        self.device_connection.execute.side_effect = mapper
 
     def test_full_igmp(self):
         self.maxDiff = None
