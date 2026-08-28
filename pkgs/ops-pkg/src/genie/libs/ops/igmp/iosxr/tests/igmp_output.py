@@ -27,6 +27,17 @@ class IgmpOutput(object):
         }
     }
 
+    ShowVrfAllDetail_EmptyVRF = {
+        "zEmptyVRF": {
+            "address_family": {
+                "ipv4 unicast": {}
+            },
+            "description": "not set",
+            "interfaces": [],
+            "vrf_mode": "regular"
+        }
+    }
+
     ShowIgmpInterface = {
         "vrf": {
             "default": {

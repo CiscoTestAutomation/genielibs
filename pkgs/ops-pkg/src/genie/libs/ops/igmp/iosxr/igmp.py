@@ -196,11 +196,14 @@ class Igmp(Base):
                 continue
 
             if 'vrfs' not in self.info:
-                continue
-            
+                self.info['vrfs'] = {}
+
+            if vrf not in self.info['vrfs']:
+                self.info['vrfs'][vrf] = {}
+
             if 'interfaces' not in self.info['vrfs'][vrf]:
-                continue
-          
+                self.info['vrfs'][vrf]['interfaces'] = {}
+
             src = '[vrf][(?P<vrf>.*)]'
             dest = 'info[vrfs][(?P<vrf>.*)]'
 
