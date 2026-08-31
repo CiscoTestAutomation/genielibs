@@ -13,6 +13,7 @@ import logging
 
 from urllib.parse import urlsplit, urlunsplit
 
+from genie.libs.filetransferutils.bases.fileutils import redact_url_credentials
 from genie.libs.filetransferutils.exceptions import TimeLimitExceededOnFileTransfer
 from genie.libs.filetransferutils.fileutils import FileUtils as FileUtilsLinuxBase
 
@@ -445,7 +446,7 @@ class FileUtils(FileUtilsLinuxBase):
             raise Exception(
                 "Cannot find available space from the output of df command on "
                 "server '{}' at location '{}'".format(
-                    server_name, target))
+                    server_name, redact_url_credentials(target)))
 
         else:
             return result

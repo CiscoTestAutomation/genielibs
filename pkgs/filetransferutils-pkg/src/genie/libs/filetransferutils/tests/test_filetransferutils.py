@@ -34,6 +34,7 @@ from genie.libs.filetransferutils.bases.fileutils import (
     DEFAULT_CHECK_FILE_DELAY_SECONDS,
     DEFAULT_CHECK_FILE_MAX_TRIES,
     DEFAULT_TIMEOUT_SECONDS,
+    redact_url_credentials,
 )
 
 from genie.libs.filetransferutils import fileutils \
@@ -275,6 +276,53 @@ class TestBaseFileUtils(unittest.TestCase):
             '/path/to/file',
             "ftp://server:1234/path/to/file"), "ftp")
 
+    def test_redact_url_credentials(self):
+        test_values = {
+            "ftp://user@192.0.2.10/image.bin":
+                "ftp://****:****@192.0.2.10/image.bin",
+            "http://user:@192.0.2.10/image.bin":
+                "http://****:****@192.0.2.10/image.bin",
+            "https://user:p%40ss%2Fword@server.example/image.bin":
+                "https://****:****@server.example/image.bin",
+            "sftp://domain%5Cuser:p%40%24%24word@[2001:db8::1]:22/image.bin":
+                "sftp://****:****@[2001:db8::1]:22/image.bin",
+            "scp://user:password@proxy.example:2222/image.bin":
+                "scp://****:****@proxy.example:2222/image.bin",
+            "tftp://user:password@server.example/image.bin":
+                "tftp://****:****@server.example/image.bin",
+            "https://user%40domain:p%40ss@server.example:8443/image.bin"
+            "?download=1#section":
+                "https://****:****@server.example:8443/image.bin"
+                "?download=1#section",
+            "https://user:pass/word@server.example/image.bin":
+                "https://****:****@server.example/image.bin",
+            "https://user:pass?word@server.example/image.bin":
+                "https://****:****@server.example/image.bin",
+            "https://user:pass#word@server.example/image.bin":
+                "https://****:****@server.example/image.bin",
+            "https://user:pass word@server.example/image.bin":
+                "https://****:****@server.example/image.bin",
+            "https://user:pass@word@server.example/image.bin":
+                "https://****:****@server.example/image.bin",
+            "https://:password@server.example/image.bin":
+                "https://****:****@server.example/image.bin",
+            "failed for https://user:password@server.example/one and "
+            "ftp://other:secret@192.0.2.10/two":
+                "failed for https://****:****@server.example/one and "
+                "ftp://****:****@192.0.2.10/two",
+            "https://server.example/image.bin":
+                "https://server.example/image.bin",
+            "https://server.example/users/user@example.test?view=1#details":
+                "https://server.example/users/user@example.test"
+                "?view=1#details",
+            "https://server.example/path@archive":
+                "https://server.example/path@archive",
+        }
+
+        for value, expected in test_values.items():
+            with self.subTest(value=value):
+                self.assertEqual(redact_url_credentials(value), expected)
+
 
     def test_get_server_block_by_name(self):
         fu = FileUtils(testbed=self.testbed_1)
@@ -399,19 +447,22 @@ class TestBaseFileUtils(unittest.TestCase):
     @patch.object(fileutils_base_module, 'time')
     def test_check_file_exception_stability(self, time_mock):
         fu = FileUtils(testbed=self.testbed_1)
+        target = "ftp://url-user:url-password@server:1234/path/to/file"
         with self.assertLogs('genie.libs.filetransferutils.bases.fileutils',
                 logging.WARNING) as cm:
             with self.assertRaisesRegex(Exception,
                     re.escape("Failure to check existence and length of file "
-                    "ftp://server:1234/path/to/file.")):
+                    "ftp://****:****@server:1234/path/to/file.")):
                 with patch.object(fu, 'stat') as stat_mock:
-                    stat_mock.side_effect = Exception("Boom, stat failed.")
+                    stat_mock.side_effect = Exception(
+                        "Boom, stat failed for {}.".format(target))
                     fu.checkfile(
-                        "ftp://server:1234/path/to/file",
+                        target,
                         check_stability=True)
         expected_log = \
             "WARNING:genie.libs.filetransferutils.bases.fileutils:"\
-            "File stat error : Boom, stat failed."
+            "File stat error : Boom, stat failed for "\
+            "ftp://****:****@server:1234/path/to/file."
         self.assertEqual(cm.output, \
             [expected_log] * DEFAULT_CHECK_FILE_MAX_TRIES)
 
@@ -517,6 +568,51 @@ class TestBaseFileUtils(unittest.TestCase):
         self.assertEqual('1.1.1.1',
                          fu.validate_and_update_url('1.1.1.1'))
 
+    def test_validate_and_update_url_encodes_password(self):
+        encoded_passwords = {
+            "pass/word": "pass%2Fword",
+            "pass?word": "pass%3Fword",
+            "pass#word": "pass%23word",
+            "pass word": "pass%20word",
+        }
+
+        for password, encoded_password in encoded_passwords.items():
+            with self.subTest(password=password):
+                testbed = AttrDict()
+                testbed.servers = AttrDict(
+                    server_name=dict(
+                        username="url-user",
+                        password=password,
+                    )
+                )
+                fu = FileUtils(testbed=testbed)
+                fu.get_hostname = Mock(return_value="server.example")
+
+                self.assertEqual(
+                    "https://url-user:{}@server.example/image.bin".format(
+                        encoded_password
+                    ),
+                    fu.validate_and_update_url(
+                        "https://server_name/image.bin"
+                    ),
+                )
+
+    def test_validate_and_update_url_encodes_scp_username(self):
+        testbed = AttrDict()
+        testbed.servers = AttrDict(
+            server_name=dict(
+                username="url/user",
+                password="password",
+            )
+        )
+        fu = FileUtils(testbed=testbed)
+        fu.get_hostname = Mock(return_value="server.example")
+
+        self.assertEqual(
+            "scp://url%2Fuser@server.example/image.bin",
+            fu.validate_and_update_url("scp://server_name/image.bin"),
+        )
+
 class TestBaseLinuxFileUtils(unittest.TestCase):
 
     # Specified with server key and explicit address
@@ -550,6 +646,72 @@ class TestBaseLinuxFileUtils(unittest.TestCase):
         self.assertEqual(hostname, '2.2.2.2')
         self.assertEqual(port, None)
         self.assertEqual(path, "/path/to/stuff")
+
+    def test_validate_url_warning_redacts_credentials(self):
+        fu = FileUtils(testbed=self.testbed_1)
+        url = "ftp://url-user:url-password@1.1.1.1/path/to/stuff"
+
+        with self.assertLogs(
+            "genie.libs.filetransferutils.fileutils", logging.WARNING
+        ) as logs:
+            hostname, port, path = fu.validate_and_parse_url(url, "stat")
+
+        log_output = "\n".join(logs.output)
+        self.assertEqual(hostname, "1.1.1.1")
+        self.assertIsNone(port)
+        self.assertEqual(path, "/path/to/stuff")
+        self.assertNotIn("url-user", log_output)
+        self.assertNotIn("url-password", log_output)
+        self.assertIn(
+            "ftp://****:****@1.1.1.1/path/to/stuff", log_output
+        )
+
+    def test_stat_log_redacts_credentials_but_uses_original_url(self):
+        fu = FileUtils()
+        stat_result = AttrDict(st_size=1024)
+        child = Mock()
+        child.stat.return_value = stat_result
+        fu.children["https"] = child
+        url = "https://user:password@server.example/image.bin"
+
+        with self.assertLogs(
+            "genie.libs.filetransferutils.fileutils", logging.INFO
+        ) as logs:
+            result = fu.stat(url)
+
+        self.assertIs(result, stat_result)
+        child.stat.assert_called_once_with(
+            url, DEFAULT_TIMEOUT_SECONDS
+        )
+        self.assertNotIn("user", "\n".join(logs.output))
+        self.assertNotIn("password", "\n".join(logs.output))
+        self.assertIn(
+            "https://****:****@server.example/image.bin",
+            "\n".join(logs.output),
+        )
+
+    def test_copyfile_log_redacts_credentials(self):
+        fu = FileUtils()
+        child = Mock()
+        fu.children["ftp"] = child
+        source = "ftp://user:password@server.example/image.bin"
+        destination = "file:///tmp/image.bin"
+
+        with self.assertLogs(
+            "genie.libs.filetransferutils.fileutils", logging.INFO
+        ) as logs:
+            fu.copyfile(source, destination)
+
+        child.copyfile.assert_called_once_with(
+            source, destination, fu.DEFAULT_COPY_TIMEOUT_SECONDS,
+            upload=False
+        )
+        log_output = "\n".join(logs.output)
+        self.assertNotIn("user", log_output)
+        self.assertNotIn("password", log_output)
+        self.assertIn(
+            "ftp://****:****@server.example/image.bin", log_output
+        )
 
 
 
@@ -1822,6 +1984,39 @@ class TestBaseLinuxScpFileUtils(unittest.TestCase):
                             lcl_file_path = lcl_file),
                            'scp://server_name/path/to/remote/file')
 
+    def test_getspace_fail_redacts_credentials(self):
+        df_output = b'''
+df: `/path/to/remote/dir': No such file or directory
+        '''
+
+        fu = FileUtils(testbed=self.testbed_1)
+        with patch.object(scp_fu, 'SSHClient', autospec=True) \
+                as ssh_mock:
+            ssh_sess_mock = create_autospec(
+                paramiko_module.SSHClient, instance=True)
+            ssh_mock.return_value = ssh_sess_mock
+            ssh_sess_mock.exec_command = MagicMock()
+            ssh_sess_mock.exec_command.return_value = (
+                None, io.BytesIO(df_output), None)
+
+            with patch.object(scp_fu, 'SCPClient', autospec=True) \
+                    as scp_mock:
+                scp_sess_mock = create_autospec(
+                    scp_module.SCPClient, instance=True)
+                scp_mock.return_value = scp_sess_mock
+
+                url = (
+                    'scp://url-user:url-password@server_name//path/to/'
+                    'remote/dir/')
+                with self.assertRaises(Exception) as context:
+                    fu.getspace(url)
+
+                self.assertNotIn('url-user', str(context.exception))
+                self.assertNotIn('url-password', str(context.exception))
+                self.assertIn(
+                    'scp://****:****@server_name//path/to/remote/dir/',
+                    str(context.exception))
+
 @skipIf(paramiko_installed == False,
     "Skipping scp unit test because Paramiko and scp are not installed.")
 class TestBaseLinuxSftpFileUtils(unittest.TestCase):
@@ -2065,8 +2260,15 @@ df: `/path/to/remote/dir': No such file or directory
             ssh_sess_mock.open_sftp = MagicMock()
             ssh_sess_mock.open_sftp.return_value = sftp_sess_mock
 
-            with self.assertRaisesRegex(Exception, "Cannot find available space"):
-                fu.getspace('sftp://server_name//path/to/remote/dir/')
+            url = 'sftp://url-user:url-password@server_name//path/to/remote/dir/'
+            with self.assertRaises(Exception) as context:
+                fu.getspace(url)
+
+            self.assertNotIn('url-user', str(context.exception))
+            self.assertNotIn('url-password', str(context.exception))
+            self.assertIn(
+                'sftp://****:****@server_name//path/to/remote/dir/',
+                str(context.exception))
 
 class TestBaseLinuxHttpFileUtils(unittest.TestCase):
 
@@ -2147,6 +2349,35 @@ class TestBaseLinuxHttpFileUtils(unittest.TestCase):
         )
         mock_get_response.close.assert_called_once()
         self.assertEqual(result.st_size, 4321)
+
+    @patch(
+        'genie.libs.filetransferutils.protocols.'
+        'http.fileutils.requests.head'
+    )
+    def test_stat_error_redacts_credentials_but_uses_original_url(
+            self, mock_head):
+        url = "https://user:p%40ssword@server.example/image.bin"
+        mock_head.side_effect = requests.exceptions.RequestException(
+            f"request failed for {url}"
+        )
+        fu = FileUtils(testbed=self.testbed_1)
+
+        with self.assertRaises(Exception) as context:
+            fu.stat(url)
+
+        mock_head.assert_called_once_with(
+            url=url,
+            timeout=DEFAULT_TIMEOUT_SECONDS,
+            allow_redirects=True,
+            verify=False,
+        )
+        self.assertNotIn("user", str(context.exception))
+        self.assertNotIn("p%40ssword", str(context.exception))
+        self.assertIn(
+            "https://****:****@server.example/image.bin",
+            str(context.exception),
+        )
+        self.assertTrue(context.exception.__suppress_context__)
 
 class TestBaseLinuxTftpFileUtils(unittest.TestCase):
     from genie.libs.filetransferutils.fileutils import FileUtils

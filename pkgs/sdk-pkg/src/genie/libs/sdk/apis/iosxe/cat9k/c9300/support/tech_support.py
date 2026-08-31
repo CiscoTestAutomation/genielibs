@@ -4,20 +4,30 @@ from datetime import datetime
 
 from pyats.easypy import runtime
 from genie.libs.sdk.libs.abstracted_libs.iosxe.subsection import get_default_dir
+from genie.libs.sdk.apis.iosxe.utils import recover_device_to_enable_state
 
 log = logging.getLogger(__name__)
 
 
-def collect_install_log(device, timeout=600):
+def collect_install_log(device, timeout=600, reconnect=False,
+                         reconnect_timeout=None):
     """ Collect install failure logs from the device.
     Args:
         device (obj): Device object (required)
         timeout (int): Timeout value for show tech-support command (default: 600 seconds)
+        reconnect (bool): recover the connection and ensure enable mode
+            before collecting logs (default: False)
+        reconnect_timeout (int): timeout for the connection recovery.
+            Defaults to `timeout` when not provided.
     Returns
         None on success, False on failure
     """
 
     archive_filename = None
+
+    if reconnect:
+        recover_device_to_enable_state(
+            device, timeout=reconnect_timeout or timeout)
 
     log.info("Logging the below to get the install failure logs from device")
 

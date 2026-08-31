@@ -1,4 +1,3 @@
-import logging
 import unittest
 
 from unittest.mock import Mock
@@ -8,7 +7,6 @@ from genie.libs.clean.stages.tests.utils import create_test_device
 from pyats.aetest.steps import Steps
 from pyats.results import Passed, Failed
 from pyats.aetest.signals import TerminateStepSignal
-from unicon.core.errors import SubCommandFailure
 
 
 class TestRunConfigure(unittest.TestCase):
@@ -25,22 +23,22 @@ class TestRunConfigure(unittest.TestCase):
         # Make sure we have a unique Steps() object for result verification
         steps = Steps()
 
-        # And we want the configure apis to be mocked.
-        # This simulates the pass case.
-        self.device.execute = Mock()
+        # Simulate the API successfully applying the WSIM configuration.
+        self.device.api.run_wsim_config = Mock(return_value=True)
 
         # Call the method to be tested (clean step inside class)
         self.cls.run_configure(steps=steps, device=self.device, )
 
         # Check that the result is expected
         self.assertEqual(Passed, steps.details[0].result)
+        self.device.api.run_wsim_config.assert_called_once_with(timeout=600)
 
     def test_fail_run_configure(self):
         # Make sure we have a unique Steps() object for result verification
         steps = Steps()
 
-        # This simulates the Fail case.
-        self.device.execute = Mock(side_effect=Exception)
+        # Simulate the API reporting that the WSIM configuration failed.
+        self.device.api.run_wsim_config = Mock(return_value=False)
 
         # Call the method to be tested (clean step inside class)
         with self.assertRaises(TerminateStepSignal):
@@ -48,3 +46,4 @@ class TestRunConfigure(unittest.TestCase):
 
         # Check that the result is expected
         self.assertEqual(Failed, steps.details[0].result)
+        self.device.api.run_wsim_config.assert_called_once_with(timeout=600)

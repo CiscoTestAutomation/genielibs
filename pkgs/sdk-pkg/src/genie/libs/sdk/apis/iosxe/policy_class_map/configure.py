@@ -21,7 +21,7 @@ def configure_class_map(device,
     """ Configures class-map
         Args:
              device ('obj'): device to use
-             class_name ('str'): name of the class 
+             class_name ('str'): name of the class
              match_val  ('str'): values of the match
              match_mode ('str',optional): name of the match_mode, default is None
              match_val1 ('str',optional): name of the match_mode 2, default is None
@@ -32,7 +32,7 @@ def configure_class_map(device,
         Returns:
             None
         Raises:
-            SubCommandFailure             
+            SubCommandFailure
     """
     log.info(
         "Configuring class_map {class_name} with {match_mode} {class_match_type}".format(
@@ -41,14 +41,14 @@ def configure_class_map(device,
             class_match_type=class_match_type
         )
     )
-    cmd = [f"class-map {class_match_type} {class_name}"]    
+    cmd = [f"class-map {class_match_type} {class_name}"]
     if access_group:
         cmd.append(f"match access-group name {match_val}")
     elif match_mode:
         cmd.append(f"match {match_mode}  {match_val}")
     if match_val1 and match_mode1:
         cmd.append(f"match {match_mode1}  {match_val1}")
-    
+
     try:
         device.configure(cmd)
 
@@ -149,7 +149,7 @@ def configure_class_map_access_group_on_device(device, class_map_name, acc_list_
     """
     log.debug("Configuring class-map access-group on device")
     configs = [f'class-map match-all {class_map_name}',
-           f'match access-group {acc_list_number}']	    
+           f'match access-group {acc_list_number}']
     try:
         device.configure(configs)
     except SubCommandFailure as e:
@@ -175,7 +175,7 @@ def configure_traffic_class_for_class_map(device, class_map_name, matching_state
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(
-            f"Could not configure traffic-class for class-map on device {device}. Error:\n{e}")       
+            f"Could not configure traffic-class for class-map on device {device}. Error:\n{e}")
 
 def configure_class_map_match_protocol_attribute(device, class_match_type, class_name, attribute_name, attribute_value):
     """ Configures a class-map with a 'match protocol attribute' statement.
@@ -195,10 +195,146 @@ def configure_class_map_match_protocol_attribute(device, class_match_type, class
     )
     cmd = [f"class-map {class_match_type} {class_name}"]
     cmd.append(f"match protocol attribute {attribute_name} {attribute_value}")
-    
+
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Could not configure class-map. Error:\n{e}"
+        )
+
+
+def configure_class_map_type_inspect(
+        device,
+        class_map_name,
+        match_type="match-any",
+        match_access_group=None,
+        match_access_group_name=None,
+        match_protocol=None,
+        match_class_map=None):
+    """ Configure 'class-map type inspect' with match rules (ZBFW)
+
+        Args:
+            device ('obj'): Device object
+            class_map_name ('str'): Name of the class-map
+            match_type ('str', optional): 'match-any' or 'match-all'.
+                Defaults to 'match-any'
+            match_access_group ('str' or 'list', optional): Numbered access
+                group(s) to match. Defaults to None
+            match_access_group_name ('str' or 'list', optional): Named access
+                group(s) to match. Defaults to None
+            match_protocol ('str' or 'list', optional): Protocol(s) to match.
+                Defaults to None
+            match_class_map ('str' or 'list', optional): Nested class-map(s)
+                to match. Defaults to None
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [f"class-map type inspect {match_type} {class_map_name}"]
+    if match_access_group_name is not None:
+        if isinstance(match_access_group_name, str):
+            match_access_group_name = [match_access_group_name]
+        for acl in match_access_group_name:
+            cmd.append(f"match access-group name {acl}")
+    if match_access_group is not None:
+        if isinstance(match_access_group, (str, int)):
+            match_access_group = [match_access_group]
+        for acl in match_access_group:
+            cmd.append(f"match access-group {acl}")
+    if match_protocol is not None:
+        if isinstance(match_protocol, str):
+            match_protocol = [match_protocol]
+        for protocol in match_protocol:
+            cmd.append(f"match protocol {protocol}")
+    if match_class_map is not None:
+        if isinstance(match_class_map, str):
+            match_class_map = [match_class_map]
+        for child in match_class_map:
+            cmd.append(f"match class-map {child}")
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure class-map type inspect "
+            f"{class_map_name}. Error:\n{e}"
+        )
+
+
+def unconfigure_class_map_type_inspect(
+        device,
+        class_map_name,
+        match_type="match-any",
+        match_access_group=None,
+        match_access_group_name=None,
+        match_protocol=None,
+        match_class_map=None,
+        remove_class_map=True):
+    """ Unconfigure 'class-map type inspect' match rules (ZBFW)
+
+        Args:
+            device ('obj'): Device object
+            class_map_name ('str'): Name of the class-map
+            match_type ('str', optional): 'match-any' or 'match-all'.
+                Defaults to 'match-any'
+            match_access_group ('str' or 'list', optional): Numbered access
+                group(s) to remove. Defaults to None
+            match_access_group_name ('str' or 'list', optional): Named access
+                group(s) to remove. Defaults to None
+            match_protocol ('str' or 'list', optional): Protocol(s) to remove.
+                Defaults to None
+            match_class_map ('str' or 'list', optional): Nested class-map(s)
+                to remove. Defaults to None
+            remove_class_map ('bool', optional): Also delete the class-map
+                with 'no class-map type inspect ...'. Defaults to True
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = []
+    has_match = any(
+        m is not None for m in (
+            match_access_group,
+            match_access_group_name,
+            match_protocol,
+            match_class_map,
+        )
+    )
+    if has_match:
+        cmd.append(f"class-map type inspect {match_type} {class_map_name}")
+        if match_access_group_name is not None:
+            if isinstance(match_access_group_name, str):
+                match_access_group_name = [match_access_group_name]
+            for acl in match_access_group_name:
+                cmd.append(f"no match access-group name {acl}")
+        if match_access_group is not None:
+            if isinstance(match_access_group, (str, int)):
+                match_access_group = [match_access_group]
+            for acl in match_access_group:
+                cmd.append(f"no match access-group {acl}")
+        if match_protocol is not None:
+            if isinstance(match_protocol, str):
+                match_protocol = [match_protocol]
+            for protocol in match_protocol:
+                cmd.append(f"no match protocol {protocol}")
+        if match_class_map is not None:
+            if isinstance(match_class_map, str):
+                match_class_map = [match_class_map]
+            for child in match_class_map:
+                cmd.append(f"no match class-map {child}")
+        cmd.append("exit")
+    if remove_class_map:
+        cmd.append(
+            f"no class-map type inspect {match_type} {class_map_name}"
+        )
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure class-map type inspect "
+            f"{class_map_name}. Error:\n{e}"
         )

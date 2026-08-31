@@ -12,3 +12,12 @@ class TestUnconfigureStaticNatNetworkRule(TestCase):
             device.configure.mock_calls[0].args,
             ('no ip nat inside source static network 35.0.0.0 81.1.1.0 255.255.255.0',)
         )
+
+    def test_unconfigure_static_nat_network_rule_vrf(self):
+        device = Mock()
+        result = unconfigure_static_nat_network_rule(device, '1.1.1.0', '200.1.1.0', '/24', vrf='green')
+        self.assertEqual(result, None)
+        self.assertEqual(
+            device.configure.mock_calls[0].args,
+            ('no ip nat inside source static network 1.1.1.0 200.1.1.0 /24 vrf green',)
+        )

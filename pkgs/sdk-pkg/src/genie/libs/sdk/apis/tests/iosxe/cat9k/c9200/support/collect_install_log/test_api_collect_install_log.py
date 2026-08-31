@@ -73,6 +73,44 @@ class TestCollectInstallLog(unittest.TestCase):
                 error_msg = mock_log.error.call_args[0][0]
                 self.assertIn("Failed to copy the install failure logs to runinfo directory", error_msg)
 
+    @patch(
+        'genie.libs.sdk.apis.iosxe.cat9k'
+        '.c9200.support.tech_support'
+        '.recover_device_to_enable_state')
+    def test_reconnect_true_recovers(
+            self, mock_recover):
+        device = MagicMock()
+        device.execute.side_effect = [
+            None, None, None,
+            "Done with creation of the archive file:[flash:archive.tar.gz]",
+        ]
+        with patch('re.search') as mock_search:
+            mock_match = MagicMock()
+            mock_match.group.return_value = "flash:archive.tar.gz"
+            mock_search.return_value = mock_match
+            collect_install_log(device, reconnect=True, reconnect_timeout=150)
+
+        mock_recover.assert_called_once_with(device, timeout=150)
+
+    @patch(
+        'genie.libs.sdk.apis.iosxe.cat9k'
+        '.c9200.support.tech_support'
+        '.recover_device_to_enable_state')
+    def test_reconnect_false_skips_recovery(
+            self, mock_recover):
+        device = MagicMock()
+        device.execute.side_effect = [
+            None, None, None,
+            "Done with creation of the archive file:[flash:archive.tar.gz]",
+        ]
+        with patch('re.search') as mock_search:
+            mock_match = MagicMock()
+            mock_match.group.return_value = "flash:archive.tar.gz"
+            mock_search.return_value = mock_match
+            collect_install_log(device)
+
+        mock_recover.assert_not_called()
+
 
 if __name__ == '__main__':
     unittest.main()

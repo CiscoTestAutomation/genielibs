@@ -2425,7 +2425,7 @@ def unconfigure_redestribute_ospf_metric_in_bgp(device, bgp_as, process_id, metr
         raise SubCommandFailure(f"Could not unconfigure redistributes ospf metric route under bgp on device {device}. Error:\n{e}")
 
 def configure_bgp_neighbor_remote_as_fall_over_as_with_peergroup(device, bgp_as, neighbor_address,
-        fall_over_as=None, remote_as=None, peer_group_as=None):
+        fall_over_as=None, remote_as=None, peer_group_as=None,local_as=None,timers=None):
     """Configure bgp neighbour and remote as fall over as
        Args:
        device('obj'): device to configure on
@@ -2434,6 +2434,8 @@ def configure_bgp_neighbor_remote_as_fall_over_as_with_peergroup(device, bgp_as,
        remote_as ('str'): Destination
        peer_group_as('str'): configure the peer-group
        fall_over_as ('str'): falloveras
+       local_as ('str', optional): Local as
+       timers ('str, optional): timers
        Returns:
             N/A
         Raises:
@@ -2447,6 +2449,10 @@ def configure_bgp_neighbor_remote_as_fall_over_as_with_peergroup(device, bgp_as,
         config.append('neighbor {neighbor_address} peer-group {peer_group_as}'.format(neighbor_address=neighbor_address, peer_group_as=peer_group_as))
     if fall_over_as:
         config.append('neighbor {neighbor_address} fall-over {fall_over_as}'.format(neighbor_address=neighbor_address, fall_over_as=fall_over_as))
+    if local_as:
+        config.append('neighbor {neighbor_address} local-as {local_as}'.format(neighbor_address=neighbor_address, local_as=local_as))
+    if timers:
+        config.append('neighbor {neighbor_address} timers {timers}'.format(neighbor_address=neighbor_address, timers=timers))
     try:
         device.configure(config)
     except SubCommandFailure as e:

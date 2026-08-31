@@ -8,6 +8,7 @@ from genie.utils.timeout import Timeout
 
 # Unicon
 from unicon.core.errors import SubCommandFailure
+from unicon.eal.dialogs import Dialog, Statement
 
 # Logger
 log = logging.getLogger(__name__)
@@ -86,15 +87,55 @@ def configure_client_details(device,client_base_mac):
         log.info("Successfully configured ap configs on wsim {}".format(device.name))
 
 
+def _execute_vsta_command(device, command, timeout):
+    """Execute a command without matching a buffered vSTA prompt."""
+    stale_prompt = Statement(
+        pattern=r"^(?:(?!{})[\s\S])*?vSTA#".format(re.escape(command)),
+        loop_continue=True,
+        continue_timer=False,
+    )
+
+    # WSIM handles relayed controller prompts internally, so override
+    # Unicon's generic dialog and discard prompts preceding this command echo.
+    return device.execute(
+        command,
+        timeout=timeout,
+        service_dialog=Dialog([stale_prompt]),
+    )
+
+
 def run_wsim_config(device, timeout=600):
     try:
         device.execute("configure client number total 1 ap 1", timeout=timeout)
-        device.sendline("run wlc remove certs")
-        device.expect(r'.*vSTA#',timeout=timeout)
-        device.sendline("run wlc apply certs")
-        device.expect(r'.*vSTA#',timeout=timeout)
-        device.sendline("run wlc get capwap")
-        device.expect(r'.*vSTA#',timeout=timeout)
+        buffer_output = _execute_vsta_command(
+            device, "run wlc remove certs", timeout
+        )
+        if "Authentication failed" in buffer_output:
+            raise SubCommandFailure(
+                "Authentication failed while running wsim config on device "
+                "{}".format(device.name)
+            )
+        if "Do you really want to remove these keys" not in buffer_output:
+            raise SubCommandFailure(
+                "Failed to remove certs while running wsim config on device "
+                "{}".format(device.name)
+            )
+        output = _execute_vsta_command(
+            device, "run wlc apply certs", timeout
+        )
+        if "[OK]" not in output:
+            raise SubCommandFailure(
+                "Failed to apply certs while running wsim config on device "
+                "{}".format(device.name)
+            )
+        capwap_output = _execute_vsta_command(
+            device, "run wlc get capwap", timeout
+        )
+        if "CAPWAP version is set to" not in capwap_output:
+            raise SubCommandFailure(
+                "Failed to enable capwap while running wsim config on device "
+                "{}".format(device.name)
+            )
     except SubCommandFailure as e:
         raise SubCommandFailure(
             "Failed to configure the controller configs on wsim"
@@ -105,6 +146,7 @@ def run_wsim_config(device, timeout=600):
         ) from e
     else:
         log.info("Successfully configured certs for controller with wsim {}".format(device.name))
+        return True
 
 def configure_ap_client_count(device,ap_count,client_count,shell_access=True,timeout=600):
     try:
@@ -124,13 +166,25 @@ def configure_ap_client_count(device,ap_count,client_count,shell_access=True,tim
             )
         ) from e
     else:
-        log.info("Successfully configured ap, client count configs on wsim {}".format(device.name))
+        log.info(
+            "Successfully configured ap, client count configs on wsim "
+            "{}".format(device.name)
+        )
 
 
 
 def simulate_ap_container(device,ap_count,timeout=600):
     try:
-        device.execute("start ap id 1 to {}".format(ap_count),timeout=timeout)
+        output = device.execute(
+            "start ap id 1 to {}".format(ap_count), timeout=timeout
+        )
+        message = "{} vAP started".format(ap_count)
+        if message not in output:
+            raise SubCommandFailure(
+                "Failed to start {} vAPs on wsim {}".format(
+                    ap_count, device.name
+                )
+            )
     except SubCommandFailure as e:
         raise SubCommandFailure(
             "Failed to configure the controller configs on wsim"
@@ -140,7 +194,12 @@ def simulate_ap_container(device,ap_count,timeout=600):
             )
         ) from e
     else:
-        log.info("Successfully configured ap, client count configs on wsim {}".format(device.name))
+        log.info(
+            "Successfully started {} vAPs on wsim {}".format(
+                ap_count, device.name
+            )
+        )
+        return True
 
 
 def verify_ap_associate(device,ap_count,max_time=600):

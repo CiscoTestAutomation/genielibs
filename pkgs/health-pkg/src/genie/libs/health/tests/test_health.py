@@ -1,7 +1,7 @@
 import sys
 import unittest
 import yaml
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 from pyats.aetest.script import TestScript
 from genie.libs.health.health import Health, SECTION_CLASS_MAPPING
@@ -83,6 +83,45 @@ class TestHealth(unittest.TestCase):
             }])
 
 
+class TestDeviceConnectivity(unittest.TestCase):
+
+    def test_enable_runs_after_parallel_connectivity_checks(self):
+        """Enable connected devices in the parent process after pcall."""
+        devices = {}
+        for name in ('uut1', 'uut2'):
+            device = Mock()
+            device.name = name
+            device.connected = True
+            device.api.verify_device_connection.return_value = True
+            devices[name] = device
+
+        testbed = Mock()
+        testbed.devices = devices
+        data = [
+            {'api': {'device': 'uut1'}},
+            {'api': {'device': 'uut2'}},
+        ]
+
+        def run_connectivity_checks(callback, device, testbed, reconnect):
+            results = []
+            for name, worker_testbed, worker_reconnect in zip(
+                    device, testbed, reconnect):
+                results.append(callback(name, worker_testbed,
+                                        worker_reconnect))
+                self.assertFalse(worker_testbed.devices[name].enable.called)
+            return results
+
+        with patch('genie.libs.health.health.pcall',
+                   side_effect=run_connectivity_checks):
+            connected = Health()._check_all_devices_connected(
+                testbed, data, reconnect=None)
+
+        self.assertCountEqual(connected, ['uut1', 'uut2'])
+        for device in devices.values():
+            device.api.verify_device_connection.assert_called_once_with()
+            device.enable.assert_called_once_with()
+
+
 def _load_pyats_health_yaml():
     """Load and return the parsed pyats_health.yaml as a dict."""
     with open(health_yamls.pyats_health_yaml) as f:
@@ -151,4 +190,3 @@ class TestCrashinfoYamlWiring(unittest.TestCase):
             _get_section_actions(self.health_yaml, 'crashinfo_pre_check'))
         for api in api_actions:
             self.assertNotIn('save', api, "crashinfo_pre_check must not have a 'save:' block")
-

@@ -31,12 +31,15 @@ def get_recovery_details(device, golden_image: list = None, tftp_boot: dict = No
         recovery_info = {}
 
     # parsing golden image from drec0:
-    try:
-        output = device.parse('dir drec0:')
-        drec0_files = output.get('dir', {}).get('drec0:', {}).get('files', {})
-    except SchemaEmptyParserError:
-        log.info(f"{device.name}: dir drec0: is empty, no golden image found")
+    if tftp_boot:
         drec0_files = {}
+    else:
+        try:
+            output = device.parse('dir drec0:')
+            drec0_files = output.get('dir', {}).get('drec0:', {}).get('files', {})
+        except SchemaEmptyParserError:
+            log.info(f"{device.name}: dir drec0: is empty, no golden image found")
+            drec0_files = {}
 
     if drec0_files:
         golden_image_file = next(iter(drec0_files))

@@ -63,7 +63,7 @@ DEFAULT_ARGS = {
     "install_image__install_timeout": 1800,
     "install_image__reload_timeout": 1800,
     "install_smu__install_timeout": 700,
-    "install_remove_inactive__timeout": 180,
+    "install_remove_inactive__timeout": 300,
     "install_remove_smu__timeout": 700,
     "apply_configuration__configuration": "",
     "copy_to_device__protocol": "http",

@@ -704,10 +704,14 @@ def execute_copy_run_to_start(device, command_timeout=300, max_time=120,
     ''' Execute copy running-config to startup-config
         Args:
             device ('obj'): Device object
-            command_timeout ('int'): Timeout value in sec, Default Value is 300 sec
-            max_time ('int'): Maximum time in seconds, Default Value is 300 sec
-            check_interval ('int'): Check interval in seconds, Default Value is 20 sec
-            copy_vdc_all ('boolean'): Copy on all VDCs or not, Default Value is False
+            command_timeout ('int'): Copy-command timeout in seconds. Defaults
+                to 300.
+            max_time ('int'): Ignored compatibility argument. Retained for
+                backward compatibility. Defaults to 120.
+            check_interval ('int'): Ignored compatibility argument. Retained
+                for backward compatibility. Defaults to 30.
+            copy_vdc_all ('boolean'): Whether to copy on all VDCs. Defaults to
+                False.
     '''
 
     # Build command

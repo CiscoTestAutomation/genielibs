@@ -14,6 +14,7 @@ from functools import lru_cache
 from urllib.parse import urlparse
 from unicon.eal.dialogs import Statement, Dialog
 from unicon.core.errors import SubCommandFailure
+from genie.libs.filetransferutils.bases.fileutils import redact_url_credentials
 
 import contextlib
 
@@ -427,7 +428,8 @@ class FileUtils(FileUtilsCommonDeviceBase):
 
         if not resolved_ip or not isinstance(resolved_ip, str):
             logger.info("No route-based server IP found for device IP %s "
-                        "— URL unchanged: %s", device_ip, url)
+                        "— URL unchanged: %s", device_ip,
+                        redact_url_credentials(url))
             return url
 
         # Validate resolved_ip is a usable IP address
@@ -435,13 +437,15 @@ class FileUtils(FileUtilsCommonDeviceBase):
             ipaddress.ip_address(resolved_ip)
         except (ValueError, TypeError):
             logger.info("Route lookup returned invalid IP '%s' for device IP %s "
-                        "— URL unchanged: %s", resolved_ip, device_ip, url)
+                        "— URL unchanged: %s", resolved_ip, device_ip,
+                        redact_url_credentials(url))
             return url
 
         # Only rewrite if the resolved IP differs from current hostname
         if resolved_ip == parsed.hostname:
             logger.info("Resolved server IP '%s' matches current URL host "
-                        "— URL unchanged: %s", resolved_ip, url)
+                        "— URL unchanged: %s", resolved_ip,
+                        redact_url_credentials(url))
             return url
 
         logger.info("Resolved server route IP '%s' for device IP %s (URL host: '%s')",
@@ -1038,7 +1042,7 @@ class FileUtils(FileUtilsCommonDeviceBase):
             command returns a result.
         """
         if command:
-            logger.info("Executing command %s" % command)
+            logger.info("Executing command %s" % redact_url_credentials(command))
             args = shlex.split(command)
             subprocess.check_call(args, timeout=timeout_seconds, shell=False,
                 **kwargs)

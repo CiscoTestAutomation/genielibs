@@ -7,6 +7,7 @@ from pyats.easypy import runtime
 from unicon.eal.dialogs import Dialog
 from genie.libs.filetransferutils import FileServer, FileUtils
 from genie.libs.sdk.libs.abstracted_libs.iosxe.subsection import get_default_dir
+from genie.libs.sdk.apis.iosxe.utils import recover_device_to_enable_state
 
 from unicon.core.errors import SubCommandFailure
 
@@ -137,16 +138,28 @@ def show_tech_support_firewall(device, timeout=300):
     return True
 
 
-def collect_install_log(device, timeout=600):
+def collect_install_log(device, timeout=600, reconnect=False,
+                         reconnect_timeout=None):
     """ Collect install failure logs from the device.
     Args:
         device (obj): Device object (required)
         timeout (int): timeout for show tech-support command (default: 600s)
+        reconnect (bool): recover the connection and ensure enable mode
+            before collecting logs. Use this after an install timeout when
+            the device state is uncertain (default: False)
+        reconnect_timeout (int): timeout for the connection recovery.
+            Defaults to `timeout` when not provided, so callers (e.g. the
+            install timeout) can pass their own timeout independently of
+            the diagnostic commands' timeout.
     Returns
         None
     """
 
     archive_filename = None
+
+    if reconnect:
+        recover_device_to_enable_state(
+            device, timeout=reconnect_timeout or timeout)
 
     log.info("Logging the below to get the install failure logs from device")
 

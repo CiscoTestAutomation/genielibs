@@ -3,6 +3,7 @@ from unittest.mock import MagicMock, Mock, call, patch
 import logging
 
 from pyats.aetest.steps import Steps
+from pyats.aetest.signals import TerminateStepSignal
 from pyats.results import Passed, Failed
 from pyats.topology import loader
 from genie.libs.clean.stages.stages import Connect
@@ -63,7 +64,30 @@ class TestConnect(unittest.TestCase):
             device.disconnect()
             self.md.stop()
         
-        # All steps should have result_rollup set to false,
-        # if the recovery processor is enabled.
+        # Connect failures must remain visible when recovery is enabled. A
+        # successful recovery supersedes this attempt through a full retry.
         for step in steps.steps:
-            self.assertFalse(step.result_rollup)
+            self.assertTrue(step.result_rollup)
+
+    def test_connect_failure_rolls_up_with_recovery_enabled(self):
+        steps = Steps()
+        device = MagicMock()
+        device.name = 'R1'
+        device.connect.side_effect = RuntimeError('Connection failed')
+
+        connect = Connect()
+        mock_parent = Mock()
+        mock_parent.device_recovery_processor = True
+        mock_section = Mock()
+        mock_section.parent = mock_parent
+        connect.parameters.internal['section'] = mock_section
+
+        with self.assertRaises(TerminateStepSignal):
+            connect.connect(
+                steps=steps,
+                device=device,
+                retry_timeout=0,
+                retry_interval=0)
+
+        self.assertEqual(Failed, steps.details[0].result)
+        self.assertTrue(steps.steps[0].result_rollup)

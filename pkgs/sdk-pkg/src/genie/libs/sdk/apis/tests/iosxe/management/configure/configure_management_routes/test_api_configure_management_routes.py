@@ -1,35 +1,24 @@
-import os
 import unittest
-from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.management.configure import configure_management_routes
+from unittest import TestCase
+from unittest.mock import Mock
+
+from genie.libs.sdk.apis.iosxe.management.configure import (
+    configure_management_routes,
+)
 
 
-class TestConfigureManagementRoutes(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          vmtb-isr4451:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: iosxe
-            type: iosxe
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['vmtb-isr4451']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureManagementRoutes(TestCase):
 
     def test_configure_management_routes(self):
-        result = configure_management_routes(self.device)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.state_machine.current_state = "enable"
+        device.management = {}
+
+        result = configure_management_routes(device)
+
+        self.assertIsNone(result)
+        device.configure.assert_not_called()
+
+
+if __name__ == "__main__":
+    unittest.main()

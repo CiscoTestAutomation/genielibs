@@ -30,6 +30,6 @@ class TestSimulateApContainer(unittest.TestCase):
         )
 
     def test_simulate_ap_container(self):
-        result = simulate_ap_container(self.device, '1', '600')
-        expected_output = None
+        result = simulate_ap_container(self.device, ap_count='1', timeout=600)
+        expected_output = True
         self.assertEqual(result, expected_output)

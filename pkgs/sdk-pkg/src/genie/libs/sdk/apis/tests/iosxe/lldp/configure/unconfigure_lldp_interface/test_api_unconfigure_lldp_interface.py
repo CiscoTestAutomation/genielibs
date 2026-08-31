@@ -1,35 +1,41 @@
-import os
 import unittest
-from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.lldp.configure import unconfigure_lldp_interface
+from unittest import TestCase
+from unittest.mock import Mock
+
+from genie.libs.sdk.apis.iosxe.lldp.configure import (
+    unconfigure_lldp_interface,
+)
 
 
-class TestUnconfigureLldpInterface(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          stack3-nyquist-1:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: c9300
-            type: c9300
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['stack3-nyquist-1']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestUnconfigureLldpInterface(TestCase):
 
     def test_unconfigure_lldp_interface(self):
-        result = unconfigure_lldp_interface(self.device, 'Tw1/0/28', True, True)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.state_machine.current_state = "enable"
+        device.configure.return_value = None
+
+        result = unconfigure_lldp_interface(
+            device,
+            "Tw1/0/28",
+            True,
+            True,
+        )
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once()
+
+        sent_commands = device.configure.call_args.args[0]
+        self.assertIsInstance(sent_commands, list)
+        self.assertEqual(
+            sent_commands,
+            [
+                "no lldp run",
+                "interface Tw1/0/28",
+                "no lldp transmit",
+                "no lldp receive",
+            ],
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()

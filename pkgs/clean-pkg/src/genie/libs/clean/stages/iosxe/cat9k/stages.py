@@ -610,6 +610,7 @@ install_image:
         Optional('verify_running_image', description="Compare the image filename with the running image version on device. If a match is found, the stage will be skipped", default=VERIFY_RUNNING_IMAGE): bool,
         Optional('stack_member_timeout'): int,
         Optional('stack_member_interval'): int,
+        Optional('install_space_factor'): Or(int, float),
 
         Optional('reload_service_args'): {
             Optional('reload_creds'): str,
@@ -635,6 +636,7 @@ install_image:
         'verify_boot_variable',
         'check_start_up_config_variables',
         'verify_running_image',
+        'verify_install_space',
         'install_image'
     ]
 

@@ -1,34 +1,41 @@
 import unittest
-from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.macsec.configure import configure_disable_sci_dot1q_clear
+from unittest import TestCase
+from unittest.mock import Mock
+
+from genie.libs.sdk.apis.iosxe.macsec.configure import (
+    configure_disable_sci_dot1q_clear,
+)
 
 
-class TestConfigureDisableSciDot1qClear(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = """
-        devices:
-          FUGAZI:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: iosxe
-            type: iosxe
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['FUGAZI']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureDisableSciDot1qClear(TestCase):
 
     def test_configure_disable_sci_dot1q_clear(self):
-        result = configure_disable_sci_dot1q_clear(self.device, 'Te0/1/1', True, True, 1)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.state_machine.current_state = "enable"
+        device.configure.return_value = None
+
+        result = configure_disable_sci_dot1q_clear(
+            device,
+            "Te0/1/1",
+            True,
+            True,
+            1,
+        )
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once()
+
+        sent_commands = device.configure.call_args.args[0]
+        self.assertIsInstance(sent_commands, list)
+        self.assertEqual(
+            sent_commands,
+            [
+                "interface Te0/1/1",
+                "macsec disable-sci",
+                "macsec dot1q-in-clear 1",
+            ],
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -260,7 +260,8 @@ run_configure:
 
         with steps.start("Run the configurations on wsim") as step:
             try:
-                device.api.run_wsim_config(timeout=timeout,)
+                if not device.api.run_wsim_config(timeout=timeout):
+                    raise Exception("Failed to run wsim config")
             except Exception as e:
                 step.failed("Failed to run the config on wsim "
                             "{}\n{}".format(device.name, str(e)))
@@ -329,7 +330,10 @@ start_ap_containers:
 
         with steps.start("Start the Ap containers") as step:
             try:
-                device.api.simulate_ap_container(ap_count=ap_count,timeout=timeout,)
+                if not device.api.simulate_ap_container(
+                    ap_count=ap_count, timeout=timeout,
+                ):
+                    raise Exception("Failed to start ap container on wsim")
             except Exception as e:
                 step.failed("Failed to start ap container on wsim "
                             "{}\n{}".format(device.name, str(e)))

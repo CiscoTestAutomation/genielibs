@@ -81,8 +81,6 @@ class TestGetRecoveryDetails(unittest.TestCase):
 
     def test_get_recovery_details_with_tftp_boot_arg(self):
         """When tftp_boot is passed as argument, use it over clean config."""
-        self.device.parse.side_effect = SchemaEmptyParserError(
-            None, 'dir drec0:')
         custom_tftp = {
             "gateway": "2.2.2.0",
             "image": ["custom/image.bin"],
@@ -97,3 +95,4 @@ class TestGetRecoveryDetails(unittest.TestCase):
             'tftp_image': ['custom/image.bin'],
         }
         self.assertEqual(result, expected)
+        self.device.parse.assert_not_called()

@@ -2528,3 +2528,65 @@ def get_show_output(device, command, target=None):
                 command=command, device=device.name, e=e))
 
     return (bool(output), output)
+
+
+def recover_device_to_enable_state(device, timeout=600):
+    """ Recover the connection and bring the device to enable mode.
+
+    Use this after a long running or disruptive operation (image install,
+    reload, upgrade, etc.) when the device state can no longer be assumed.
+    The device may be rebooting, sitting at a login/authentication prompt,
+    in user EXEC mode, in ROMMON, or the connection may have dropped
+    altogether. Running enable-only commands from any of those states
+    fails with '% Invalid input detected'.
+
+    This API reconnects the device if the session is down, resynchronizes
+    the unicon state machine, completes authentication, and transitions
+    the device to enable mode so subsequent commands can run.
+
+    Args:
+        device (obj): Device object (required)
+        timeout (int): timeout for the state machine transitions
+            (default: 600s)
+    Returns
+        None
+    Raises
+        RuntimeError: if the device is in ROMMON or enable mode could not
+            be reached.
+    """
+    try:
+        connected = device.is_connected()
+    except Exception:
+        connected = False
+
+    if not connected:
+        log.debug("Connection to %s is down, reconnecting", device.name)
+        # Disconnect first to clean up any stale session state before
+        # establishing a new connection.
+        try:
+            device.disconnect()
+        except Exception as e:
+            log.debug("Failed to disconnect %s: %s", device.name, e)
+        device.connect()
+
+    # Send an empty line so the device responds with a prompt. Without it
+    # the state machine has no output to match against on an idle session.
+    device.sendline()
+
+    state_machine = device.state_machine
+    state_machine.go_to(
+        'any', device.spawn, timeout=timeout, prompt_recovery=True)
+    current_state = state_machine.current_state
+    log.debug("Device %s is in '%s' state", device.name, current_state)
+
+    if current_state == 'rommon':
+        raise RuntimeError(
+            f"Device {device.name} is in ROMMON, cannot bring the device "
+            "to enable mode")
+
+    if current_state != 'enable':
+        state_machine.go_to(
+            'enable', device.spawn, timeout=timeout, prompt_recovery=True)
+
+    if state_machine.current_state != 'enable':
+        raise RuntimeError(f"Device {device.name} did not reach enable mode")

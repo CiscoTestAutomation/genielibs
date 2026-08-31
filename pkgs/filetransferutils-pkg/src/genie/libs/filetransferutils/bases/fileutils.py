@@ -6,14 +6,16 @@ __author__ = "Myles Dear <pyats-support@cisco.com>"
 
 __all__ = [
     "FileUtilsBase",
+    "redact_url_credentials",
 ]
 
 import ipaddress
 import logging
+import re
 import sys
 import time
 from functools import lru_cache
-from urllib.parse import urlparse
+from urllib.parse import quote, urlparse
 
 import psutil
 from genie.abstract import Lookup
@@ -37,6 +39,24 @@ DEFAULT_PORTS = {
     "https": 443,
 }
 ENTRYPOINT_GROUP = "genie.libs.filetransferutils"
+
+
+def redact_url_credentials(value):
+    """Redact URL credentials from log and error messages.
+
+    Supports both RFC-compliant URLs and legacy URLs with unescaped
+    password characters.
+    """
+    if not isinstance(value, str):
+        return value
+
+    return re.sub(
+        r"(?P<scheme>[A-Za-z][A-Za-z0-9+.-]*://)"
+        r"(?P<userinfo>(?:[^/?#\s@:]+(?::[^\r\n]*?)?|:[^\r\n]*?))@"
+        r"(?=[^/?#\s@]*(?:[/?#\s]|$))",
+        r"\g<scheme>****:****@",
+        value,
+    )
 
 
 @lru_cache(maxsize=1)
@@ -487,10 +507,14 @@ class FileUtilsBase(object):
                 if protocol in ["ftp", "http", "https"]:
                     if password:
                         hostname = "{u}:{p}@{h}".format(
-                            u=username, p=password, h=hostname
+                            u=quote(username, safe=""),
+                            p=quote(password, safe=""),
+                            h=hostname,
                         )
                 elif protocol in ("scp", "sftp"):
-                    hostname = "{u}@{h}".format(u=username, h=hostname)
+                    hostname = "{u}@{h}".format(
+                        u=quote(username, safe=""), h=hostname
+                    )
 
             # Append port if it's defined
             server_block = self.get_server_block(
@@ -674,7 +698,8 @@ class FileUtilsBase(object):
             except NotImplementedError:
                 raise
             except Exception as exc:
-                logger.warning("File stat error : {}".format(exc))
+                logger.warning("File stat error : {}".format(
+                    redact_url_credentials(str(exc))))
                 result = None
                 prev_result = None
             else:
@@ -690,11 +715,13 @@ class FileUtilsBase(object):
 
         if not result:
             raise Exception(
-                "Failure to check existence and length of file {}.".format(target)
+                "Failure to check existence and length of file {}.".format(
+                    redact_url_credentials(target))
             )
 
         if check_stability and num_consecutive_equal_length_tries < 2:
-            raise Exception("The length of file {} is not stable.".format(target))
+            raise Exception("The length of file {} is not stable.".format(
+                redact_url_credentials(target)))
 
     def copyfile(self, source, destination, timeout_seconds, *args, **kwargs):
         """Copy a single file.
@@ -953,7 +980,8 @@ class FileUtilsBase(object):
             raise Exception(
                 "No valid server address or hostname has been detected in the "
                 "passed URLS '{from_URL}' & '{to_URL}'".format(
-                    from_URL=source, to_URL=destination
+                    from_URL=redact_url_credentials(source),
+                    to_URL=redact_url_credentials(destination)
                 )
             )
 

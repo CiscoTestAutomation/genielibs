@@ -5,6 +5,9 @@ Implementation for http File Utilities.
 import requests
 from requests.exceptions import RequestException
 from pyats.datastructures import AttrDict
+from genie.libs.filetransferutils.bases.fileutils import (
+    redact_url_credentials,
+)
 from genie.libs.filetransferutils.fileutils import FileUtils as FileUtilsLinuxBase
 
 class FileUtils(FileUtilsLinuxBase):
@@ -40,8 +43,10 @@ class FileUtils(FileUtilsLinuxBase):
             file_size = response.headers.get('Content-Length')
         except RequestException as exc:
             raise Exception(
-                f"Failed to get the file size from http server for {target}. Error: {exc}"
-            ) from exc
+                "Failed to get the file size from http server for "
+                f"{redact_url_credentials(target)}. Error: "
+                f"{redact_url_credentials(str(exc))}"
+            ) from None
 
         # Some HTTP servers respond to HEAD (especially after redirects) with
         # Content-Length: 0. As a fallback, do a ranged GET to retrieve the
@@ -74,7 +79,10 @@ class FileUtils(FileUtilsLinuxBase):
                     get_response.close()
 
         if not file_size or not str(file_size).isdigit():
-            raise Exception(f"Unable to determine file size from http server for {target}.")
+            raise Exception(
+                "Unable to determine file size from http server for "
+                f"{redact_url_credentials(target)}."
+            )
 
         result = AttrDict()
         # Construct st_size

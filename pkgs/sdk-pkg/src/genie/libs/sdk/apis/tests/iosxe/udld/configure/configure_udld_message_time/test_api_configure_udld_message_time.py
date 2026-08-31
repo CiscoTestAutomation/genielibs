@@ -1,35 +1,17 @@
-import os
-import unittest
-from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.udld.configure import configure_udld_message_time
+from unittest import TestCase
+from unittest.mock import Mock
+
+from genie.libs.sdk.apis.iosxe.udld.configure import (
+    configure_udld_message_time,
+)
 
 
-class TestConfigureUdldMessageTime(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          stack3-nyquist-1:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: c9300
-            type: c9300
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['stack3-nyquist-1']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureUdldMessageTime(TestCase):
 
     def test_configure_udld_message_time(self):
-        result = configure_udld_message_time(self.device, 18)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+
+        result = configure_udld_message_time(device, 18)
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once_with('udld message time 18')

@@ -1,7 +1,38 @@
 # Python
 import logging
 
+from unicon.core.errors import SubCommandFailure
+
 log = logging.getLogger(__name__)
+
+
+def execute_clear_platform_software_fed_switch_punt_entries(
+        device, switch_number, timeout=60):
+    """Clear FED punt entry counters for a switch.
+
+    Args:
+        device (`obj`): Device object.
+        switch_number (`int`): Switch number whose counters are cleared.
+        timeout (`int`, optional): Command timeout in seconds. Defaults to 60.
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure: If the command cannot be executed.
+    """
+    command = (
+        f"show platform software fed switch {switch_number} "
+        "punt entries clear"
+    )
+
+    try:
+        device.execute(command, timeout=timeout)
+    except SubCommandFailure as error:
+        raise SubCommandFailure(
+            f"Could not clear FED punt entry counters on switch "
+            f"{switch_number} for {device.name}. Error:\n{error}"
+        ) from error
 
 
 def execute_set_config_register(device, config_register, timeout=300):

@@ -3,7 +3,7 @@ import unittest
 from pyats.topology import loader
 from genie.libs.sdk.apis.linux.wsim.execute import run_wsim_config
 
-@unittest.skip('Mock data appears malformed (has expected inputs as part of output)')
+
 class TestRunWsimConfig(unittest.TestCase):
 
     @classmethod
@@ -16,10 +16,10 @@ class TestRunWsimConfig(unittest.TestCase):
                 class: unicon.Unicon
               a:
                 command: mock_device_cli --os linux --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
+                protocol: ssh
             os: linux
             platform: wsim
-            type: None
+            type: linux
         """
         self.testbed = loader.load(testbed)
         self.device = self.testbed.devices['wsim4ca14d90:~$']
@@ -30,6 +30,6 @@ class TestRunWsimConfig(unittest.TestCase):
         )
 
     def test_run_wsim_config(self):
-        result = run_wsim_config(self.device, '600')
-        expected_output = None
+        result = run_wsim_config(self.device, timeout=600)
+        expected_output = True
         self.assertEqual(result, expected_output)

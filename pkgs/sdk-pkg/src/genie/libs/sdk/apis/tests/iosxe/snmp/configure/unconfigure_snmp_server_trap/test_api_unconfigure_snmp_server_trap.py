@@ -1,52 +1,89 @@
-import os
 import unittest
-from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.snmp.configure import unconfigure_snmp_server_trap
+from unittest.mock import Mock
+
+from genie.libs.sdk.apis.iosxe.snmp.configure import (
+    unconfigure_snmp_server_trap,
+)
 
 
 class TestUnconfigureSnmpServerTrap(unittest.TestCase):
 
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          startrek-1:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: C9300X
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['startrek-1']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
+    def test_unconfigure_snmp_server_trap(self):
+        device = Mock()
+
+        result = unconfigure_snmp_server_trap(
+            device,
+            'HundredGigE1/0/27',
+            '70.70.70.2',
+            'traps',
+            '3',
+            'privuser256256',
+            'config',
         )
 
-    def test_unconfigure_snmp_server_trap(self):
-        result = unconfigure_snmp_server_trap(self.device, 'HundredGigE1/0/27', '70.70.70.2', 'traps', '3', 'privuser256256', 'config', None)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        self.assertIsNone(result)
+        device.configure.assert_called_once_with(
+            [
+                'no snmp-server trap-source HundredGigE1/0/27',
+                'no snmp-server enable traps',
+                'no snmp-server host 70.70.70.2 traps version 3 '
+                'priv privuser256256 config',
+            ]
+        )
 
-    def test_unconfigure_snmp_server_trap_1(self):
-        result = unconfigure_snmp_server_trap(self.device, 'HundredGigE1/0/27', '70.70.70.2', 'informs', '3', 'privuser256256', 'config', '800000090300005056BE0829')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+    def test_unconfigure_snmp_server_inform_with_engine_id(self):
+        device = Mock()
 
-    def test_unconfigure_snmp_server_trap_2(self):
-        # 'snmp' is a legitimate IOS-XE trap category; the API must accept it
-        # when used in the category form (no intf/host/version/user/config_type).
-        result = unconfigure_snmp_server_trap(self.device, None, None, 'snmp', None, None, None, None)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        result = unconfigure_snmp_server_trap(
+            device,
+            'HundredGigE1/0/27',
+            '70.70.70.2',
+            'informs',
+            '3',
+            'privuser256256',
+            'config',
+            '800000090300005056BE0829',
+        )
 
-    def test_unconfigure_snmp_server_trap_3(self):
-        result = unconfigure_snmp_server_trap(self.device, None, None, None, None, None, None, None)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        self.assertIsNone(result)
+        device.configure.assert_called_once_with(
+            [
+                'no snmp-server trap-source HundredGigE1/0/27',
+                'no snmp-server enable traps',
+                'no snmp-server host 70.70.70.2 informs version 3 '
+                'priv privuser256256 config',
+                'no snmp-server engineID remote 70.70.70.2 '
+                '800000090300005056BE0829',
+            ]
+        )
+
+    def test_unconfigure_snmp_server_trap_type(self):
+        device = Mock()
+
+        result = unconfigure_snmp_server_trap(
+            device,
+            trap_type='snmp',
+            version=None,
+        )
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once_with(
+            [
+                'no snmp-server enable traps snmp',
+            ]
+        )
+
+    def test_unconfigure_snmp_server_trap_default(self):
+        device = Mock()
+
+        result = unconfigure_snmp_server_trap(
+            device,
+            version=None,
+        )
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once_with(
+            [
+                'no snmp-server enable traps',
+            ]
+        )

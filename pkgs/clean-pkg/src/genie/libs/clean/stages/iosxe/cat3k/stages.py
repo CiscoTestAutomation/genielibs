@@ -2,7 +2,7 @@
 IOSXE cat3k specific clean stages
 '''
 # Genie
-from genie.metaparser.util.schemaengine import Optional
+from genie.metaparser.util.schemaengine import Optional, Or
 from genie.libs.clean.stages.iosxe.stages import (
     InstallImage as IOSXEInstallImage)
 
@@ -52,6 +52,7 @@ install_image:
         Optional('save_system_config'): bool,
         Optional('install_timeout'): int,
         Optional('reload_timeout'): int,
+        Optional('install_space_factor'): Or(int, float),
     }
 
     # ==============================
@@ -63,6 +64,7 @@ install_image:
         'deactivate_manual_boot',
         'save_running_config',
         'verify_boot_variable',
+        'verify_install_space',
         'install_image',
         'wait_for_reload'
     ]

@@ -1,35 +1,44 @@
-import os
 import unittest
-from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.mdns.configure import configure_mdns_sd_service_peer
+from unittest import TestCase
+from unittest.mock import Mock
+
+from genie.libs.sdk.apis.iosxe.mdns.configure import (
+    configure_mdns_sd_service_peer,
+)
 
 
-class TestConfigureMdnsSdServicePeer(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          Vishal_C9600_SP:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: c9600
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['Vishal_C9600_SP']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureMdnsSdServicePeer(TestCase):
 
     def test_configure_mdns_sd_service_peer(self):
-        result = configure_mdns_sd_service_peer(self.device, '10', '10.10.10.1', '30', '60', '10', '100')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.configure.return_value = None
+
+        result = configure_mdns_sd_service_peer(
+            device,
+            "10",
+            "10.10.10.1",
+            "30",
+            "60",
+            "10",
+            "100",
+        )
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once_with(
+            [
+                "mdns-sd gateway",
+                "mode service-peer",
+                "source-interface vlan 10",
+                "sdg-agent 10.10.10.1",
+                "active-response timer 30",
+                "service-announcement-timer periodicity 60",
+                "service-announcement-count 10",
+                "service-query-timer periodicity 60",
+                "service-query-count 10",
+                "rate-limit 100",
+            ]
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()

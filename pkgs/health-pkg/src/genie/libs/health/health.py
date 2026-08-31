@@ -419,7 +419,6 @@ class Health(Blitz):
                         reconnect_interval=reconnect.get('interval', 60))
                 # verify_device_connection returns True(device connected)/False
                 if state:
-                    dev_obj.enable()
                     return dev_obj.name
             return ''
 
@@ -442,6 +441,13 @@ class Health(Blitz):
                 reconnect=[
                     reconnect for i in range(len(set(device_check_list)))
                 ])
+
+            # pcall performs connectivity checks in child processes. Change the
+            # connection state in the parent process so Unicon's state machine
+            # remains synchronized for subsequent health actions.
+            for device in dev_list:
+                if device:
+                    testbed.devices[device].enable()
 
         # return confirmed connected device list
         log.debug('connected device list: {}'.format(dev_list))

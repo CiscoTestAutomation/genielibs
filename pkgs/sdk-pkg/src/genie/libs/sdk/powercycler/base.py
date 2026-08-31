@@ -108,9 +108,11 @@ class PowerCycler(metaclass=PowerCyclerMeta):
         """
         Disconnect from socat
         """
-        if self.proxy_dev and self.socat_pid:
+        proxy_dev = getattr(self, 'proxy_dev', None)
+        socat_pid = getattr(self, 'socat_pid', None)
+        if proxy_dev and socat_pid:
             # Stop the socat relay process
-            self.proxy_dev.api.stop_socat_relay(self.socat_pid)
+            proxy_dev.api.stop_socat_relay(socat_pid)
 
     def proxy_connect(self):
         """

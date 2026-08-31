@@ -1,0 +1,76 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+    system mode insecure: ''
+    show install summary: ''
+  prompt: DNAC-4(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: DNAC-4(config-line)#
+connect:
+  commands:
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
+    Connected to mock_device.
+    Escape character is '^]'.
+  prompt: ''
+execute:
+  commands:
+    clear logging:
+      response:
+      - Clear logging buffer [confirm]
+      response_type: circular
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show interfaces GigabitEthernet0/1/0 switchport:
+      response: |
+        Name: Gi0/1/0
+        Switchport: Enabled
+        Administrative Mode: static access
+        Operational Mode: static access
+        Administrative Trunking Encapsulation: dot1q
+        Operational Trunking Encapsulation: native
+        Negotiation of Trunking: Off
+        Access Mode VLAN: 100 (VLAN0100)
+        Trunking Native Mode VLAN: 1 (default)
+        Administrative Native VLAN tagging: disabled
+        Voice VLAN: none
+        Administrative private-vlan host-association: none
+        Administrative private-vlan mapping: none
+        Administrative private-vlan trunk native VLAN: none
+        Administrative private-vlan trunk Native VLAN tagging: enabled
+        Administrative private-vlan trunk encapsulation: dot1q
+        Administrative private-vlan trunk normal VLANs: none
+        Administrative private-vlan trunk associations: none
+        Administrative private-vlan trunk mappings: none
+        Operational private-vlan: none
+        Trunking VLANs Enabled: ALL
+        Pruning VLANs Enabled: 2-1001
+        Capture Mode Disabled
+        Capture VLANs Allowed: ALL
+
+        Protected: false
+        Unknown unicast blocked: disabled
+        Unknown multicast blocked: disabled
+        Priority for untagged frame: 0
+        Override vlan tag priority: FALSE
+        Appliance trust: none
+      response_type: circular
+    show version: ''
+    show version | include operating mode: ''
+    term length 0: ''
+    term width 0: ''
+    enable: ''
+    show install summary: ''
+  prompt: DNAC-4#
