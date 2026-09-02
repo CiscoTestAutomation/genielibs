@@ -74,6 +74,53 @@ devices:
             ]
             self.assertEqual(set_mock.call_args_list, expected_calls)
 
+    def test_execute_power_off_device_missing_powercycler_host(self):
+        testbed = loader.load("""
+devices:
+  FW-9800-7:
+    connections:
+      defaults:
+        class: unicon.Unicon
+    peripherals:
+      power_cycler:
+        - type: raritan-px2
+          connection_type: snmpv3
+          outlets: [11]
+    os: iosxe
+    platform: c9800
+    type: c9800
+        """)
+
+        with self.assertRaises(Exception) as cm:
+            execute_power_off_device(testbed.devices['FW-9800-7'])
+
+        self.assertEqual(
+            str(cm.exception),
+            "Powercycler host/IP is missing for device 'FW-9800-7'."
+        )
+
+    def test_execute_power_off_device_empty_or_none_powercycler_host(self):
+        for host in (None, ''):
+            device = SimpleNamespace(
+                name='FW-9800-7',
+                peripherals={
+                    'power_cycler': [{
+                        'type': 'raritan-px2',
+                        'connection_type': 'snmpv3',
+                        'host': host,
+                        'outlets': [11],
+                    }],
+                },
+            )
+
+            with self.assertRaises(Exception) as cm:
+                execute_power_off_device(device)
+
+            self.assertEqual(
+                str(cm.exception),
+                "Powercycler host/IP is missing for device 'FW-9800-7'."
+            )
+
 
 class TestExecutePowerCyclerApisMultiplePowerCyclers(unittest.TestCase):
     @classmethod
@@ -378,6 +425,18 @@ class TestPowerCyclerProxyRelayFailures(unittest.TestCase):
             servers={'proxy': object()})
         pc.device = SimpleNamespace(api=MagicMock())
         return pc
+
+    def test_disconnect_partial_powercycler(self):
+        pc = object.__new__(PowerCycler)
+
+        self.assertIsNone(pc.disconnect())
+
+    def test_disconnect_without_socat_pid(self):
+        pc = object.__new__(PowerCycler)
+        pc.proxy_dev = MagicMock()
+
+        self.assertIsNone(pc.disconnect())
+        pc.proxy_dev.api.stop_socat_relay.assert_not_called()
 
     def test_proxy_connect_successful_relay_setup(self):
         proxy_dev = MagicMock()

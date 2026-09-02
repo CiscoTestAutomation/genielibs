@@ -1,34 +1,28 @@
 import unittest
-from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.mdns.configure import configure_controller_policy
+from unittest import TestCase
+from unittest.mock import Mock
+
+from genie.libs.sdk.apis.iosxe.mdns.configure import (
+    configure_controller_policy,
+)
 
 
-class TestConfigureControllerPolicy(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = """
-        devices:
-          C9500H_Sathya:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: c9500
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['C9500H_Sathya']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureControllerPolicy(TestCase):
 
     def test_configure_controller_policy(self):
-        result = configure_controller_policy(self.device, 'DNAC', 'cntrl_list')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.configure.return_value = None
+
+        result = configure_controller_policy(device, "DNAC", "cntrl_list")
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once_with(
+            [
+                "mdns-sd controller service-policy DNAC",
+                "service-list cntrl_list",
+            ]
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()

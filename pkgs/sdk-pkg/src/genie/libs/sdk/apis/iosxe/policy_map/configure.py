@@ -65,7 +65,7 @@ def configure_policy_map(device,
             if 'bandwidth_percent' in class_map:
                 cmd.append(f"bandwidth percent {class_map['bandwidth_percent']}")
             if 'priority_percent' in class_map:
-                cmd.append(f"priority percent {class_map['priority_percent']}")    
+                cmd.append(f"priority percent {class_map['priority_percent']}")
             if 'bandwidth_remaining_percent' in class_map:
                 cmd.append(f"bandwidth remaining percent {class_map['bandwidth_remaining_percent']}")
             if class_map.get('match_mode', None)  and class_map.get('matched_value', None):
@@ -119,7 +119,7 @@ def unconfigure_policy_map(device, policy_name):
             )
         )
 
-def configure_shape_map(device, queue_name=None, class_map_list=[], 
+def configure_shape_map(device, queue_name=None, class_map_list=[],
                         service_policy='service-policy', policy_name=None):
     """ Configures policy_map type queueing
         Args:
@@ -229,7 +229,7 @@ def configure_policy_map_on_device(device, policy_map_name, class_map_name, targ
         raise SubCommandFailure("Could not configure policy-map on device")
 
 def configure_bandwidth_remaining_policy_map(device, policy_names, shape_average,
-                                             class_names=None, bandwidth_list=None, 
+                                             class_names=None, bandwidth_list=None,
                                              bandwidth_remaining=True):
 
     """ Configures policy_map
@@ -282,7 +282,7 @@ def unconfigure_bandwidth_remaining_policy_map(device,policy_names):
     """ Unconfigures policy_map
         Args:
              device ('obj'): device to use
-             policy_names('list) : list of policy-maps i.e. parent and grandparent  
+             policy_names('list) : list of policy-maps i.e. parent and grandparent
         example:
              policy_names=['parent','grandparent']
         Returns:
@@ -390,8 +390,8 @@ def configure_policy_map_with_pps(device, policy_name, class_map_name, police_ra
             SubCommandFailure
     """
     log.info("configure policy_map {policy_name} with {class_map_name} and {police_rate} in pps".format(policy_name=policy_name, class_map_name=class_map_name, police_rate=police_rate))
-    config = [f"policy-map {policy_name}", 
-              f"class {class_map_name}", 
+    config = [f"policy-map {policy_name}",
+              f"class {class_map_name}",
               f"police rate {police_rate} pps"]
     try:
         device.configure(config)
@@ -431,17 +431,17 @@ def unconfigure_table_map_values(device, table_map_name, from_val, to_val):
              device ('obj'): device to use
              table_map_name ('str') : name of the table map  name
              from_val ('int') : list of from values
-             to_val ('int') : list of to values 
+             to_val ('int') : list of to values
         Returns:
             None
         Raises:
             SubCommandFailure
     """
-   
+
     cli = [f'table-map {table_map_name}',
            f'no map from {from_val} to {to_val}']
-  
-    
+
+
     try:
         device.configure(cli)
 
@@ -455,16 +455,16 @@ def configure_table_map_values(device, table_map_name, from_val, to_val):
              device ('obj'): device to use
              table_map_name('str') : name of the table map  name
              from_val ('int') : list of from values
-             to_val ('int') : list of to values 
+             to_val ('int') : list of to values
         Returns:
             None
         Raises:
             SubCommandFailure
     """
-   
+
     cli = [f'table-map {table_map_name}',
            f'map from {from_val} to {to_val}']
-      
+
     try:
         device.configure(cli)
 
@@ -481,7 +481,7 @@ def configure_policy_map_with_dscp_table(device, policy_map_name, class_map_name
         match_mode ('str'): match mode name for cos or dscp
         match_packet ('str'): match packets for qos or dscp
         table_map_name ('str',optional): set packet dscp based on table_map_name
-        
+
     Return:
         None
     Raise:
@@ -493,7 +493,7 @@ def configure_policy_map_with_dscp_table(device, policy_map_name, class_map_name
 
     try:
         device.configure(cli)
-        
+
     except SubCommandFailure as e:
         raise SubCommandFailure(
         "Could not configure policy map with dscp table. Error:\n{error}".format(error=e ))
@@ -534,7 +534,7 @@ def configure_policy_map_with_dscp_police(device, policy_map_name, class_map_nam
         policy_var ('str'): policy-var to configure
         table_map_mode ('str'): table map mode for dscp
         table_map_name ('str',optional): set table_map_name
-        
+
     Return:
         None
     Raise:
@@ -547,7 +547,7 @@ def configure_policy_map_with_dscp_police(device, policy_map_name, class_map_nam
            f'set {table_map_mode} {table_map_mode} table {table_map_name}']
     try:
         device.configure(cli)
-        
+
     except SubCommandFailure as e:
         raise SubCommandFailure(
         f"Could not configure policy map with {table_map_mode} table {table_map_name}. Error:\n{e}")
@@ -558,7 +558,7 @@ def unconfigure_policy_map_with_type_queue(device, policy_type, queue_name):
         device ('obj'): device to use
         policy_type ('str'): Configure Queueing policy type
         queue_name ('str') : queue name to configure
-             
+
     Returns:
         None
     Raises:
@@ -588,16 +588,16 @@ def configure_service_policy_with_queueing_name(device, interface, policy_type, 
     """
     cmd = [f'interface {interface}',
            f'service-policy type {policy_type} output {queue_name}']
-           
+
     try:
         output = device.configure(cmd)
-        
+
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Unable to configure service policy type with {queue_name}. Error:\n{e}")
     return output
 
-def configure_policy_map_on_device(device, policy_map_name, class_map_name, 
+def configure_policy_map_on_device(device, policy_map_name, class_map_name,
                                    target_bit_rate, match_mode=None,match_packets_precedence=None):
     """ Configure policy-map type on Device
     Args:
@@ -613,7 +613,7 @@ def configure_policy_map_on_device(device, policy_map_name, class_map_name,
         SubCommandFailure: Failed configuring policy-map on device
     """
     log.debug("Configuring policy-map on device")
-    
+
     cmd = [
         f"policy-map {policy_map_name}",
         f"class {class_map_name}",
@@ -691,7 +691,7 @@ def configure_hqos_policer_map(device,
     if policer_percent_val:
         cmd.append(f"police cir percent {policer_percent_val} conform-action transmit")
     if police_val and table_map_mode and table_map_name:
-        cmd.append(f"police {police_val} conform-action transmit exceed-action set-dscp-transmit {table_map_mode} table {table_map_name}")         
+        cmd.append(f"police {police_val} conform-action transmit exceed-action set-dscp-transmit {table_map_mode} table {table_map_name}")
     if match_mode and matched_value :
         for mat_mode, mat_value in zip(match_mode, matched_value):
                 cmd.append(f"set {mat_mode} {mat_value}")
@@ -724,7 +724,7 @@ def unconfigure_service_policy_with_queueing_name(device, interface, policy_type
     """
     cmd = [f'interface {interface}',
            f'no service-policy type {policy_type} output {queue_name}']
-    
+
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
@@ -733,27 +733,27 @@ def unconfigure_service_policy_with_queueing_name(device, interface, policy_type
 
 
 def configure_policy_map_class_parameters(
-    device, 
-    policy_name, 
-    class_map_name, 
-    policer_rate=None, 
+    device,
+    policy_name,
+    class_map_name,
+    policer_rate=None,
     cir_rate=None,
-    cir_percent=None, 
-    rate_value=None, 
+    cir_percent=None,
+    rate_value=None,
     rate_percent=None,
     confirm_action=None,
-    confirm_transmit_action=None, 
-    pir_rate=None, 
-    exceed_action=None, 
-    exceed_transmit_action=None, 
-    violate_action=None, 
-    violate_transmit_action=None, 
+    confirm_transmit_action=None,
+    pir_rate=None,
+    exceed_action=None,
+    exceed_transmit_action=None,
+    violate_action=None,
+    violate_transmit_action=None,
     table_map_name=None,
     traffic_class_mode=None,
     traffic_class_table=None
     ):
 
-    """ Configures Policy-map class 
+    """ Configures Policy-map class
         Args:
              device ('obj'): device to use
              policy_name('str) : name of the policy name
@@ -786,7 +786,7 @@ def configure_policy_map_class_parameters(
         if traffic_class_table:
             command += f' table {traffic_class_table}'
         cmd.append(command)
-    
+
     command = ''
     if policer_rate:
         command = f'police {policer_rate}'
@@ -819,34 +819,34 @@ def configure_policy_map_class_parameters(
 
     try:
         device.configure(cmd)
-    
+
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Could not configures Policy-map class. Error:\n{e}")
 
 
 def unconfigure_policy_map_class_parameters(
-    device, 
-    policy_name, 
-    class_map_name, 
-    policer_rate=None, 
+    device,
+    policy_name,
+    class_map_name,
+    policer_rate=None,
     cir_rate=None,
-    cir_percent=None, 
-    rate_value=None, 
+    cir_percent=None,
+    rate_value=None,
     rate_percent=None,
     confirm_action=None,
-    confirm_transmit_action=None, 
-    pir_rate=None, 
-    exceed_action=None, 
-    exceed_transmit_action=None, 
-    violate_action=None, 
-    violate_transmit_action=None, 
+    confirm_transmit_action=None,
+    pir_rate=None,
+    exceed_action=None,
+    exceed_transmit_action=None,
+    violate_action=None,
+    violate_transmit_action=None,
     table_map_name=None,
     traffic_class_mode=None,
     traffic_class_table=None
     ):
 
-    """ Unconfigures Policy-map class 
+    """ Unconfigures Policy-map class
         Args:
              device ('obj'): device to use
              policy_name('str) : name of the policy name
@@ -879,7 +879,7 @@ def unconfigure_policy_map_class_parameters(
         if traffic_class_table:
             command += f' table {traffic_class_table}'
         cmd.append(command)
-    
+
     command = ''
     if policer_rate:
         command = f'no police {policer_rate}'
@@ -912,14 +912,14 @@ def unconfigure_policy_map_class_parameters(
 
     try:
         device.configure(cmd)
-    
+
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Could not unconfigures Policy-map class. Error:\n{e}")
 
 
 def unconfigure_policy_map_class(device, policy_name, class_map_name, policy_map_type=None):
-    """ Unconfigures Policy-map class 
+    """ Unconfigures Policy-map class
         Args:
              device ('obj'): device to use
              policy_name ('str): name of the policy name
@@ -931,7 +931,7 @@ def unconfigure_policy_map_class(device, policy_name, class_map_name, policy_map
             SubCommandFailure
     """
 
-    cmd = [f'policy-map{f" type {policy_map_type}" if policy_map_type else ""} {policy_name}', 
+    cmd = [f'policy-map{f" type {policy_map_type}" if policy_map_type else ""} {policy_name}',
         f'no class {class_map_name}']
 
     try:
@@ -946,7 +946,7 @@ def configure_table_map_on_device(device, table_map_name,from_val,to_val,table_m
              device ('obj'): device to use
              table_map_name('str') : name of the table map  name
              from_val ('int') : list of from values
-             to_val ('int') : list of to values 
+             to_val ('int') : list of to values
              table_map_value('str',optional) : value of the table map (copy/ignore)
         Returns:
             None
@@ -954,20 +954,20 @@ def configure_table_map_on_device(device, table_map_name,from_val,to_val,table_m
             SubCommandFailure
     """
     log.debug("Configuring table_map on device")
-   
+
     cli = [f'table-map {table_map_name}',
            f'map from {from_val} to {to_val}']
-           
+
     if table_map_value:
-        cli.append(f"default {table_map_value}")       
-      
+        cli.append(f"default {table_map_value}")
+
     try:
         device.configure(cli)
 
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Could not configure table_map with {from_val} to {to_val}. Error:\n{e}")
-            
+
 def configure_policy_map_class_precedence(device, policy_map_name,class_map_name,precedence_num):
     """ Configures policy-map with class and precedence
         Args:
@@ -980,13 +980,13 @@ def configure_policy_map_class_precedence(device, policy_map_name,class_map_name
         Raises:
             SubCommandFailure
     """
-    
+
     log.debug("Configuring policy-map with class and precedence on device")
-   
+
     cmd = [f'policy-map {policy_map_name}',
            f'class {class_map_name}',
-           f'set precedence {precedence_num}']   
-      
+           f'set precedence {precedence_num}']
+
     try:
         device.configure(cmd)
 
@@ -1007,19 +1007,19 @@ def unconfigure_policy_map_with_pps(device, policy_name, class_map_name, police_
             SubCommandFailure
     """
     log.info(f"unconfigure policy_map {policy_name} with {class_map_name} and {police_rate} in pps")
-    
-    config = [f"policy-map {policy_name}", 
-              f"class {class_map_name}", 
+
+    config = [f"policy-map {policy_name}",
+              f"class {class_map_name}",
               f"no police rate {police_rate} pps"]
     try:
         device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Could not unconfigure policy_map {policy_name} with {class_map_name} and {police_rate} in pps.  Error:\n{e}")
-            
+
 
 def configure_policy_map_set_cos_cos_table(device, policy_map_name, class_name, table_name):
-    """ 
+    """
     Args:
         device ('obj'): device to use
         policy_map_name ('str'): name of policy-map
@@ -1032,15 +1032,15 @@ def configure_policy_map_set_cos_cos_table(device, policy_map_name, class_name, 
     """
     if class_name == 'class-default':
         config = [
-            "policy-map {}".format(policy_map_name), 
-            "class {}".format(class_name), 
+            "policy-map {}".format(policy_map_name),
+            "class {}".format(class_name),
             "set cos cos table {}".format(table_name)
             ]
     else:
         config = [
-            "class-map {}".format(class_name), 
-            "policy-map {}".format(policy_map_name), 
-            "class {}".format(class_name), 
+            "class-map {}".format(class_name),
+            "policy-map {}".format(policy_map_name),
+            "class {}".format(class_name),
             "set cos cos table {}".format(table_name)
             ]
 
@@ -1050,7 +1050,7 @@ def configure_policy_map_set_cos_cos_table(device, policy_map_name, class_name, 
         raise SubCommandFailure("Could not configure policy map set cos cos table. Error:\n{error}".format(error=e))
 
 def unconfigure_policy_map_set_cos_cos_table(device, policy_map_name, class_name, table_name):
-    """ 
+    """
     Args:
         device ('obj'): device to use
         policy_map_name ('str'): name of policy-map
@@ -1067,8 +1067,8 @@ def unconfigure_policy_map_set_cos_cos_table(device, policy_map_name, class_name
         config.append("class-map {}".format(class_name))
 
     config.extend([
-        "policy-map {}".format(policy_map_name), 
-        "class {}".format(class_name), 
+        "policy-map {}".format(policy_map_name),
+        "class {}".format(class_name),
         "no set cos cos table {}".format(table_name)
     ])
 
@@ -1159,8 +1159,8 @@ def configure_policy_map_with_police_cir_percentage(device, policy_map_name, cla
         Args:
              device ('obj'): device to use
              policy_map_name('str'): Policy-map name
-             class_name('str',optional) : Class-name 
-             percent('int',optional) : police cir percentage  
+             class_name('str',optional) : Class-name
+             percent('int',optional) : police cir percentage
              action('str',optional) : exceed-action to do (drop/transmit)
         Returns:
             None
@@ -1179,14 +1179,14 @@ def configure_policy_map_with_police_cir_percentage(device, policy_map_name, cla
 
     except SubCommandFailure as e:
         raise SubCommandFailure(
-            f"Could not configure policy-map with police cir percentage on device {device}.Error:\n{e}") 
+            f"Could not configure policy-map with police cir percentage on device {device}.Error:\n{e}")
 
 def configure_policy_map_parameters(device, policy_map_name, class_name=None, priority_level=None, bandwidth_remaining_percent=None):
     """ Configure policy-map parameters on device
         Args:
              device ('obj'): device to use
              policy_map_name('str'): Policy-map name
-             class_name('str',optional) : Class-name 
+             class_name('str',optional) : Class-name
              priority_level('int',optional): value of priority queue from 0 to 7
              bandwidth_remaining_percent('int',optional) :bandwidth remaining percent
         Returns:
@@ -1198,24 +1198,24 @@ def configure_policy_map_parameters(device, policy_map_name, class_name=None, pr
 
     config = [f'policy-map type queueing {policy_map_name}']
     if class_name:
-        config.append(f'class {class_name}')  
+        config.append(f'class {class_name}')
     if priority_level:
         config.append(f'priority level {priority_level}')
     if bandwidth_remaining_percent:
-        config.append(f'bandwidth remaining ratio {bandwidth_remaining_percent}')  
+        config.append(f'bandwidth remaining ratio {bandwidth_remaining_percent}')
     try:
         device.configure(config)
 
     except SubCommandFailure as e:
         raise SubCommandFailure(
-            f"Could not configure policy-map parameters on device {device}.Error:\n{e}") 
+            f"Could not configure policy-map parameters on device {device}.Error:\n{e}")
 
 def configure_policy_map_priority_express(device, policy_map_name, class_name=None, rate_kbps=None, percent=None):
     """ Configure policy-map parameters on device
         Args:
              device ('obj'): device to use
              policy_map_name('str'): Policy-map name
-             class_name('str',optional) : Class-name 
+             class_name('str',optional) : Class-name
              rate_kbps('int', optional): Rate in Kilo Bits per second (8-100000000)
              percent('int', optional): Percentage of total bandwidth
         Returns:
@@ -1226,31 +1226,31 @@ def configure_policy_map_priority_express(device, policy_map_name, class_name=No
     log.debug("Configuring policy-map express config on device")
 
     config = [
-            "policy-map {}".format(policy_map_name), 
-            "class {}".format(class_name), 
+            "policy-map {}".format(policy_map_name),
+            "class {}".format(class_name),
             ]
-    
+
     # Build the priority command based on parameters
     priority_cmd = "priority level 1 express"
     if rate_kbps is not None:
         priority_cmd += f" {rate_kbps}"
     elif percent is not None:
         priority_cmd += f" percent {percent}"
-    
+
     config.append(priority_cmd)
     try:
         device.configure(config)
 
     except SubCommandFailure as e:
         raise SubCommandFailure(
-            f"Could not configure policy-map express configuration on device {device}.Error:\n{e}") 
+            f"Could not configure policy-map express configuration on device {device}.Error:\n{e}")
 
 def unconfigure_policy_map_priority_express(device, policy_map_name, class_name=None):
     """ Unconfigure policy-map parameters on device
         Args:
              device ('obj'): device to use
              policy_map_name('str'): Policy-map name
-             class_name('str',optional) : Class-name 
+             class_name('str',optional) : Class-name
         Returns:
             None
         Raises:
@@ -1259,8 +1259,8 @@ def unconfigure_policy_map_priority_express(device, policy_map_name, class_name=
     log.debug("Unconfiguring policy-map express config on device")
 
     config = [
-            "policy-map {}".format(policy_map_name), 
-            "class {}".format(class_name), 
+            "policy-map {}".format(policy_map_name),
+            "class {}".format(class_name),
             "no priority level 1 express"
             ]
     try:
@@ -1268,7 +1268,7 @@ def unconfigure_policy_map_priority_express(device, policy_map_name, class_name=
 
     except SubCommandFailure as e:
         raise SubCommandFailure(
-            f"Could not unconfigure policy-map express configuration on device {device}.Error:\n{e}") 
+            f"Could not unconfigure policy-map express configuration on device {device}.Error:\n{e}")
 
 def default_policy_map(device, policy_map, policy_type=None):
     """
@@ -1310,7 +1310,7 @@ def default_attribute_service_map(device, parameter_map=None, parameter_type=Non
     Raises:
         SubCommandFailure: If command fails to execute on the device
     """
-    
+
     log.debug(f"Attempting to default attribute parameter-map {parameter_map}")
     cmd = []
     if parameter_type == "subscriber":
@@ -1348,7 +1348,7 @@ def unconfigure_policy_map_shape_on_device(device, policy_map_name, class_map_na
         device (`obj`): Device object
         policy_map_name ('str'): policy-map name to configure
         class_map_name ('str'): class map name to configure
-        
+
     Return:
         None
     Raise:
@@ -1524,4 +1524,83 @@ def unconfigure_class_map_type_control(device, class_name,
         raise SubCommandFailure(
             f"Failed to unconfigure class-map type control "
             f"{class_name}. Error: {e}"
+        )
+
+
+def configure_policy_map_type_inspect(
+        device,
+        policy_map_name,
+        class_map_name,
+        action,
+        log_param=None,
+        reset_actions=True):
+    """ Configure 'policy-map type inspect' with a class action (ZBFW)
+
+        Args:
+            device ('obj'): Device object
+            policy_map_name ('str'): Name of the inspect policy-map
+            class_map_name ('str'): Inspect class-map to reference
+            action ('str'): Class action - 'inspect', 'pass' or 'drop'
+            log_param ('str', optional): Parameter-map / keyword appended to
+                the action (e.g. inspect parameter-map). Defaults to None
+            reset_actions ('bool', optional): Issue 'no inspect', 'no pass',
+                'no drop' before setting the action. Defaults to True
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [
+        f"policy-map type inspect {policy_map_name}",
+        f"class type inspect {class_map_name}",
+    ]
+    if reset_actions:
+        cmd.append("no inspect")
+        cmd.append("no pass")
+        cmd.append("no drop")
+    if log_param is not None:
+        cmd.append(f"{action} {log_param}")
+    else:
+        cmd.append(f"{action}")
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure policy-map type inspect "
+            f"{policy_map_name}. Error:\n{e}"
+        )
+
+
+def unconfigure_policy_map_type_inspect(
+        device,
+        policy_map_name,
+        class_map_name=None,
+        remove_policy_map=True):
+    """ Unconfigure 'policy-map type inspect' (ZBFW)
+
+        Args:
+            device ('obj'): Device object
+            policy_map_name ('str'): Name of the inspect policy-map
+            class_map_name ('str', optional): Inspect class-map to remove
+                from the policy-map. Defaults to None
+            remove_policy_map ('bool', optional): Also delete the policy-map
+                with 'no policy-map type inspect ...'. Defaults to True
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = []
+    if class_map_name is not None:
+        cmd.append(f"policy-map type inspect {policy_map_name}")
+        cmd.append(f"no class type inspect {class_map_name}")
+        cmd.append("exit")
+    if remove_policy_map:
+        cmd.append(f"no policy-map type inspect {policy_map_name}")
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure policy-map type inspect "
+            f"{policy_map_name}. Error:\n{e}"
         )

@@ -1,5 +1,6 @@
 
 import logging
+from collections.abc import Mapping
 from contextlib import contextmanager
 import re
 import time
@@ -11,6 +12,103 @@ from unicon.core.errors import ConnectionError
 
 
 log = logging.getLogger(__name__)
+
+
+def get_tftp_server_address(device):
+    """Select a TFTP server address from the device testbed.
+
+    TFTP services with an ``order`` value take precedence, with the lowest
+    numeric order selected first. The function then falls back to an unordered
+    TFTP service, a server using the legacy top-level ``protocol: tftp`` form,
+    and finally the address of the legacy server named ``tftp``.
+
+    Args:
+        device (obj): Device whose testbed server data should be searched.
+
+    Returns:
+        str: Selected TFTP server address, or an empty string when unavailable.
+    """
+    servers = getattr(getattr(device, 'testbed', None), 'servers', {}) or {}
+    if not isinstance(servers, Mapping):
+        return ''
+
+    ordered_servers = []
+    unordered_servers = []
+    legacy_servers = []
+
+    for server in servers.values():
+        address = server.get('address')
+        if not address:
+            continue
+
+        tftp_services = [
+            service for service in (server.get('services', {}) or {}).values()
+            if service.get('protocol') == 'tftp'
+        ]
+        for service in tftp_services:
+            order = service.get('order')
+            if order is None:
+                unordered_servers.append(address)
+            else:
+                ordered_servers.append((order, address))
+
+        if not tftp_services and server.get('protocol') == 'tftp':
+            legacy_servers.append(address)
+
+    if ordered_servers:
+        def order_key(server):
+            order = server[0]
+            try:
+                return (0, float(order))
+            except (TypeError, ValueError):
+                return (1, str(order))
+
+        ordered_servers.sort(key=order_key)
+        return ordered_servers[0][1]
+
+    if unordered_servers:
+        return unordered_servers[0]
+
+    if legacy_servers:
+        return legacy_servers[0]
+
+    return servers.get('tftp', {}).get('address', '')
+
+
+def get_recovery_tftp_server(device):
+    """Get the clean recovery TFTP server, falling back to testbed services.
+
+    Args:
+        device (obj): Device containing clean and testbed server data.
+
+    Returns:
+        str: Recovery TFTP server name or address, or an empty string when no
+            TFTP server is available.
+    """
+    clean = getattr(device, 'clean', None)
+    if not isinstance(clean, Mapping):
+        clean = {}
+
+    recovery = clean.get('device_recovery', {}) or {}
+    if not isinstance(recovery, Mapping):
+        recovery = {}
+
+    tftp_boot = recovery.get('tftp_boot', {}) or {}
+    if not isinstance(tftp_boot, Mapping):
+        tftp_boot = {}
+
+    tftp_server = tftp_boot.get('tftp_server', '')
+    if tftp_server:
+        log.info(
+            'Using recovery TFTP server %s from clean data for device %s',
+            tftp_server, device.name)
+        return tftp_server
+
+    log.warning(
+        'No recovery TFTP server found in clean data for device %s; '
+        'falling back to testbed services', device.name)
+    return get_tftp_server_address(device)
+
 
 @contextmanager
 def ensure_connection(device):
@@ -149,3 +247,19 @@ def device_connection_provider_connect(device):
     """
     device.sendline()
     device.connection_provider.connect()
+
+
+_SYSLOG_MONTHS = {'jan', 'feb', 'mar', 'apr', 'may', 'jun',
+                  'jul', 'aug', 'sep', 'oct', 'nov', 'dec'}
+
+
+def _is_syslog_line(line):
+    """Return True if line looks like a syslog message that should be stripped."""
+    stripped = line.strip().lstrip('.*')
+    parts = stripped.split()
+    if len(parts) >= 1 and parts[0].lower() in _SYSLOG_MONTHS:
+        return True
+    if '%' in line and '-' in line:
+        if re.search(r'%[A-Z_]+-\d+-[A-Z_]+:', line):
+            return True
+    return False

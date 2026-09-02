@@ -64,5 +64,74 @@ class TestCollectInstallLog(unittest.TestCase):
                 error_msg = mock_log.error.call_args[0][0]
                 self.assertIn("Failed to copy the install failure logs to runinfo directory", error_msg)
 
+    @patch(
+        'genie.libs.sdk.apis.iosxe.support'
+        '.tech_support'
+        '.recover_device_to_enable_state')
+    @patch('genie.libs.sdk.apis.iosxe.support.tech_support.log')
+    @patch('genie.libs.sdk.apis.iosxe.support.tech_support.get_default_dir')
+    @patch('genie.libs.sdk.apis.iosxe.support.tech_support.datetime')
+    def test_reconnect_true_recovers(
+            self, mock_datetime, mock_get_default_dir, mock_log,
+            mock_recover):
+        mock_datetime.utcnow.return_value.strftime.return_value = (
+            "20250101T000000000")
+        mock_get_default_dir.return_value = "flash:"
+        with patch.object(
+                type(runtime), 'directory',
+                new_callable=PropertyMock) as mock_dir:
+            mock_dir.return_value = "/tmp"
+            device = MagicMock()
+            device.execute.side_effect = [
+                None, None, None,
+                "Done with creation of the archive file:[flash:archive.tar.gz]",
+            ]
+
+            with patch('re.search') as mock_search:
+                mock_match = MagicMock()
+                mock_match.group.return_value = "flash:archive.tar.gz"
+                mock_search.return_value = mock_match
+                collect_install_log(
+                    device, reconnect=True, reconnect_timeout=150)
+
+                mock_recover.assert_called_once_with(device, timeout=150)
+
+    @patch(
+        'genie.libs.sdk.apis.iosxe.support'
+        '.tech_support'
+        '.recover_device_to_enable_state')
+    def test_reconnect_false_skips_recovery(
+            self, mock_recover):
+        device = MagicMock()
+        device.execute.side_effect = [
+            None, None, None,
+            "Done with creation of the archive file:[flash:archive.tar.gz]",
+        ]
+        with patch('re.search') as mock_search:
+            mock_match = MagicMock()
+            mock_match.group.return_value = "flash:archive.tar.gz"
+            mock_search.return_value = mock_match
+            collect_install_log(device)
+
+        mock_recover.assert_not_called()
+
+    @patch(
+        'genie.libs.sdk.apis.iosxe.support'
+        '.tech_support'
+        '.recover_device_to_enable_state')
+    def test_propagates_recovery_failure(
+            self, mock_recover):
+        # A failure while resynchronizing (e.g. could not reach enable
+        # mode) must propagate so the caller can preserve/log it without
+        # masking the original install error.
+        mock_recover.side_effect = RuntimeError('device did not reach enable mode')
+        device = MagicMock()
+
+        with self.assertRaises(RuntimeError):
+            collect_install_log(device, reconnect=True)
+
+        device.execute.assert_not_called()
+
+
 if __name__ == '__main__':
     unittest.main()

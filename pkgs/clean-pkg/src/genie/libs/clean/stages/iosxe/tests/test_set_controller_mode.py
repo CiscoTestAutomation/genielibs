@@ -1,7 +1,7 @@
 import logging
 import unittest
 
-from unittest.mock import Mock, MagicMock, patch
+from unittest.mock import Mock, MagicMock
 from collections import OrderedDict
 
 from genie.libs.clean.stages.iosxe.stages import SetControllerMode
@@ -38,7 +38,8 @@ class SetControllermode(unittest.TestCase):
         self.device.connect = Mock()
         self.device.execute = Mock()
         self.device.parse = Mock()
-        self.device.api.get_username_password = Mock(return_value=('admin', 'admin'))
+        self.device.api.get_username_password = Mock(
+            return_value=('admin', 'admin'))
 
         # Call the method to be tested (clean step inside class)
         self.cls.set_controller_mode(
@@ -47,6 +48,79 @@ class SetControllermode(unittest.TestCase):
 
         # Check that the result is expected
         self.assertEqual(Passed, steps.details[0].result)
+
+    def test_includes_platform_reload_dialog_for_grub_handling(self):
+        """Verify the stage appends the platform's reload dialog so that
+        devices entering the grub prompt are handled by the Unicon
+        platform layer rather than hardcoded clean stage logic."""
+        steps = Steps()
+        self.device.connect = Mock()
+        self.device.execute = Mock()
+        self.device.parse = Mock()
+        self.device.api.get_username_password = Mock(
+            return_value=('admin', 'admin'))
+
+        # Use the real C8KV reload service dialog which contains
+        # boot_from_rommon_stmt and grub_prompt_stmt.
+        from unicon.eal.dialogs import Dialog
+        from unicon.plugins.iosxe.c8kv.statements import \
+            boot_from_rommon_stmt
+        from unicon.plugins.iosxe.statements import grub_prompt_stmt
+        from unicon.plugins.generic.service_statements import \
+            reload_statement_list
+        from unicon.plugins.generic.statements import \
+            default_statement_list
+        reload_dialog = Dialog(
+            [boot_from_rommon_stmt, grub_prompt_stmt]
+            + reload_statement_list
+            + default_statement_list)
+        self.device.reload = Mock()
+        self.device.reload.dialog = reload_dialog
+
+        self.cls.set_controller_mode(
+            steps=steps, device=self.device, mode='disable')
+
+        dialog = self.device.execute.call_args.kwargs['service_dialog']
+        patterns = [stmt.pattern for stmt in dialog]
+
+        # The C8KV reload dialog's grub prompt statement must be present
+        self.assertIn(grub_prompt_stmt.pattern, patterns)
+        # The C8KV boot_from_rommon_stmt must be present
+        self.assertIn(boot_from_rommon_stmt.pattern, patterns)
+
+    def test_default_admin_password_change_handled(self):
+        """Verify the stage keeps targeted handlers for the default-admin
+        password change forced after the NVRAM reset."""
+        steps = Steps()
+        self.device.connect = Mock()
+        self.device.execute = Mock()
+        self.device.parse = Mock()
+        self.device.api.get_username_password = Mock(
+            return_value=('admin', 'Secret123'))
+
+        self.cls.set_controller_mode(
+            steps=steps, device=self.device, mode='disable')
+
+        dialog = self.device.execute.call_args.kwargs['service_dialog']
+        statements = {stmt.pattern: stmt for stmt in dialog}
+
+        # controller-mode confirmation prompts
+        self.assertIn(r"Continue\? \[confirm\]", statements)
+        self.assertIn(r"Do you want to abort\? \(yes/\[no\]\):", statements)
+
+        def sent_value(pattern):
+            """Run the statement action and return what was sent."""
+            spawn = Mock()
+            stmt = statements[pattern]
+            stmt.action(spawn, **stmt.args)
+            return spawn.sendline.call_args.args[0]
+
+        # factory-default credentials are sent, not the testbed ones
+        self.assertEqual('admin', sent_value(r"Username:"))
+        self.assertEqual('admin', sent_value(r"Password:"))
+        # the configured password is used for the forced password change
+        self.assertEqual('Secret123', sent_value(r"Enter new password:"))
+        self.assertEqual('Secret123', sent_value(r"Confirm password:"))
 
     def test_skipped(self):
         # Make sure we have a unique Steps() object for result verification
@@ -59,7 +133,6 @@ class SetControllermode(unittest.TestCase):
         self.device.parse = MagicMock()
         d = {'version': {'router_operating_mode': 'Controller-Managed'}}
         self.device.parse.return_value = d
-        self.device.api.get_username_password = Mock(return_value=('admin', 'admin'))
 
         # Call the method to be tested (clean step inside class)
         # Assert it raises a skipped signal
@@ -167,7 +240,7 @@ class ConfirmAndSetDefault(unittest.TestCase):
 
         # Check that the result is expected
         self.assertEqual(Passed, steps.details[0].result)
-        
+
 
     def test_fail_inactive_version(self):
         # Make sure we have a unique Steps() object for result verification

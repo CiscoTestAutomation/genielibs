@@ -1,5 +1,9 @@
 import unittest
 from unittest.mock import Mock
+
+from genie.libs.sdk.apis.iosxe.cat9k.c9200.rommon.get import (
+    get_recovery_details as c9200_get_recovery_details,
+)
 from genie.libs.sdk.apis.iosxe.cat9k.c9200.c9200_48p.rommon.get import get_recovery_details
 
 
@@ -33,6 +37,7 @@ class TestGetRecoveryDetailsBoth(unittest.TestCase):
 
     def test_get_recovery_details_both(self):
         """Verify both golden image and TFTP boot info are returned."""
+        self.assertIs(get_recovery_details, c9200_get_recovery_details)
         result = get_recovery_details(self.device)
 
         expected = {
@@ -45,4 +50,3 @@ class TestGetRecoveryDetailsBoth(unittest.TestCase):
         }
         
         self.assertEqual(result, expected)
-

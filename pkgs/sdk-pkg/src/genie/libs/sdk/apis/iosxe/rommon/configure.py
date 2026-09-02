@@ -5,8 +5,10 @@ log = logging.getLogger(__name__)
 # Unicon
 from unicon.core.errors import SubCommandFailure
 from genie.libs.clean.utils import get_image_handler
+from genie.libs.sdk.libs.utils.utils import get_recovery_tftp_server
 import ipaddress
 from ipaddress import IPv4Address, IPv6Address, IPv4Interface, IPv6Interface, ip_interface
+
 
 def configure_rommon_tftp(device, use_ipv6=False, image_path=None):
     """configure_rommon_tftp 
@@ -68,13 +70,7 @@ def configure_rommon_tftp(device, use_ipv6=False, image_path=None):
     tftp.setdefault("IP_SUBNET_MASK", subnet_mask)
     tftp.setdefault("DEFAULT_GATEWAY", str(device.management.get('gateway', {}).get(ip, '')))
 
-    if hasattr(device, 'clean') and hasattr(device.clean, 'device_recovery'):
-        tftp_server = device.clean.get('device_recovery', {}).get('tftp_boot', {}).get('tftp_server', '')
-    else:
-        log.warning(f'There is no recovery info for device {device.name} in clean yaml')
-        log.warning('Falling back to get the tftp server info from the testbed server')
-        tftp_server = device.testbed.servers.get('tftp', {}).get('address', '')
-
+    tftp_server = get_recovery_tftp_server(device)
     tftp.setdefault("TFTP_SERVER", str(tftp_server))
 
     # get the image from clean data
@@ -207,13 +203,7 @@ def configure_rommon_tftp_ha(device, use_ipv6=False, image_path=None):
             else:
                 gateway_ip = str(gateway_dict.get('ipv4'))
 
-            if hasattr(device, 'clean') and hasattr(device.clean, 'device_recovery'):
-                tftp_server = device.clean.get('device_recovery', {}).get('tftp_boot', {}).get('tftp_server', '')
-            else:
-                log.warning(f'There is no recovery info for device {device.name} in clean yaml')
-                log.warning('Falling back to get the tftp server info from the testbed server')
-                tftp_server = device.testbed.servers.get('tftp', {}).get('address', '')
-
+            tftp_server = get_recovery_tftp_server(device)
             tftp.update({
                 "IP_ADDRESS": ip_address,
                 "IP_SUBNET_MASK": subnet_mask,

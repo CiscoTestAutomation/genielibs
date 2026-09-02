@@ -1366,3 +1366,33 @@ def unconfigure_vrf_ipv6_unicast_map_allow_evpn(device, vrf_name, export_map=Non
         raise SubCommandFailure(
             f"Could not remove IPv6 route leaking with allow-evpn on VRF {vrf_name}.\nError:{e}"
         )
+
+def configure_ip_vrf(device, vrf_name, rd_val=None, rt_type=None, rt_val=None):
+    """ Create ip vrf
+        Args:
+            device ('obj'): device to use
+            vrf_name ('str'): vrf name
+            rd_val ('str', optional): rd value; Eg: ASN:nn, IP-address:nn or 4BASN:nn
+            rt_type ('str', optional): rt_type; Eg: import/export/both
+            rt_val ('str', optional): rt value; Eg: ASN:nn or IP-address:nn
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [f"ip vrf {vrf_name}"]
+
+    if rd_val:
+        cmd.append(f'rd {rd_val}')
+
+    if rt_type and rt_val:
+        cmd.append(f'route-target {rt_type} {rt_val}')
+
+    log.debug("Configuring ip vrf")
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(
+            "Failed to configure ip vrf"
+        )

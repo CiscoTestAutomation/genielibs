@@ -3260,7 +3260,10 @@ def configure_ip_on_tunnel_interface(
     out_vrf=None,
     acl_name=None,
     tunnel_protocol=None,
-    ip_mode = 'ipv4'
+    ip_mode = 'ipv4',
+    tunnel_key_val=None,
+    path_mtu_disc=False,
+    path_mtu_disc_val=None,
 ):
     """ Configure tunnel interface
         Args:
@@ -3282,6 +3285,9 @@ def configure_ip_on_tunnel_interface(
             acl_name('str',optional): acl policy applied on tunnel inetrface
             tunnel_protocol ('str',optional): Protocol type (i.e ipv4)
             ip_mode ('str',optional): gre mode i.e ip or ipv4 (Default is ipv4)
+            tunnel_key_val ('str', optional): tunnel key value
+            path_mtu_disc ('boolean', optional): tunnel path_mtu_discovery
+            path_mtu_disc_val ('str', optional): tunnel path-mtu-discovery value
 
         Returns:
             None
@@ -3320,6 +3326,13 @@ def configure_ip_on_tunnel_interface(
                        format(tunnel_protection=tunnel_protection,profile=profile))
     if tunnel_protection is not None and tunnel_protocol == 'ipv4' and acl_name is not None:
         configs.append(f"tunnel protection {tunnel_protection} policy {tunnel_protocol} {acl_name}")
+    if tunnel_key_val:
+        configs.append(f'tunnel key {tunnel_key_val}')
+    if path_mtu_disc or path_mtu_disc_val:
+        if path_mtu_disc_val:
+            configs.append(f'tunnel path-mtu-discovery {path_mtu_disc_val}')
+        else:
+            configs.append('tunnel path-mtu-discovery')
     try:
         device.configure(configs)
     except SubCommandFailure as e:

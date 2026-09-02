@@ -1,8 +1,10 @@
 import unittest
+from unittest.mock import ANY, Mock
 
-from pyats.results import Passed
-from pyats.topology import loader
 from pyats.aetest.steps import Steps
+from pyats.aetest.signals import TerminateStepSignal
+from pyats.results import Failed, Passed
+from pyats.topology import loader
 from genie.libs.clean.stages.iosxe.stages import InstallRemoveInactive
 
 
@@ -110,3 +112,24 @@ class TestIosXEConnect(unittest.TestCase):
 
         # Check the results is as expected.
         self.assertEqual(Passed, self.steps.details[0].result)
+
+    def test_install_remove_inactive_timeout_fails_without_prompt_recovery(
+        self,
+    ):
+        device = Mock()
+        device.execute.side_effect = TimeoutError
+
+        with self.assertRaises(TerminateStepSignal):
+            self.install_remove_inactive.remove_inactive_pkgs(
+                steps=self.steps,
+                device=device,
+                images=[self.image],
+            )
+
+        self.assertEqual(Failed, self.steps.details[0].result)
+        device.execute.assert_called_once_with(
+            "install remove inactive",
+            service_dialog=ANY,
+            timeout=180,
+            prompt_recovery=False,
+        )

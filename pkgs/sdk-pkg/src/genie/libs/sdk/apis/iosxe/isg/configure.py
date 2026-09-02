@@ -272,3 +272,328 @@ def unconfigure_ip_portbundle(device):
             f"Failed to unconfigure ip portbundle on device "
             f"{device.name}. Error: {e}"
         )
+
+
+def configure_policy_map_type_service_default_l4r_redirect(
+        device,
+        policy_map_name='DEFAULT_L4R_REDIRECT_SERVICE',
+        class_name='DEFAULT_L4R_REDIRECT_TC',
+        group_name='DEFAULT_L4R_REDIRECT_GROUP',
+        sequence=15):
+    """ Configure ISG default L4R redirect service policy-map
+
+        Args:
+            device (`obj`): Device object
+            policy_map_name (`str`, optional): Policy-map name.
+                Defaults to 'DEFAULT_L4R_REDIRECT_SERVICE'
+            class_name (`str`, optional): Traffic class-map name.
+                Defaults to 'DEFAULT_L4R_REDIRECT_TC'
+            group_name (`str`, optional): Redirect server-group name.
+                Defaults to 'DEFAULT_L4R_REDIRECT_GROUP'
+            sequence (`int` or `str`, optional): Class sequence.
+                Defaults to 15
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [
+        f"policy-map type service {policy_map_name}",
+        f" {sequence} class type traffic {class_name}",
+        f"  redirect to group {group_name}",
+    ]
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure default L4R redirect service policy-map "
+            f"{policy_map_name}. Error: {e}"
+        )
+
+
+def configure_policy_map_type_service_smtp_redirect(
+        device,
+        policy_map_name='SMTP_REDIRECT_SERVICE',
+        class_name='SMTP_REDIRECT_TC',
+        group_name='SMTP_REDIRECT_GROUP',
+        sequence=15):
+    """ Configure ISG SMTP redirect service policy-map
+
+        Args:
+            device (`obj`): Device object
+            policy_map_name (`str`, optional): Policy-map name.
+                Defaults to 'SMTP_REDIRECT_SERVICE'
+            class_name (`str`, optional): Traffic class-map name.
+                Defaults to 'SMTP_REDIRECT_TC'
+            group_name (`str`, optional): Redirect server-group name.
+                Defaults to 'SMTP_REDIRECT_GROUP'
+            sequence (`int` or `str`, optional): Class sequence.
+                Defaults to 15
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [
+        f"policy-map type service {policy_map_name}",
+        f" {sequence} class type traffic {class_name}",
+        f"  redirect to group {group_name}",
+    ]
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure SMTP redirect service policy-map "
+            f"{policy_map_name}. Error: {e}"
+        )
+
+
+def configure_class_map_type_control_isg(device, class_name,
+                                         match_type='match-all',
+                                         matches=None):
+    """ Configure ISG class-map type control on device
+
+        Args:
+            device (`obj`): Device object
+            class_name (`str`): Class-map name
+            match_type (`str`, optional): Match type. Defaults to 'match-all'
+            matches (`list`, optional): Match commands without indentation.
+                For example:
+                    ['match vlan 130', 'match vlan 140']
+                    ['match service-name DEFAULT_L4R_REDIRECT_SERVICE']
+                    ['available remote-id',
+                     'match not remote-id unauthenticated']
+                Defaults to None
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [f"class-map type control {match_type} {class_name}"]
+    if matches:
+        for match in matches:
+            cmd.append(f" {str(match).strip()}")
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure ISG class-map type control "
+            f"{class_name}. Error: {e}"
+        )
+
+
+def configure_redirect_server_group_without_port(device, group_name,
+                                                 ip_address):
+    """ Configure redirect server-group with server IP and no port
+
+        Args:
+            device (`obj`): Device object
+            group_name (`str`): Server group name
+            ip_address (`str`): Server IP address
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [
+        f"redirect server-group {group_name}",
+        f" server ip {ip_address}",
+    ]
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure redirect server-group {group_name} "
+            f"without port. Error: {e}"
+        )
+
+
+def configure_policy_map_type_service_secure_dhcp_class(
+        device,
+        policy_map_name='SECURE_DHCP_CLASS',
+        classname='orange_secure'):
+    """ Configure ISG secure DHCP class service policy-map
+
+        Args:
+            device (`obj`): Device object
+            policy_map_name (`str`, optional): Policy-map name.
+                Defaults to 'SECURE_DHCP_CLASS'
+            classname (`str`, optional): Classname value.
+                Defaults to 'orange_secure'
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [
+        f"policy-map type service {policy_map_name}",
+        f" classname {classname}",
+    ]
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure secure DHCP service policy-map "
+            f"{policy_map_name}. Error: {e}"
+        )
+
+
+def configure_policy_map_type_service_opengarden(
+        device,
+        policy_map_name='OPENGARDEN_SERVICE',
+        class_name='OPENGARDEN_TC',
+        sequence=10,
+        default_direction='input'):
+    """ Configure ISG opengarden service policy-map
+
+        Args:
+            device (`obj`): Device object
+            policy_map_name (`str`, optional): Policy-map name.
+                Defaults to 'OPENGARDEN_SERVICE'
+            class_name (`str`, optional): Traffic class-map name.
+                Defaults to 'OPENGARDEN_TC'
+            sequence (`int` or `str`, optional): Class sequence.
+                Defaults to 10
+            default_direction (`str`, optional): Default class direction.
+                Defaults to 'input'
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [
+        f"policy-map type service {policy_map_name}",
+        f" {sequence} class type traffic {class_name}",
+        f" class type traffic default {default_direction}",
+        "  drop",
+    ]
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure opengarden service policy-map "
+            f"{policy_map_name}. Error: {e}"
+        )
+
+
+def configure_policy_map_type_service_https_l4r_redirect(
+        device,
+        policy_map_name='HTTPS_L4R_REDIRECT_SERVICE',
+        class_name='HTTPS_L4R_REDIRECT_TC',
+        group_name='HTTPS_L4R_REDIRECT_GROUP',
+        sequence=25):
+    """ Configure ISG HTTPS L4R redirect service policy-map
+
+        Args:
+            device (`obj`): Device object
+            policy_map_name (`str`, optional): Policy-map name.
+                Defaults to 'HTTPS_L4R_REDIRECT_SERVICE'
+            class_name (`str`, optional): Traffic class-map name.
+                Defaults to 'HTTPS_L4R_REDIRECT_TC'
+            group_name (`str`, optional): Redirect server-group name.
+                Defaults to 'HTTPS_L4R_REDIRECT_GROUP'
+            sequence (`int` or `str`, optional): Class sequence.
+                Defaults to 25
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [
+        f"policy-map type service {policy_map_name}",
+        f" {sequence} class type traffic {class_name}",
+        f"  redirect to group {group_name}",
+    ]
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure HTTPS L4R redirect service policy-map "
+            f"{policy_map_name}. Error: {e}"
+        )
+
+
+def configure_policy_map_type_service_web_proxy_redirect(
+        device,
+        policy_map_name='WEB_PROXY_REDIRECT_SERVICE',
+        class_name='WEB_PROXY_REDIRECT_TC',
+        group_name='WEB_PROXY_REDIRECT_GROUP',
+        sequence=10):
+    """ Configure ISG web proxy redirect service policy-map
+
+        Args:
+            device (`obj`): Device object
+            policy_map_name (`str`, optional): Policy-map name.
+                Defaults to 'WEB_PROXY_REDIRECT_SERVICE'
+            class_name (`str`, optional): Traffic class-map name.
+                Defaults to 'WEB_PROXY_REDIRECT_TC'
+            group_name (`str`, optional): Redirect server-group name.
+                Defaults to 'WEB_PROXY_REDIRECT_GROUP'
+            sequence (`int` or `str`, optional): Class sequence.
+                Defaults to 10
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [
+        f"policy-map type service {policy_map_name}",
+        f" {sequence} class type traffic {class_name}",
+        f"  redirect to group {group_name}",
+    ]
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure web proxy redirect service policy-map "
+            f"{policy_map_name}. Error: {e}"
+        )
+
+
+def configure_policy_map_type_service_arp_keepalive(
+        device,
+        policy_map_name='ARP_KEEPALIVE',
+        idle=35,
+        attempts=10,
+        interval=20,
+        protocol='ARP'):
+    """ Configure ISG ARP keepalive service policy-map
+
+        Args:
+            device (`obj`): Device object
+            policy_map_name (`str`, optional): Policy-map name.
+                Defaults to 'ARP_KEEPALIVE'
+            idle (`int` or `str`, optional): Idle value. Defaults to 35
+            attempts (`int` or `str`, optional): Attempts value.
+                Defaults to 10
+            interval (`int` or `str`, optional): Interval value.
+                Defaults to 20
+            protocol (`str`, optional): Keepalive protocol. Defaults to 'ARP'
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = [
+        f"policy-map type service {policy_map_name}",
+        (
+            f" keepalive idle {idle} attempts {attempts} interval "
+            f"{interval} protocol {protocol}"
+        ),
+    ]
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure ARP keepalive service policy-map "
+            f"{policy_map_name}. Error: {e}"
+        )

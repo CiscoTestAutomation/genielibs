@@ -16,6 +16,7 @@ from pyats.aetest.signals import TerminateStepSignal, AEtestSkippedSignal, AEtes
 
 import unicon
 from unicon.eal.dialogs import Statement, Dialog
+from unicon.core.errors import TimeoutError as UniconTimeoutError
 
 # Disable logging. It may be useful to comment this out when developing tests.
 logging.disable(logging.CRITICAL)
@@ -548,7 +549,13 @@ class TestInstallImage(unittest.TestCase):
     @patch('genie.libs.clean.stages.iosxe.stages.Dialog')
     def test_iosxe_install_image_pass_retries_not_enough_space(self, dialog):
         reload_dialog = Mock()
-        dialog.return_value = reload_dialog
+        dialog_statements = []
+
+        def _dialog(statements):
+            dialog_statements.append(statements)
+            return reload_dialog
+
+        dialog.side_effect = _dialog
         steps = Steps()
         cls = InstallImage()
         cls.history = MagicMock()
@@ -560,11 +567,32 @@ iso   rp 0 0   rp_base cat9k-2.pkg'''
         
         device = create_test_device('PE1', os='iosxe')
         device.reload = Mock()
-        device.space_required = 5
         device.spawn = Mock()
-        device.clean_space = True
         device.is_ha = False
-        device.execute = Mock(side_effect=[Exception('Not enough space'),'Directory of bootflash:/',package_data,"bootflash", "", ""])
+        execute_responses = iter([
+            'Directory of bootflash:/', package_data, "bootflash", "", ""
+        ])
+
+        def _execute(cmd, **kwargs):
+            if (cmd == 'install add file bootflash:/image.bin activate '
+                    'commit prompt-level none' and not hasattr(device, 'space_required')):
+                output = (
+                    'FAILED: flash: requires 455144 KB of free space, '
+                    'but only 99460 KB is available\n'
+                    'FAILED: install_add  exit(1)'
+                )
+                space_statement = next(
+                    statement for statement in dialog_statements[0]
+                    if re.search(statement.pattern, output)
+                    and getattr(statement, 'action', None)
+                    and statement.action.__name__ == '_check_disk_space'
+                )
+                spawn = Mock(buffer=output, device=device)
+                space_statement.action(spawn, None, None)
+                raise Exception(output)
+            return next(execute_responses)
+
+        device.execute = Mock(side_effect=_execute)
         device.parse = Mock(return_value={
                                  'location': {
                                      'Switch 1': {
@@ -579,6 +607,17 @@ iso   rp 0 0   rp_base cat9k-2.pkg'''
         device.api.collect_install_log = Mock()
         device.api.free_up_disk_space = Mock(return_value=True)
         cls.install_image(steps=steps, device=device, images=['bootflash:/image.bin'])
+
+        install_failure_statement = next(
+            statement for statement in dialog_statements[0]
+            if 'FAILED: install_add' in str(statement.pattern)
+            and getattr(statement, 'action', None)
+            and statement.action.__name__ == 'install_image_failing'
+        )
+        self.assertIsNotNone(re.search(
+            install_failure_statement.pattern,
+            'FAILED: install_add  exit(1)',
+        ))
 
         expected_execute_call = [call('install add file bootflash:/image.bin activate commit prompt-level none', reply=reload_dialog, append_error_pattern=['FAILED:'], timeout=500),
                                 call('more bootflash:packages.conf'),
@@ -597,9 +636,10 @@ iso   rp 0 0   rp_base cat9k-2.pkg'''
             )
         device.reload.assert_has_calls([expected_reload_call])
         device.api.free_up_disk_space.assert_called_with(
-            destination='', required_size=5120,
+            destination='', required_size=466067456,
             protected_files=['image.bin'], allow_deletion_failure=True,
             skip_deletion=False)
+        device.api.collect_install_log.assert_not_called()
         device.api.get_running_image.assert_called_once()
         self.assertEqual(Passed, steps.details[0].result)
 
@@ -670,77 +710,66 @@ iso   rp 0 0   rp_base cat9k-2.pkg'''
         self.assertEqual(Passed, steps.details[0].result)
 
     @patch('genie.libs.clean.stages.iosxe.stages.Dialog')
-    @patch('genie.libs.sdk.apis.iosxe.support.tech_support.get_default_dir')
-    @patch('genie.libs.sdk.apis.iosxe.support.tech_support.datetime')
-    def test_install_image_fail(self, mock_datetime, mock_get_default_dir, dialog):
-        mock_get_default_dir.return_value = "flash:"
-        mock_datetime.utcnow.return_value.strftime.return_value = '20250101T000000000'
-        with patch.object(type(runtime), 'directory', new_callable=PropertyMock) as mock_dir:
-            mock_dir.return_value = "/tmp"
+    def test_install_image_fail(self, dialog):
+        steps = Steps()
+        cls = InstallImage()
+        cls.history = MagicMock()
 
-            steps = Steps()
-            cls = InstallImage()
-            cls.history = MagicMock()
+        device = Mock()
+        device.api = Mock()
+        device.reload = Mock()
+        device.spawn = Mock()
+        device.context = {}
+        device.parse = Mock(return_value={
+            'location': {
+                'Switch 1': {
+                    'pkg_state': {
+                        1: {'type': 'IMG',
+                            'state': 'U',
+                            'filename_version': '17.17.01.0.207986'}},
+                    'auto_abort_timer': 'inactive'
+                }}})
 
-            device = Mock()
-            device.api = Mock()
-            device.reload = Mock()
-            device.parse = Mock(return_value={
-                'location': {
-                    'Switch 1': {
-                        'pkg_state': {
-                            1: {'type': 'IMG',
-                                'state': 'U',
-                                'filename_version': '17.17.01.0.207986'}},
-                        'auto_abort_timer': 'inactive'
-                    }}})
+        device.api.get_running_image = Mock()
+        # The device recovery/diagnostic collection is owned by the
+        # collect_install_log API and covered by its own SDK API tests, so
+        # only the stage's contract with that API is asserted here.
+        device.api.collect_install_log = Mock()
 
-            device.api.get_running_image = Mock()
-            device.api.copy_from_device = Mock()
-            import types
-            from genie.libs.sdk.apis.iosxe.support.tech_support import collect_install_log
-            device.api.collect_install_log = types.MethodType(collect_install_log, device)
+        device.clean_space = None
+        device.issu_in_progress = None
+        device.connections = {'telnet': True}
+        device.default_connection_alias = 'ssh'
 
-            device.clean_space = None
-            device.issu_in_progress = None
-            device.connections = {'telnet': True}
-            device.default_connection_alias = 'ssh'
+        device.execute = Mock(side_effect=[
+            "SUCCESS:",  # install commit
+            Exception(
+                "FAILED: Install Operation failed as one "
+                "or more package file(s) for running "
+                "image is not present in the device"
+            ),  # install add file
+        ])
 
-            # Provide outputs for all expected calls
-            device.execute = Mock(side_effect=[
-                "SUCCESS:",  # install commit
-                Exception("FAILED: Install Operation failed as one or more package file(s) for running image is not present in the device"),  # install add file
-                "output for current detail",  # show platform software install-manager switch active R0 operation current detail
-                "output for history detail",  # show platform software install-manager switch active R0 operation history detail
-                "output for tech-support",    # show tech-support install | append show_tech_support.txt
-                "Done with creation of the archive file:[flash:archive.tar.gz]",  # request platform software trace archive
-                "flash:" # dir
-            ])
+        # Run the install_image method
+        with self.assertRaises(TerminateStepSignal):
+            cls.install_image(
+                steps=steps, device=device, images=['/image/stay-isr-image.bin']
+            )
 
-            with patch('genie.libs.sdk.apis.iosxe.support.tech_support.re.search') as mock_search:
-                mock_match = MagicMock()
-                mock_match.group.return_value = "flash:archive.tar.gz"
-                mock_search.return_value = mock_match
+        # The stage must delegate connection recovery to the API instead of
+        # driving the state machine itself.
+        device.api.collect_install_log.assert_called_once_with(
+            reconnect=True, reconnect_timeout=150)
 
-                # Run the install_image method
-                with self.assertRaises(TerminateStepSignal):
-                    cls.install_image(
-                        steps=steps, device=device, images=['/image/stay-isr-image.bin']
-                    )
-
-            # Assert all expected calls inside collect_install_log
-            device.execute.assert_any_call("show platform software install-manager r0 operation current detail")
-            device.execute.assert_any_call("show platform software install-manager r0 operation history detail")
-            device.execute.assert_any_call("show tech-support install | append show_tech_support_20250101T000000.txt", timeout=600)
-            device.execute.assert_any_call("request platform software trace archive")
-            device.api.copy_from_device.assert_any_call(local_path="flash:show_tech_support_20250101T000000.txt", remote_path="/tmp")
-            device.api.copy_from_device.assert_any_call(local_path="flash:archive.tar.gz", remote_path="/tmp")
-
-            # Verify the steps reflect the failure
-            assert steps.details[0].name == 'Check for previous uncommitted install operation'
-            assert steps.details[1].name == "Installing image '/image/stay-isr-image.bin'"
-            assert steps.details[0].result == Passed
-            assert steps.details[1].result == Failed
+        # Verify the steps reflect the failure
+        assert steps.details[0].name == (
+            'Check for previous uncommitted install operation'
+        )
+        assert steps.details[1].name == (
+            "Installing image '/image/stay-isr-image.bin'"
+        )
+        assert steps.details[0].result == Passed
+        assert steps.details[1].result == Failed
 
     @patch('genie.libs.clean.stages.iosxe.stages.Dialog')
     def test_install_image_empty_output(self, dialog):
@@ -777,6 +806,86 @@ iso   rp 0 0   rp_base cat9k-2.pkg'''
 
         # Verify the install failed
         self.assertEqual(Passed, steps.details[0].result)
+        self.assertEqual(Failed, steps.details[1].result)
+
+    @patch('genie.libs.clean.stages.iosxe.stages.Dialog')
+    def test_install_timeout_collects_logs_with_reconnect(self, dialog):
+        reload_dialog = Mock()
+        dialog.return_value = reload_dialog
+        steps = Steps()
+        cls = InstallImage()
+        cls.history = MagicMock()
+
+        device = create_test_device('PE1', os='iosxe')
+        device.name = 'PE1'
+        device.spawn = Mock(buffer='Username:')
+        device.parse = Mock(return_value={})
+
+        install_cmd = (
+            'install add file bootflash:/image.bin '
+            'activate commit prompt-level none'
+        )
+
+        def _execute(command, **kwargs):
+            if command == install_cmd:
+                raise UniconTimeoutError('install operation timed out')
+            return ''
+
+        device.execute = Mock(side_effect=_execute)
+        device.api.get_running_image = Mock(return_value='old-image.bin')
+        device.api.collect_install_log = Mock()
+
+        with self.assertRaises(TerminateStepSignal):
+            cls.install_image(
+                steps=steps,
+                device=device,
+                images=['bootflash:/image.bin'],
+            )
+
+        # The stage must delegate resynchronization/reconnect and enable
+        # recovery to the collect_install_log API rather than handling it
+        # locally.
+        device.api.collect_install_log.assert_called_once_with(
+            reconnect=True, reconnect_timeout=150)
+        self.assertEqual(Failed, steps.details[1].result)
+
+    @patch('genie.libs.clean.stages.iosxe.stages.Dialog')
+    def test_install_timeout_preserves_failure_when_log_collection_fails(
+            self, dialog):
+        reload_dialog = Mock()
+        dialog.return_value = reload_dialog
+        steps = Steps()
+        cls = InstallImage()
+        cls.history = MagicMock()
+
+        device = create_test_device('PE1', os='iosxe')
+        device.name = 'PE1'
+        device.spawn = Mock(buffer='Username:')
+        device.parse = Mock(return_value={})
+        install_timeout = UniconTimeoutError('install operation timed out')
+        device.execute = Mock(side_effect=install_timeout)
+        device.api.get_running_image = Mock(return_value='old-image.bin')
+        device.api.collect_install_log = Mock(side_effect=RuntimeError(
+            'device did not reach enable mode'))
+
+        with self.assertRaises(TerminateStepSignal):
+            cls.install_image(
+                steps=steps,
+                device=device,
+                images=['bootflash:/image.bin'],
+            )
+
+        # A failure while collecting diagnostics must not mask the
+        # original install error.
+        device.api.collect_install_log.assert_called_once_with(
+            reconnect=True, reconnect_timeout=150)
+        failure_reason = steps.details[1].result.reason
+        self.assertIn(
+            'diagnostic collection also failed',
+            failure_reason,
+        )
+        self.assertIn('device did not reach enable mode', failure_reason)
+        self.assertIn('install operation timed out', failure_reason)
         self.assertEqual(Failed, steps.details[1].result)
 
 
@@ -1002,3 +1111,143 @@ class TestConfigureBootManual(unittest.TestCase):
                                     device=device)
         self.assertEqual(Passx, steps.details[0].result)
         device.api.configure_no_boot_manual.assert_called_once()
+
+
+class VerifyInstallSpace(unittest.TestCase):
+
+    IMAGE = 'flash:/ie3x00-universalk9.SSA.bin'
+    IMAGE_SIZE = 457558593
+    RUNNING_IMAGE = 'flash:ie3x00-universalk9.OLD.SSA.bin'
+
+    def setUp(self):
+        self.cls = InstallImage()
+        self.cls.history = MagicMock()
+
+        self.device = Mock()
+        self.device.name = 'PE1'
+        self.device.is_ha = False
+        self.device.api.get_file_size = Mock(return_value=self.IMAGE_SIZE)
+        self.device.api.get_platform_default_dir = Mock(return_value='flash:')
+        self.device.api.get_running_image = Mock(return_value=self.RUNNING_IMAGE)
+        self.device.api.free_up_disk_space = Mock(return_value=True)
+
+    def test_pass_when_enough_space(self):
+        steps = Steps()
+        # 1.3x the image size, above the 1.25 default
+        self.device.api.get_available_space = Mock(
+            return_value=int(self.IMAGE_SIZE * 1.3))
+
+        self.cls.verify_install_space(
+            steps=steps, device=self.device, images=[self.IMAGE])
+
+        self.assertEqual(Passed, steps.details[0].result)
+        self.device.api.free_up_disk_space.assert_not_called()
+
+    def test_frees_space_using_padded_requirement(self):
+        steps = Steps()
+        # 1.03x the image size clears the device precheck but not expansion
+        self.device.api.get_available_space = Mock(
+            return_value=int(self.IMAGE_SIZE * 1.03))
+
+        with patch('genie.libs.clean.stages.iosxe.stages.get_protected_files',
+                   return_value=['ie3x00-universalk9.SSA.bin']):
+            self.cls.verify_install_space(
+                steps=steps, device=self.device, images=[self.IMAGE])
+
+        self.assertEqual(Passed, steps.details[0].result)
+        self.device.api.free_up_disk_space.assert_called_once_with(
+            destination='flash:',
+            required_size=int(self.IMAGE_SIZE * 1.25),
+            protected_files=ANY,
+            allow_deletion_failure=True,
+            skip_deletion=False)
+
+    def test_honours_custom_space_factor(self):
+        steps = Steps()
+        self.device.api.get_available_space = Mock(return_value=0)
+
+        with patch('genie.libs.clean.stages.iosxe.stages.get_protected_files',
+                   return_value=[]):
+            self.cls.verify_install_space(
+                steps=steps, device=self.device, images=[self.IMAGE],
+                install_space_factor=1.5)
+
+        self.assertEqual(
+            int(self.IMAGE_SIZE * 1.5),
+            self.device.api.free_up_disk_space.call_args.kwargs['required_size'])
+
+    def test_protects_running_image(self):
+        steps = Steps()
+        self.device.api.get_available_space = Mock(return_value=0)
+
+        # packages.conf is absent in bundle mode, so this returns None
+        with patch('genie.libs.clean.stages.iosxe.stages.get_protected_files',
+                   return_value=None):
+            self.cls.verify_install_space(
+                steps=steps, device=self.device, images=[self.IMAGE])
+
+        protected = self.device.api.free_up_disk_space.call_args.kwargs[
+            'protected_files']
+        self.assertIn('ie3x00-universalk9.OLD.SSA.bin', protected)
+        self.assertIn('ie3x00-universalk9.SSA.bin', protected)
+
+    def test_passx_when_space_cannot_be_freed(self):
+        steps = Steps()
+        self.device.api.get_available_space = Mock(return_value=0)
+        self.device.api.free_up_disk_space = Mock(return_value=False)
+
+        with patch('genie.libs.clean.stages.iosxe.stages.get_protected_files',
+                   return_value=[]):
+            self.cls.verify_install_space(
+                steps=steps, device=self.device, images=[self.IMAGE])
+
+        self.assertEqual(Passx, steps.details[0].result)
+
+    def test_passx_when_free_up_disk_space_raises(self):
+        steps = Steps()
+        self.device.api.get_available_space = Mock(return_value=0)
+        self.device.api.free_up_disk_space = Mock(side_effect=Exception)
+
+        with patch('genie.libs.clean.stages.iosxe.stages.get_protected_files',
+                   return_value=[]):
+            self.cls.verify_install_space(
+                steps=steps, device=self.device, images=[self.IMAGE])
+
+        self.assertEqual(Passx, steps.details[0].result)
+
+    def test_skipped_when_image_size_unknown(self):
+        steps = Steps()
+        self.device.api.get_file_size = Mock(return_value=None)
+
+        self.cls.verify_install_space(
+            steps=steps, device=self.device, images=[self.IMAGE])
+
+        self.assertEqual(Skipped, steps.details[0].result)
+        self.device.api.free_up_disk_space.assert_not_called()
+
+    def test_skipped_when_default_dir_unavailable(self):
+        steps = Steps()
+        self.device.api.get_platform_default_dir = Mock(side_effect=Exception)
+
+        self.cls.verify_install_space(
+            steps=steps, device=self.device, images=[self.IMAGE])
+
+        self.assertEqual(Skipped, steps.details[0].result)
+        self.device.api.free_up_disk_space.assert_not_called()
+
+    def test_ha_falls_through_when_any_directory_returns_none(self):
+        steps = Steps()
+        self.device.is_ha = True
+        self.device.api.get_platform_default_dir = Mock(
+            return_value=['flash:', 'stby-flash:'])
+        # Active RP has plenty of space, standby returns None (unknown).
+        self.device.api.get_available_space = Mock(
+            side_effect=[int(self.IMAGE_SIZE * 2), None])
+
+        with patch('genie.libs.clean.stages.iosxe.stages.get_protected_files',
+                   return_value=[]):
+            self.cls.verify_install_space(
+                steps=steps, device=self.device, images=[self.IMAGE])
+
+        # Should NOT pass — must fall through to free_up_disk_space.
+        self.device.api.free_up_disk_space.assert_called_once()

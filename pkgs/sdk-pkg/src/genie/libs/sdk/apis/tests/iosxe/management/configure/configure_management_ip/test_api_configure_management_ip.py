@@ -1,35 +1,44 @@
-import os
 import unittest
-from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.management.configure import configure_management_ip
+from unittest import TestCase
+from unittest.mock import Mock
+
+from genie.libs.sdk.apis.iosxe.management.configure import (
+    configure_management_ip,
+)
 
 
-class TestConfigureManagementIp(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          vmtb-isr4451:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: iosxe
-            type: iosxe
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['vmtb-isr4451']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureManagementIp(TestCase):
 
     def test_configure_management_ip(self):
-        result = configure_management_ip(self.device)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.state_machine.current_state = "enable"
+        device.configure.return_value = None
+
+        device.management = {
+            "interface": "GigabitEthernet0",
+            "vrf": "Mgmt-intf",
+            "address": {
+                "ipv4": "10.29.30.167/32",
+            },
+        }
+
+        result = configure_management_ip(device)
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once()
+
+        sent_commands = device.configure.call_args.args[0]
+        self.assertIsInstance(sent_commands, list)
+        self.assertEqual(
+            sent_commands,
+            [
+                "interface GigabitEthernet0",
+                "vrf forwarding Mgmt-intf",
+                "ip address 10.29.30.167 255.255.255.255",
+                "no shutdown",
+            ],
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()

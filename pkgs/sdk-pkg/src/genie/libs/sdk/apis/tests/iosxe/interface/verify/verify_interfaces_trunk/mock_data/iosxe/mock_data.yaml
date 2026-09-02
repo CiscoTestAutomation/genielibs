@@ -1,0 +1,56 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+    system mode insecure: ''
+    show install summary: ''
+  prompt: DNAC-4(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: DNAC-4(config-line)#
+connect:
+  commands:
+    '':
+      new_state: execute
+  preface: |-
+    Trying mock_device ...
+    Connected to mock_device.
+    Escape character is '^]'.
+  prompt: ''
+execute:
+  commands:
+    clear logging:
+      response:
+      - Clear logging buffer [confirm]
+      response_type: circular
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show interfaces GigabitEthernet0/1/0 trunk:
+      response: |
+        Port           Mode             Encapsulation  Status        Native vlan
+        Gi0/1/0        off              802.1q         not-trunking  1
+
+        Port           Vlans allowed on trunk
+        Gi0/1/0        100
+
+        Port           Vlans allowed and active in management domain
+        Gi0/1/0        100
+
+        Port           Vlans in spanning tree forwarding state and not pruned
+        Gi0/1/0        100
+      response_type: circular
+    show version: ''
+    show version | include operating mode: ''
+    term length 0: ''
+    term width 0: ''
+    enable: ''
+    show install summary: ''
+  prompt: DNAC-4#

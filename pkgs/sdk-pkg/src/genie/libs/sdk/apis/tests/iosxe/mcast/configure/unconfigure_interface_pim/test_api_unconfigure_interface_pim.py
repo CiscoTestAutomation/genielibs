@@ -1,34 +1,38 @@
 import unittest
-from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.mcast.configure import unconfigure_interface_pim
+from unittest import TestCase
+from unittest.mock import Mock
+
+from genie.libs.sdk.apis.iosxe.mcast.configure import (
+    unconfigure_interface_pim,
+)
 
 
-class TestUnconfigureInterfacePim(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = """
-        devices:
-          VTEP1:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: c9500h
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['VTEP1']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestUnconfigureInterfacePim(TestCase):
 
     def test_unconfigure_interface_pim(self):
-        result = unconfigure_interface_pim(device=self.device, interface='loopback1', pim_mode='sparse-mode')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.state_machine.current_state = "enable"
+        device.configure.return_value = None
+
+        result = unconfigure_interface_pim(
+            device=device,
+            interface="loopback1",
+            pim_mode="sparse-mode",
+        )
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once()
+
+        sent_commands = device.configure.call_args.args[0]
+        self.assertIsInstance(sent_commands, list)
+        self.assertEqual(
+            sent_commands,
+            [
+                "interface loopback1",
+                "no ip pim sparse-mode",
+            ],
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()

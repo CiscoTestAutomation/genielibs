@@ -129,9 +129,8 @@ class TestIosXEConnect_1(unittest.TestCase):
             device.disconnect()
             md.stop()
 
-        # All steps should have result_rollup set to false,
-        # if the recovery processor is enabled.
+        # Connect failures must remain visible when recovery is enabled. A
+        # successful recovery supersedes this attempt through a full retry.
         for step in steps.steps:
-            self.assertFalse(step.result_rollup)
-
+            self.assertTrue(step.result_rollup)
 

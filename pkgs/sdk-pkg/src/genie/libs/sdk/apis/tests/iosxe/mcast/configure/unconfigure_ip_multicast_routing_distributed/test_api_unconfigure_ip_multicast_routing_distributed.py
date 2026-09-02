@@ -1,35 +1,31 @@
-import os
 import unittest
-from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.mcast.configure import unconfigure_ip_multicast_routing_distributed
+from unittest import TestCase
+from unittest.mock import Mock
+
+from genie.libs.sdk.apis.iosxe.mcast.configure import (
+    unconfigure_ip_multicast_routing_distributed,
+)
 
 
-class TestUnconfigureIpMulticastRoutingDistributed(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          KS1:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: C8300-1N1S-4T2X
-            type: iosxe
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['KS1']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestUnconfigureIpMulticastRoutingDistributed(TestCase):
 
     def test_unconfigure_ip_multicast_routing_distributed(self):
-        result = unconfigure_ip_multicast_routing_distributed(self.device)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.state_machine.current_state = "enable"
+        device.configure.return_value = None
+
+        result = unconfigure_ip_multicast_routing_distributed(device)
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once()
+
+        sent_commands = device.configure.call_args.args[0]
+        self.assertIsInstance(sent_commands, str)
+        self.assertEqual(
+            sent_commands,
+            "no ip multicast-routing distributed",
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()

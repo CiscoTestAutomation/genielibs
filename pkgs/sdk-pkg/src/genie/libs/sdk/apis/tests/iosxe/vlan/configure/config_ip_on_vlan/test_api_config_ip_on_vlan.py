@@ -1,35 +1,28 @@
-import os
-import unittest
-from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.vlan.configure import config_ip_on_vlan
+from unittest import TestCase
+from unittest.mock import Mock
+
+from genie.libs.sdk.apis.iosxe.vlan.configure import (
+    config_ip_on_vlan,
+)
 
 
-class TestConfigIpOnVlan(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          AMZ-Acc-4:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: c9300
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['AMZ-Acc-4']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigIpOnVlan(TestCase):
 
     def test_config_ip_on_vlan(self):
-        result = config_ip_on_vlan(self.device, '101', '10.230.62.50', '255.255.255.0', None, None, True)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+
+        result = config_ip_on_vlan(
+            device,
+            vlan_id='101',
+            ipv4_address='10.230.62.50',
+            subnetmask='255.255.255.0',
+            secondary=True,
+        )
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once_with(
+            [
+                'interface vlan 101',
+                'ip address 10.230.62.50 255.255.255.0 secondary',
+            ]
+        )

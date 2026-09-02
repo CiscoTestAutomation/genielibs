@@ -1,3 +1,4 @@
+import logging
 import unittest
 from unittest.mock import patch, MagicMock
 from pyats.datastructures import AttrDict
@@ -50,9 +51,18 @@ class TestResolveServerRouteUrl(unittest.TestCase):
 
     def test_no_rewrite_when_no_match(self):
         self.mock_api.find_server_ip_for_device_ip.return_value = None
-        result = self.fu._resolve_server_route_url(
-            'tftp://10.1.1.1/auto/image.bin', device=self.device)
-        self.assertEqual(result, 'tftp://10.1.1.1/auto/image.bin')
+        url = 'tftp://url-user:url-password@10.1.1.1/auto/image.bin'
+        with self.assertLogs(
+                'genie.libs.filetransferutils.plugins.fileutils',
+                logging.INFO) as logs:
+            result = self.fu._resolve_server_route_url(
+                url, device=self.device)
+        self.assertEqual(result, url)
+        log_output = '\n'.join(logs.output)
+        self.assertNotIn('url-user', log_output)
+        self.assertNotIn('url-password', log_output)
+        self.assertIn(
+            'tftp://****:****@10.1.1.1/auto/image.bin', log_output)
 
     def test_no_rewrite_when_resolved_matches_current(self):
         self.mock_api.find_server_ip_for_device_ip.return_value = '10.1.1.1'

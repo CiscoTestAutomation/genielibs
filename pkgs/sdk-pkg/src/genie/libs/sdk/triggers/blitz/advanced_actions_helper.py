@@ -7,7 +7,7 @@ import importlib
 from datetime import datetime
 from pyats.log.utils import banner
 from collections import OrderedDict
-from collections.abc import Iterable
+from collections.abc import Mapping, Sequence
 from genie.utils.timeout import Timeout
 
 from .markup import get_variable, save_variable
@@ -115,10 +115,34 @@ def _loop_dispatcher(self, steps, testbed, section, action_item, ret_list, name)
     return func, action_item
 
 def _loop_iterator_item_update(self, section, action_item, steps):
+    """Prepare iterator items for a loop action.
+
+    Args:
+        self (Blitz): Blitz testcase instance that owns saved variables.
+        section (Section): Current Blitz section.
+        action_item (dict): Loop action configuration.
+            Expected keys:
+                loop_variable_name (str | list[str]): Saved variable name or
+                    names.
+                range (int | str, optional): Arguments used to build
+                    range().
+                value (Sequence | Mapping | str, optional): Sequence or
+                    mapping, or a saved-variable reference that resolves to
+                    one before iteration.
+            Side Effects:
+                Removes range or value after processing and normalizes
+                loop_variable_name to a list.
+        steps (Steps): Steps object used to report invalid loop configuration.
+
+    Returns:
+        list[Sequence | Mapping] or None: Iterator values consumed by
+        _loop_iterator(), or None when no iterator is configured. An empty
+        sequence or mapping performs zero iterations.
+    """
 
     if not (action_item.get('loop_variable_name') and
-            (action_item.get('range') or action_item.get('value'))):
-            return None
+            ('range' in action_item or 'value' in action_item)):
+        return None
 
     if 'range' in action_item:
 
@@ -129,31 +153,37 @@ def _loop_iterator_item_update(self, section, action_item, steps):
         action_item['loop_variable_name'] = [action_item['loop_variable_name']]
         return [range(*args)]
 
-    if not (action_item.get('value') and
+    if not ('value' in action_item and
             action_item.get('loop_variable_name')):
         return None
 
-    # get value whether list or dict or multiple iterators
+    # Get the sequence, mapping, or multiple iterators.
     value = action_item.pop('value')
 
-    # if list then multiple variable names, need to make sure that
-    # each variable name goes with one iterable else steps has to error out
+    kwargs = {'value': value, 'self': self, 'section': section}
+    value = get_variable(**kwargs)['value']
+
+    # If loop_variable_name is a list, each name needs a sequence or mapping.
     if isinstance(action_item.get('loop_variable_name'), list):
 
-        if not(len(action_item['loop_variable_name']) == len(value) and
-                all(isinstance(item, Iterable) for item in value)):
+        if not (isinstance(value, Sequence) and
+                len(action_item['loop_variable_name']) == len(value) and
+                all(isinstance(item, (Sequence, Mapping)) for item in value)):
 
-            steps.errored("Cannot verify if enough lists are provided for"
-                          " the number of variable names")
+            steps.errored(
+                "Loop value must provide one sequence or mapping per "
+                "variable name")
+            return None
     else:
-        # if not list and singular make everything as a list of Iterables,
-        # so we could follow same implementation
+        if not isinstance(value, (Sequence, Mapping)):
+            steps.errored('Loop value must resolve to a sequence or mapping')
+            return None
+
+        # Normalize a single iterator to the multi-variable representation.
         action_item['loop_variable_name'] = [action_item['loop_variable_name']]
         value = [value]
 
-    kwargs = {'value': value, 'self': self, 'section': section}
-    iterator_item = get_variable(**kwargs)['value']
-    return iterator_item
+    return value
 
 def _loop_iterator(self,
                    steps,
@@ -172,7 +202,46 @@ def _loop_iterator(self,
                    every_seconds=None,
                    parallel=None,
                    **kwargs):
-    """actually iterate over the actions under loop and call them"""
+    """Iterate over loop actions and return their dispatched results.
+
+    Args:
+        self (Blitz): Blitz testcase instance that owns saved variables.
+        steps (Steps): Steps object used to execute parallel loop actions.
+        testbed (Testbed): Testbed passed to dispatched actions.
+        section (Section): Current Blitz section.
+        name (str): Name of the parent action.
+        ret_list (list): Dispatched action results accumulated by the loop.
+        loop_variable_name (list, optional): Saved-variable names in the
+            same order as iterator_item.
+        loop_until (str, optional): Result that terminates the loop early.
+        max_time (int, optional): Maximum duration for an unbounded loop.
+        check_interval (int, optional): Interval used by the loop timeout.
+        until (str, optional): Condition evaluated before and after each
+            iteration.
+        do_until (str, optional): Condition evaluated after each iteration.
+        actions (list, optional): Actions dispatched for each iteration.
+        iterator_item (list[Sequence | Mapping], optional): Sequences or
+            mappings prepared from the loop range or value input. An empty
+            sequence or mapping performs zero iterations and clears its saved
+            loop variable.
+        every_seconds (int, optional): Interval used for periodic loop
+            reporting.
+        parallel (bool, optional): Whether to execute dispatched actions in
+            parallel.
+        **kwargs: Additional loop arguments.
+
+    Example:
+        loop_variable_name = ["sub_id", "peer"]
+        iterator_item = [[101, 102], ["leaf1", "leaf2"]]
+
+        Iteration 0 saves sub_id=101 and peer="leaf1". An empty
+        iterator clears its corresponding saved variable without dispatching
+        actions.
+
+    Returns:
+        list: The supplied ret_list with dispatched action results. Empty
+        iterators add no actions.
+    """
 
     # TODO cant save vars in loop, enhancement needed
 
@@ -181,7 +250,12 @@ def _loop_iterator(self,
 
     iterator_len = None
     iterator_index = 0
-    iterator_len = max(len(itm)for itm in iterator_item) if iterator_item else None
+    iterator_len = max(len(item) for item in iterator_item) \
+        if iterator_item else None
+
+    if iterator_len == 0:
+        _save_iterator_items(self, section, loop_variable_name,
+                             iterator_item, iterator_index)
     pcall_payload = []
 
     # until condition would be sent to blitz_control
@@ -258,23 +332,35 @@ def _loop_iterator(self,
 
 def _save_iterator_items(self, section, loop_variable_name,
                          iterator_item, iterator_index):
-    """ Save each item of a loop into a variable before running the actions
-        E.g: value: [get_logger, get_mtu_size]
-             loop_variable_name: func_name
-             action:
-                - api:
-                    function: %VARIABLES{func_name}
+    """Save loop iterator values as saved variables.
+
+    Args:
+        self (Blitz): Blitz testcase instance that owns saved variables.
+        section (Section): Current Blitz section.
+        loop_variable_name (list[str]): Saved-variable names aligned with
+            iterator_item.
+        iterator_item (list[Sequence | Mapping]): Iterator values for each
+            saved variable.
+        iterator_index (int): Current zero-based iteration index.
+
+    Side Effects:
+        Saves item[iterator_index] for sequence values, saves
+        {key: value} for mapping values, and saves '' when an iterator is
+        exhausted to clear stale loop variables.
+
+    Returns:
+        None
     """
     if loop_variable_name and iterator_item:
 
         for index, item in enumerate(iterator_item):
 
             try:
-                if isinstance(item, dict):
+                if isinstance(item, Mapping):
                     item_dict_key = list(item.keys())[iterator_index]
                     value_ = {item_dict_key: item[item_dict_key]}
 
-                # parse through list
+                # Index into the sequence.
                 else:
                     value_ = item[iterator_index]
             except IndexError:
@@ -283,12 +369,22 @@ def _save_iterator_items(self, section, loop_variable_name,
                 save_variable(self, section, loop_variable_name[index], value_)
 
 def _check_pre_iteration(iterator_len, iterator_index, max_time, timeout, parallel):
-    """
-        check pre each iteration, if timeout is reached or
-        or the iterator item (list/dict) reached its end
+    """Return whether a loop must stop before dispatching an action.
+
+    Args:
+        iterator_len (int or None): Length of the configured iterator. None
+            represents an unbounded loop; zero represents a configured empty
+            iterator and stops immediately.
+        iterator_index (int): Zero-based index for the next iteration.
+        max_time (int, optional): Maximum duration for an unbounded loop.
+        timeout (Timeout): Timeout object used to enforce max_time.
+        parallel (bool, optional): Whether actions are dispatched in parallel.
+
+    Returns:
+        bool: True when the iterator is exhausted or the timeout is reached.
     """
     # keys to check if loop is timing out or it stopped iterating
-    keys = [(iterator_len and iterator_index == iterator_len,
+    keys = [(iterator_len is not None and iterator_index == iterator_len,
             'The loop finished because the iterable item is parsed to the end'),
             (max_time and not timeout.iterate(),
             'Timeout is reached, going out of this loop')]

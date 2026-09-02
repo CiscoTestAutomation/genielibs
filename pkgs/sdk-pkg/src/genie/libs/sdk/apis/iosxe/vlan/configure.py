@@ -1242,4 +1242,44 @@ def configure_no_shutdown_vlan_interface_range(device, vlan_id_from, vlan_id_to)
             "Could not shut the vlan range {vlan_id_from}-{vlan_id_to} on {device}. Error:\n{error}".format(
                 vlan_id_from=vlan_id_from,vlan_id_to=vlan_id_to,device=device, error=e
             )
-        ) 
+        )
+
+
+def configure_default_vtp_mode(device, mode=None):
+    """
+    Set VTP mode to default, or configure to mode specified
+    Args:
+        device ('obj'): device to use
+        mode ('str'):  VTP mode (i.e transparent, client, server)
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+    if mode is None:
+        cmd = 'default vtp mode'
+    else:
+        cmd = f'vtp mode {mode}'
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f'Could not configure or default the vtp mode. Error:\n{e}')
+
+
+def configure_vlan_state(device, vlan, state):
+    """
+    Get interface members
+    Args:
+        device ('obj'): Device object
+        vlan ('str'): vlan id
+        state ('str') : vlan state
+    Returns:
+        interface members
+    Raises:
+        Nonel
+    """
+    cmd = [f'vlan {vlan}', f'state {state}']
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure vlan state on {device}. Error:\n{e}")

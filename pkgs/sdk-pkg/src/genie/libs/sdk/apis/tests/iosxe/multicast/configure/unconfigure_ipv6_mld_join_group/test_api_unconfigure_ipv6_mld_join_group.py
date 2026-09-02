@@ -1,15 +1,14 @@
 from unittest import TestCase
+from genie.libs.sdk.apis.iosxe.multicast.configure import unconfigure_ipv6_mld_join_group
 from unittest.mock import Mock
-from genie.libs.sdk.apis.iosxe.multicast.configure import unconfigure_ipv6_mld_access_group
 
-class TestUnconfigureIpv6MldAccessGroup(TestCase):
 
-    def test_unconfigure_ipv6_mld_access_group(self):
-        device = Mock()
-        result = unconfigure_ipv6_mld_access_group(device, 'te1/0/1', None)
-        self.assertEqual(result, None)
-        # If this fails, uncomment: print(device.configure.mock_calls)
+class TestUnconfigureIpv6MldJoinGroup(TestCase):
+
+    def test_unconfigure_ipv6_mld_join_group(self):
+        self.device = Mock()
+        result = unconfigure_ipv6_mld_join_group(self.device, 'ff0e::1:1:1', 'TwentyFiveGigE1/0/3', '2001:db8:20:20::100')
         self.assertEqual(
-            device.configure.mock_calls[0].args,
-            (['int te1/0/1', 'no ipv6 mld access-group None'],)
+            self.device.configure.mock_calls[0].args,
+            (['interface TwentyFiveGigE1/0/3', 'no ipv6 mld join-group ff0e::1:1:1 include 2001:db8:20:20::100'],)
         )

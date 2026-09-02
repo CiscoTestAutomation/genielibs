@@ -22,5 +22,6 @@ class TestConfigureSmartpowerDomain(TestCase):
 
         self.assertIsNone(result)
         device.configure.assert_called_once_with(
-            'smartpower domain cisco security shared-secret cisco123 protocol udp port 43440'
+            'smartpower domain cisco security shared-secret cisco123 '
+            'protocol udp port 43440'
         )

@@ -615,7 +615,8 @@ def configure_static_nat_network_rule(
     device,
     inside_local_ip,
     inside_global_ip,
-    mask 
+    mask,
+    vrf=None
 ):
     """ Configure static NAT network rule
         Args:
@@ -623,6 +624,7 @@ def configure_static_nat_network_rule(
             inside_local_ip ('str'): inside local ip
             inside_global_ip ('str'): inside global ip
             mask('str'):network mask
+            vrf ('str', optional): vrf name. Defaults to None
         Returns:
             None
         Raises:
@@ -630,6 +632,8 @@ def configure_static_nat_network_rule(
     """
     cmd = "ip nat inside source static network {} {} {}".format(
               inside_local_ip, inside_global_ip, mask)
+    if vrf:
+        cmd += " vrf {}".format(vrf)
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
@@ -640,7 +644,8 @@ def unconfigure_static_nat_network_rule(
     device,
     inside_local_ip,
     inside_global_ip,
-    mask
+    mask,
+    vrf=None
 ):
     """ UnConfigure static NAT network rule
         Args:
@@ -648,6 +653,7 @@ def unconfigure_static_nat_network_rule(
             inside_local_ip ('str'): inside local ip
             inside_global_ip ('str'): inside global ip
             mask('str'):network mask
+            vrf ('str', optional): vrf name. Defaults to None
         Returns:
             None
         Raises:
@@ -655,6 +661,8 @@ def unconfigure_static_nat_network_rule(
     """
     cmd = "no ip nat inside source static network {} {} {}".format(
               inside_local_ip, inside_global_ip, mask)
+    if vrf:
+        cmd += " vrf {}".format(vrf)
     try:
         device.configure(cmd)
     except SubCommandFailure as e:

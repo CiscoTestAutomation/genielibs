@@ -1,35 +1,34 @@
-import os
-import unittest
-from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.telemetry.configure import configure_telemetry_ietf_parameters
+from unittest import TestCase
+from unittest.mock import Mock
+
+from genie.libs.sdk.apis.iosxe.telemetry.configure import (
+    configure_telemetry_ietf_parameters,
+)
 
 
-class TestConfigureTelemetryIetfParameters(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          ott-isr4k-32:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: isr4k
-            type: isr4k
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['ott-isr4k-32']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureTelemetryIetfParameters(TestCase):
 
     def test_configure_telemetry_ietf_parameters(self):
-        result = configure_telemetry_ietf_parameters(self.device, 501, 'yang-push', '192.168.0.11', 56789, 'grpc-tcp', '/process-cpu-ios-xe-oper:cpu-usage/cpu-utilization/five-seconds', 'encode-kvgpb', 'periodic', 500, None, None)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+
+        result = configure_telemetry_ietf_parameters(
+            device,
+            sub_id=501,
+            stream='yang-push',
+            receiver_ip='192.168.0.11',
+            receiver_port=56789,
+            protocol='grpc-tcp',
+        )
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once_with(
+            [
+                'telemetry ietf subscription 501',
+                'receiver ip address 192.168.0.11 56789 protocol grpc-tcp',
+                'stream yang-push',
+                'filter xpath /process-cpu-ios-xe-oper:cpu-usage/'
+                'cpu-utilization/five-seconds',
+                'encoding encode-kvgpb',
+                'update-policy periodic 500',
+            ]
+        )

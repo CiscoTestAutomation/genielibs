@@ -620,3 +620,93 @@ def unconfigure_bfd_interval(device, interface):
         raise SubCommandFailure(
             f"Could not disable BFD interval on interface {interface}. Error:\n{e}"
         )
+
+def configure_bfd_template_multi_hop(
+        device,
+        template_name,
+        min_tx,
+        min_rx,
+        multiplier,
+    ):
+    """ Configure multi-hop BFD template
+        Args:
+            device ('obj'): device to use
+            template_name ('str'): BFD template name
+            min_tx ('int'): minimum transmit interval for BFD
+            min_rx ('int'): minimum receive interval for BFD
+            multiplier ('int'): multiplier for BFD
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed enabling BFD template on the interface
+    """
+    log.debug("Enable BFD template on the interface")
+    try:
+        device.configure([
+                        f'bfd-template multi-hop {template_name}',
+                        f'interval min-tx {min_tx} min-rx {min_rx} multiplier {multiplier}'
+                    ])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not enable BFD template on the device. Error:\n{e}"
+        )
+
+def unconfigure_bfd_template_multi_hop(device, template_name):
+    """ Remove multi-hop BFD template
+        Args:
+            device ('obj'): device to use
+            template_name ('str'): BFD template name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed disabling BFD template on the device
+    """
+    log.debug("Disable BFD template on the device")
+    try:
+        device.configure(f'no bfd-template multi-hop {template_name}')
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not disable BFD template on the device. Error:\n{e}"
+        )
+
+def configure_bfd_map(device, template_name, dst_ip, src_ip, mask):
+    """ Configure BFD map template
+        Args:
+            device ('obj'): device to use
+            template_name ('str'): BFD template name
+            dst_ip ('str'): IP address
+            src_ip ('str'): IP address
+            mask ('str'): Prefix length
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed configuring BFD map on the device
+    """
+    log.debug("Configure BFD map on the device")
+    try:
+        device.configure(f'bfd map ipv4 {dst_ip}/{mask} {src_ip}/{mask} {template_name}')
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure BFD map on the device. Error:\n{e}"
+        )
+
+def unconfigure_bfd_map(device, template_name, dst_ip, src_ip, mask):
+    """ Unconfigure BFD map template
+        Args:
+            device ('obj'): device to use
+            template_name ('str'): BFD template name
+            dst_ip ('str'): IP address
+            src_ip ('str'): IP address
+            mask ('str'): Prefix length
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed unconfiguring BFD map on the device
+    """
+    log.debug("Unconfigure BFD map on the device")
+    try:
+        device.configure(f'no bfd map ipv4 {dst_ip}/{mask} {src_ip}/{mask} {template_name}')
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure BFD map on the device. Error:\n{e}"
+        )

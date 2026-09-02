@@ -1,30 +1,14 @@
-import unittest
-from unittest.mock import Mock
+from unittest import TestCase
 from genie.libs.sdk.apis.iosxe.bgp.configure import configure_bgp_neighbor_remote_as_fall_over_as_with_peergroup
+from unittest.mock import Mock
 
 
-
-class TestConfigureBgpNeighborRemoteAsFallOverAsWithPeergroup(unittest.TestCase):
+class TestConfigureBgpNeighborRemoteAsFallOverAsWithPeergroup(TestCase):
 
     def test_configure_bgp_neighbor_remote_as_fall_over_as_with_peergroup(self):
-        device = Mock()
-        device.configure.return_value = ""
-
-        result = configure_bgp_neighbor_remote_as_fall_over_as_with_peergroup(
-            device,
-            "10",
-            "1002:101::2",
-            "bfd",
-            None,
-            "neigh-gig1",
-        )
-        self.assertIsNone(result)
-
+        self.device = Mock()
+        result = configure_bgp_neighbor_remote_as_fall_over_as_with_peergroup(self.device, '65012', '10.10.10.1', None, '22479', None, '64678', '6 20')
         self.assertEqual(
-            device.configure.mock_calls[0].args,
-            ([
-                "router bgp 10",
-                "neighbor 1002:101::2 peer-group neigh-gig1",
-                "neighbor 1002:101::2 fall-over bfd",
-            ],)
+            self.device.configure.mock_calls[0].args,
+            (['router bgp 65012', 'neighbor 10.10.10.1 remote-as 22479', 'neighbor 10.10.10.1 local-as 64678', 'neighbor 10.10.10.1 timers 6 20'],)
         )

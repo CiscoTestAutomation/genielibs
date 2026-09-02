@@ -515,7 +515,7 @@ def configure_management_ssh(device,
                              password=None,
                              domain_name='cisco.com',
                              interface=None,
-                             timeout=240):
+                             timeout=480):
     '''
     Configure device for management via ssh.
 
@@ -526,7 +526,7 @@ def configure_management_ssh(device,
         password ('str', optional): password to ssh
         domain_name ('str'): domain name to ssh
         interface: (str) Management interface to use
-        timeout ('int'): timeout for rsa key generation. Default: 240 seconds
+        timeout ('int', optional): timeout for rsa key generation. Default: 480 seconds
 
     Returns:
         None
@@ -936,6 +936,8 @@ def configure_management(device,
             raise Exception(
                 "Invalid switchport mode. Expected 'access', 'trunk', or 'no'."
             )
+        # Enabling the SVI does not enable the physical switchport.
+        device.api.unshut_interface(interface=interface)
 
     # Configure media-type on dual-media management ports
     if media_type and interface:

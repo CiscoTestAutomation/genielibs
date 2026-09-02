@@ -35,3 +35,35 @@ def verify_ignore_startup_config(device):
             f"hexadecimal integer. Error:\n{e}"
         )
     return config_reg & 0x40 != 0
+
+
+def verify_show_startup_config_section(
+        device, section=None, expect_list=None, unexpect_list=None
+    ):
+    '''
+    Verify startup config section
+    Args:
+        device ('obj'): device to use
+        expect_list ('list'): List of expected lines in startup config section
+        unexpect_list ('list'): List of unexpected lines
+                                in startup config section
+    '''
+    if section is None:
+        res = device.execute('show startup-config')
+    else:
+        res = device.execute(f'show startup-config | section {section}')
+    lines = res.splitlines()
+    lines = [line.strip() for line in lines]
+    if expect_list is not None:
+        for expect_line in expect_list:
+            if expect_line not in lines:
+                logger.error(f"Expect '{expect_line}' "
+                             "found in startup config section")
+                return False
+    if unexpect_list is not None:
+        for unexpect_line in unexpect_list:
+            if unexpect_line in lines:
+                logger.error(f"Expect '{unexpect_line}' not found "
+                             "in startup config section")
+                return False
+    return True

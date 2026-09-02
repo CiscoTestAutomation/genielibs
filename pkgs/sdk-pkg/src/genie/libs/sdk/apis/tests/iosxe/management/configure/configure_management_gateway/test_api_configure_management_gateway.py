@@ -1,35 +1,40 @@
-import os
 import unittest
-from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.management.configure import configure_management_gateway
+from unittest import TestCase
+from unittest.mock import Mock
+
+from genie.libs.sdk.apis.iosxe.management.configure import (
+    configure_management_gateway,
+)
 
 
-class TestConfigureManagementGateway(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          vmtb-isr4451:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: iosxe
-            type: iosxe
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['vmtb-isr4451']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureManagementGateway(TestCase):
 
     def test_configure_management_gateway(self):
-        result = configure_management_gateway(self.device)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.state_machine.current_state = "enable"
+        device.management = {
+            "gateway": {
+                "ipv4": "10.29.30.1",
+            },
+        }
+        device.execute.return_value = (
+            "ip route 0.0.0.0 0.0.0.0 10.29.30.1"
+        )
+
+        result = configure_management_gateway(device)
+
+        self.assertIsNone(result)
+        device.execute.assert_called_once()
+
+        sent_command = device.execute.call_args.args[0]
+        self.assertIsInstance(sent_command, str)
+        self.assertEqual(
+            sent_command,
+            "show running-config | include ip route 0.0.0.0 0.0.0.0",
+        )
+
+        device.configure.assert_not_called()
+
+
+if __name__ == "__main__":
+    unittest.main()

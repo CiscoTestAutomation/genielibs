@@ -14,7 +14,7 @@ from genie.libs.clean.stages.stages import VerifyRunningImage as GenericVerifyRu
 from genie.utils.timeout import Timeout
 
 # MetaParser
-from genie.metaparser.util.schemaengine import Optional, Any
+from genie.metaparser.util.schemaengine import Optional, Any, Or
 from genie.libs.clean import BaseStage
 
 # Unicon
@@ -683,6 +683,7 @@ install_image:
         Optional('skip_boot_variable'): bool,
         Optional('skip_save_running_config'): bool,
         Optional('verify_running_image', description="Compare the image filename with the running image version on device. If a match is found, the stage will be skipped", default=VERIFY_RUNNING_IMAGE): bool,
+        Optional('install_space_factor'): Or(int, float),
         Optional('stack_member_timeout'): int,
         Optional('stack_member_interval'): int,
 
@@ -706,6 +707,7 @@ install_image:
         'save_running_config',
         'verify_boot_variable',
         'verify_running_image',
+        'verify_install_space',
         'install_image'
     ]
 

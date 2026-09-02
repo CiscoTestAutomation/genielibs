@@ -4,6 +4,7 @@ import time
 import shutil
 import os.path
 import fnmatch
+import hashlib
 import logging
 import ipaddress
 from typing import List
@@ -102,14 +103,6 @@ connect:
         with steps.start("Connecting to the device") as step:
 
             log.info('Checking connection to device: %s' % device.name)
-
-            # If recovery is enabled, ignore rollup
-            section = self.parameters.internal.get('section')
-
-            # Check if 'section' exists and has a parent with 'device_recovery_processor'
-            if section and getattr(section.parent, 'device_recovery_processor',
-                                   None):
-                step.result_rollup = False
 
             # Create a timeout that will loop
             retry_timeout = Timeout(float(retry_timeout),
@@ -1591,6 +1584,712 @@ copy_to_device:
                                             .format(device.name))
 
 
+class RecoveryImage(BaseStage):
+    """Copy recovery images to stable local targets for device recovery.
+
+    Image discovery is performed by the producer of clean data.  This public
+    stage only resolves the supplied server, transfers the resolved paths,
+    verifies the targets, and publishes them to ``device_recovery``.
+
+    Example
+    -------
+    recovery_image:
+        images:
+        - /images/recovery.bin
+        copy_images:
+        - /short/1234/recovery.bin
+        golden_image:
+        - bootflash:recovery.bin
+        recovery_server: recovery-server
+        protocol: https
+        verify_size: True
+
+    ``images`` and ``golden_image`` are paired by position. ``copy_images``
+    may provide corresponding server-relative transfer paths while preserving
+    ``images`` as the filesystem paths used for size or MD5 verification. If
+    ``images`` is omitted and a golden-image target is configured, the stage
+    consumes resolved image paths already present in clean data. If neither
+    recovery-image input nor a golden-image target is configured, the stage
+    skips so shared templates remain safe for devices without recovery-image
+    attributes. ``verify_size`` and ``verify_md5`` require a remote image
+    source so the stage can calculate the expected metadata before checking
+    the device target. Size verification is faster, but unlike MD5 it cannot
+    distinguish different images that have the same byte count.
+    """
+
+    PROTOCOL = 'https'
+    DESTINATION = {}
+    TIMEOUT = 300
+    COPY_ATTEMPTS = 1
+    COPY_ATTEMPTS_SLEEP = 30
+    VERIFY_SIZE = False
+    VERIFY_MD5 = False
+    VRF = ''
+    CONNECTION_ALIAS = 'default'
+    UPDATE_DEVICE_RECOVERY = True
+    DEFAULT_PORTS = {
+        'ftp': 21,
+        'http': 80,
+        'https': 443,
+        'scp': 22,
+        'sftp': 22,
+        'tftp': 69,
+    }
+
+    schema = {
+        Optional('images',
+                 description='Remote image paths, paired with golden_image.'):
+        list,
+        Optional('copy_images',
+                 description='Optional server-relative transfer paths, paired '
+                             'with images.'): list,
+        Optional('golden_image',
+                 description='Local device path used for ROMMON recovery'):
+        Or(str, list),
+        Optional('recovery_server',
+                 description='Testbed server name or address'): str,
+        Optional('recovery_server_port',
+                 description='Recovery server service port.'): int,
+        Optional('protocol', description='Transfer protocol.',
+                 default=PROTOCOL): str,
+        Optional('destination', default=DESTINATION): {
+            Optional('directory'): str,
+            Optional('standby_directory'): str,
+            Optional('stack_directory'): list,
+        },
+        Optional('connection_alias', default=CONNECTION_ALIAS): str,
+        Optional('vrf', default=VRF): str,
+        Optional('timeout',
+                 description='Transfer and remote metadata timeout in seconds.',
+                 default=TIMEOUT): int,
+        Optional('copy_attempts', description='Number of copy attempts.',
+                 default=COPY_ATTEMPTS): int,
+        Optional('copy_attempts_sleep',
+                 description='Seconds between copy attempts.',
+                 default=COPY_ATTEMPTS_SLEEP): int,
+        Optional('verify_size',
+                 description='Verify the source and device image sizes.',
+                 default=VERIFY_SIZE): bool,
+        Optional('verify_md5',
+                 description='Verify the remote and device image digests.',
+                 default=VERIFY_MD5): bool,
+        Optional('prompt_recovery', default=False): bool,
+        Optional('update_device_recovery', default=UPDATE_DEVICE_RECOVERY): bool,
+    }
+
+    exec_order = [
+        'resolve_recovery_image',
+        'resolve_recovery_server',
+        'check_golden_image',
+        'copy_recovery_image',
+        'verify_golden_image',
+        'update_device_recovery',
+    ]
+
+    @staticmethod
+    def _as_list(value):
+        return [] if value is None else value if isinstance(value, list) else [value]
+
+    @staticmethod
+    def _target_parts(target, default_directory):
+        target = target.rstrip('/')
+        separator = max(target.rfind('/'), target.rfind(':'))
+        if separator == -1:
+            return default_directory, target
+        return target[:separator + 1], target[separator + 1:]
+
+    @staticmethod
+    def _join_device_path(directory, filename):
+        if directory.endswith(':'):
+            return directory + filename
+        return os.path.join(directory, filename)
+
+    @staticmethod
+    def _inspection_path(path):
+        """Return a device path normalized for file-inspection APIs."""
+        volume, separator, filename = path.partition(':')
+        if separator and filename and not filename.startswith('/'):
+            return '{}:/{}'.format(volume, filename)
+        return path
+
+    @staticmethod
+    def _get_platform_default_directory(device):
+        try:
+            directory = device.api.get_platform_default_dir()
+        except Exception as error:
+            raise RuntimeError(
+                "Unable to determine the platform default directory: {}"
+                .format(error))
+        if not directory:
+            raise RuntimeError("No platform default directory was found")
+        return directory
+
+    @classmethod
+    def _default_port(cls, protocol):
+        return cls.DEFAULT_PORTS.get(protocol.lower())
+
+    @staticmethod
+    def _service_rank(service):
+        """Rank valid numeric orders ahead of unordered services."""
+        try:
+            order = float(service.get('order'))
+        except (TypeError, ValueError):
+            return (1, 0)
+        return (0, order)
+
+    @classmethod
+    def _url_hostname(cls, hostname, port, protocol=PROTOCOL):
+        """Return a host suitable for URL construction."""
+        if not port or port == cls._default_port(protocol):
+            return hostname
+        if ':' in hostname and not hostname.startswith('['):
+            hostname = '[{}]'.format(hostname)
+        return '{}:{}'.format(hostname, port)
+
+    @staticmethod
+    def _clean_images(device):
+        """Return resolved image paths already stored in clean data."""
+        clean = getattr(device, 'clean', {}) or {}
+        if hasattr(clean, 'get'):
+            return clean.get('images', []) or []
+        return getattr(clean, 'images', []) or []
+
+    def _resolve_recovery_images(self, device, images):
+        """Use paths from clean data; image discovery is outside this stage."""
+        images = self._as_list(images)
+        if images:
+            return images
+
+        return [image for image in self._as_list(self._clean_images(device))
+                if isinstance(image, str) and image]
+
+    def _fail_transfer(self, server, hostname, source, target, device, error):
+        self.failed(
+            "Unable to use {} recovery server '{}' ({}) while "
+            "copying '{}' to '{}' on device '{}': {}. Verify that the "
+            "server is reachable, its transfer service is available, and the "
+            "server is defined correctly in the testbed.".format(
+                self._recovery_context.get('protocol', '').upper(), server,
+                hostname, source, target, device.name, error))
+
+    def resolve_recovery_image(self,
+                               steps,
+                               device,
+                               images=None,
+                               copy_images=None,
+                               golden_image=None,
+                               recovery_server=None,
+                               recovery_server_port=None,
+                               protocol=PROTOCOL,
+                               destination=DESTINATION):
+        """Resolve the remote recovery image and local golden-image target."""
+        clean = getattr(device, 'clean', {}) or {}
+        device_recovery = (clean.get('device_recovery', {})
+                           if hasattr(clean, 'get') else {}) or {}
+        configured_golden_images = self._as_list(
+            device_recovery.get('golden_image'))
+        if (images is None and copy_images is None and golden_image is None and
+                not configured_golden_images and recovery_server is None and
+                recovery_server_port is None and not destination):
+            self.skipped(
+                "No recovery-image source or golden-image target was "
+                "configured for device '{}'.".format(device.name))
+
+        images = self._resolve_recovery_images(device, images)
+        copy_images = self._as_list(copy_images)
+
+        if copy_images and len(copy_images) != len(images):
+            self.failed(
+                "The number of copy_images paths ({}) must match the number "
+                "of recovery images ({}) for device '{}'.".format(
+                    len(copy_images), len(images), device.name))
+
+        destination = destination or {}
+        default_directory = destination.get('directory')
+        golden_images = self._as_list(golden_image)
+        if not golden_images:
+            golden_images = configured_golden_images
+        if not golden_images and images:
+            try:
+                default_directory = (default_directory or
+                                     self._get_platform_default_directory(device))
+            except Exception as error:
+                self.failed(
+                    "Unable to determine the platform default directory for "
+                    "device '{}': {}".format(device.name, error))
+            if not default_directory:
+                self.failed(
+                    "No platform default directory was found for device '{}'."
+                    .format(device.name))
+            if len(images) == 1:
+                target_names = ['golden_image.bin']
+            else:
+                target_names = [
+                    'golden_image_{}.bin'.format(index)
+                    for index in range(1, len(images) + 1)]
+            golden_images = [self._join_device_path(default_directory, name)
+                             for name in target_names]
+        if (golden_images and not default_directory and
+                any('/' not in target and ':' not in target
+                    for target in golden_images)):
+            try:
+                default_directory = self._get_platform_default_directory(
+                    device)
+            except Exception as error:
+                self.failed(
+                    "Unable to determine the platform default directory for "
+                    "device '{}': {}".format(device.name, error))
+        if not golden_images:
+            self.failed(
+                "No local golden_image target was found for device '{}'. "
+                "Provide golden_image or device_recovery.golden_image when "
+                "running without a remote recovery image.".format(device.name))
+        if images and len(golden_images) != len(images):
+            self.failed(
+                "The number of golden_image targets ({}) must match "
+                "the number of recovery images ({}) for device '{}'.".format(
+                    len(golden_images), len(images), device.name))
+        # Each source is paired with exactly one golden-image target.  The
+        # target_sets entries are (device directories, filename) pairs.
+        target_sets = []
+        for target_path in golden_images:
+            target_dir, target_name = self._target_parts(
+                target_path, default_directory)
+            target_destinations = [target_dir]
+            if destination and destination.get('standby_directory'):
+                target_destinations.append(destination['standby_directory'])
+            target_destinations.extend((destination or {}).get(
+                'stack_directory', []))
+            target_sets.append((target_destinations, target_name))
+
+        self._recovery_context = {
+            'filesystem_sources': images,
+            'copy_sources': copy_images or images,
+            'copy_sources_explicit': bool(copy_images),
+            'target': golden_images[0],
+            'golden_images': golden_images,
+            'target_sets': target_sets,
+            'protocol': protocol.lower(),
+        }
+
+    def resolve_recovery_server(self,
+                                steps,
+                                device,
+                                recovery_server=None,
+                                recovery_server_port=None):
+        """Resolve the recovery server and server-relative image path."""
+        context = self._recovery_context
+        if not context['filesystem_sources']:
+            context.update({'recovery_server': None, 'hostname': None,
+                            'file_utils': None, 'port': None})
+            return
+        protocol = context['protocol']
+        selected_service = None
+        if not recovery_server:
+            candidates = []
+            for server_index, (name, block) in enumerate(
+                    getattr(device.testbed, 'servers', {}).items()):
+                for service_index, service in enumerate(
+                        (block.get('services', {}) or {}).values()):
+                    if (service.get('type') != 'file_transfer' or
+                            service.get('protocol', '').lower() != protocol):
+                        continue
+                    # Ordered services take precedence; otherwise preserve
+                    # testbed server/service order as the tie-breaker.
+                    candidates.append((self._service_rank(service),
+                                       server_index, service_index, name,
+                                       service))
+            if candidates:
+                _, _, _, recovery_server, selected_service = min(
+                    candidates, key=lambda item: item[:3])
+            else:
+                self.failed(
+                    "No {} recovery server was found for device '{}'. "
+                    "Provide recovery_server or define a file-transfer "
+                    "server in the testbed.".format(protocol.upper(),
+                                                     device.name))
+
+        source = context['filesystem_sources'][0]
+        target = context['target']
+        file_utils = FileUtils.from_device(device, protocol=protocol)
+        try:
+            server_block = file_utils.get_server_block(recovery_server)
+            hostname = file_utils.get_hostname(recovery_server)
+        except Exception as error:
+            self._fail_transfer(recovery_server, '', source, target, device,
+                                error)
+        copy_sources = context['copy_sources']
+        if server_block and not context['copy_sources_explicit']:
+            copy_sources = remove_string_from_image(
+                images=copy_sources, string=server_block.get('path', ''))
+            source = copy_sources[0]
+
+        if not hostname:
+            self._fail_transfer(recovery_server, hostname, source, target,
+                                device, 'no server address was resolved')
+
+        matching_services = [
+            service for service in
+            (server_block or {}).get('services', {}).values()
+            if (service.get('type') == 'file_transfer' and
+                service.get('protocol', '').lower() == protocol)
+        ]
+        if selected_service is None and matching_services:
+            if recovery_server_port is None:
+                selected_service = min(
+                    enumerate(matching_services),
+                    key=lambda item: (self._service_rank(item[1]), item[0]))[1]
+            else:
+                selected_service = next(
+                    (service for service in matching_services
+                     if service.get('port') in (None, recovery_server_port)),
+                    None)
+
+        port = recovery_server_port
+        if port is None and selected_service is not None:
+            port = selected_service.get('port')
+        if port is None:
+            port = self._default_port(protocol)
+        context.update({
+            'recovery_server': recovery_server,
+            'hostname': hostname,
+            'copy_sources': copy_sources,
+            'server_path': (server_block or {}).get('path', ''),
+            'port': port,
+            'file_utils': file_utils,
+        })
+
+    def check_golden_image(self,
+                           steps,
+                           device,
+                           connection_alias=CONNECTION_ALIAS,
+                           timeout=TIMEOUT,
+                           verify_size=VERIFY_SIZE,
+                           verify_md5=VERIFY_MD5):
+        """Select local targets that need a FileUtils-managed copy."""
+        context = self._recovery_context
+        filesystem_sources = context['filesystem_sources']
+        source = filesystem_sources[0] if filesystem_sources else None
+        target = context['target']
+        recovery_server = context['recovery_server']
+        hostname = context['hostname']
+        remote_sizes = []
+        remote_md5s = []
+        if verify_size and not source:
+            self.failed(
+                "verify_size requires a remote recovery image source for "
+                "device '{}'.".format(device.name))
+        if verify_md5 and not source:
+            self.failed(
+                "verify_md5 requires a remote recovery image source for "
+                "device '{}'.".format(device.name))
+        if source and verify_size:
+            remote_size_sources = remove_string_from_image(
+                images=filesystem_sources,
+                string=context.get('server_path', ''))
+            try:
+                endpoint = self._url_hostname(
+                    hostname, context['port'], context['protocol'])
+                for filesystem_source, remote_source in zip(
+                        filesystem_sources, remote_size_sources):
+                    if os.path.isfile(filesystem_source):
+                        image_size = os.path.getsize(filesystem_source)
+                    else:
+                        image_size = device.api.get_file_size_from_server(
+                            server=endpoint,
+                            path=remote_source,
+                            protocol=context['protocol'],
+                            timeout=timeout,
+                            fu_session=context['file_utils'])
+                    try:
+                        image_size = int(image_size)
+                    except (TypeError, ValueError):
+                        raise RuntimeError(
+                            "the recovery server returned an invalid size "
+                            "for '{}'".format(filesystem_source))
+                    if image_size <= 0:
+                        raise RuntimeError(
+                            "the recovery server returned a non-positive "
+                            "size for '{}'".format(filesystem_source))
+                    remote_sizes.append(image_size)
+            except Exception as error:
+                self._fail_transfer(recovery_server, hostname, source, target,
+                                    device, error)
+        if source and verify_md5:
+            server_device = None
+            try:
+                for remote_source in filesystem_sources:
+                    if os.path.isfile(remote_source):
+                        with open(remote_source, 'rb') as image_file:
+                            digest = hashlib.md5()
+                            for chunk in iter(
+                                    lambda: image_file.read(1024 * 1024), b''):
+                                digest.update(chunk)
+                            remote_md5s.append(digest.hexdigest())
+                        continue
+                    if server_device is None:
+                        server_device = device.api.convert_server_to_linux_device(
+                            recovery_server)
+                        if not server_device:
+                            raise RuntimeError(
+                                "recovery image source is not locally readable "
+                                "and the recovery server is not SSH-accessible")
+                        server_device.connect()
+                    remote_md5s.append(
+                        server_device.api.get_md5_hash_of_file(
+                            remote_source, timeout=timeout))
+            except Exception as error:
+                self._fail_transfer(recovery_server, hostname, source, target,
+                                    device, error)
+            finally:
+                if server_device is not None:
+                    try:
+                        server_device.disconnect()
+                    except Exception as error:
+                        log.warning(
+                            "Unable to disconnect recovery server '%s': %s",
+                            recovery_server, error)
+            if (not remote_md5s or
+                    any(not image_md5 for image_md5 in remote_md5s)):
+                self._fail_transfer(
+                    recovery_server, hostname, source, target, device,
+                    "the recovery server returned no MD5 for '{}'".format(source))
+
+        context['remote_sizes'] = remote_sizes
+        context['remote_md5s'] = remote_md5s
+        context['verify_size'] = verify_size
+        context['verify_md5'] = verify_md5
+        context['copy_targets'] = []
+
+        with device.temp_default_alias(connection_alias):
+            for index, (target_destinations, target_filename) in enumerate(
+                    context['target_sets']):
+                for directory in target_destinations:
+                    local_target = self._join_device_path(
+                        directory, target_filename)
+                    with steps.start(
+                            "Check recovery image '{}' on device {}".format(
+                                local_target, device.name)) as step:
+                        try:
+                            dir_output = device.execute('dir {}'.format(directory))
+                            inspection_target = self._inspection_path(
+                                local_target)
+                            name_exists = device.api.verify_file_exists(
+                                file=inspection_target,
+                                size=None,
+                                dir_output=dir_output)
+                            exists = name_exists
+                            if name_exists and verify_size:
+                                exists = device.api.verify_file_exists(
+                                    file=inspection_target,
+                                    size=remote_sizes[index],
+                                    dir_output=dir_output)
+                            if exists and source and verify_md5:
+                                local_md5 = device.api.get_md5_hash_of_file(
+                                    local_target,
+                                    timeout=timeout)
+                                exists = bool(
+                                    local_md5 and
+                                    local_md5.lower() ==
+                                    remote_md5s[index].lower())
+                        except Exception as error:
+                            self.failed(
+                                "Unable to inspect recovery image destination "
+                                "'{}' on device '{}': {}".format(
+                                    local_target, device.name, error))
+                        if exists:
+                            if verify_size and verify_md5:
+                                message = (
+                                    "Recovery image already exists with the "
+                                    "expected size and MD5")
+                            elif verify_size:
+                                message = (
+                                    "Recovery image already exists with the "
+                                    "expected size")
+                            elif verify_md5:
+                                message = (
+                                    "Recovery image already exists with the "
+                                    "expected MD5")
+                            else:
+                                message = (
+                                    "Recovery image already exists at the "
+                                    "expected target path")
+                            step.passed(message)
+                        else:
+                            if not source:
+                                self.failed(
+                                    "No remote recovery image was resolved and "
+                                    "local golden image '{}' is missing on device '{}'."
+                                    .format(local_target, device.name))
+                            context['copy_targets'].append({
+                                'source': context['copy_sources'][index],
+                                'target': local_target,
+                                # A mismatched verified target is the only
+                                # case where the transport must overwrite.
+                                'overwrite': bool(
+                                    name_exists and
+                                    (verify_size or verify_md5)),
+                            })
+                            step.passed("Recovery image copy is required")
+
+    def copy_recovery_image(self,
+                            steps,
+                            device,
+                            connection_alias=CONNECTION_ALIAS,
+                            vrf=VRF,
+                            timeout=TIMEOUT,
+                            copy_attempts=COPY_ATTEMPTS,
+                            copy_attempts_sleep=COPY_ATTEMPTS_SLEEP,
+                            prompt_recovery=False):
+        """Copy the recovery image to each target selected for transfer."""
+        context = self._recovery_context
+        if not context['copy_targets']:
+            with steps.start("Copy recovery image to device {}".format(
+                    device.name)) as step:
+                step.skipped("All recovery image targets are already present")
+            return
+
+        with device.temp_default_alias(connection_alias):
+            for copy_target in context['copy_targets']:
+                local_target = copy_target['target']
+                source = copy_target['source']
+                for attempt in range(1, copy_attempts + 1):
+                    endpoint = self._url_hostname(
+                        context['hostname'], context['port'],
+                        context['protocol'])
+                    with steps.start(
+                            "Copy recovery image '{}' to '{}' on device {} "
+                            "via {}://{} (attempt {}/{})".format(
+                                source, local_target, device.name,
+                                context['protocol'], endpoint, attempt,
+                                copy_attempts)) as step:
+                        try:
+                            # The SDK returns command output on success and a
+                            # false value when the device copy failed.
+                            copy_kwargs = {
+                                'protocol': context['protocol'],
+                                # Preserve the testbed server name so the SDK
+                                # can resolve its server block and let the
+                                # device-specific FileUtils plugin select the
+                                # reachable address, certificate, and proxy.
+                                'server': context['recovery_server'],
+                                'remote_path': source,
+                                'local_path': local_target,
+                                'vrf': vrf,
+                                'timeout': timeout,
+                                'prompt_recovery': prompt_recovery,
+                            }
+                            # Only replace an existing target after a size or
+                            # MD5 mismatch. Missing targets use FileUtils'
+                            # normal copy behavior and do not need an
+                            # overwrite flag.
+                            if copy_target['overwrite']:
+                                copy_kwargs['overwrite'] = True
+                            # The SDK omits the default port from URLs; pass an
+                            # override only when one was supplied.
+                            if (context.get('port') !=
+                                    self._default_port(context['protocol'])):
+                                copy_kwargs['port'] = context['port']
+                            result = device.api.copy_to_device(**copy_kwargs)
+                            if not result:
+                                raise RuntimeError('copy API returned failure')
+                        except Exception as error:
+                            if attempt < copy_attempts:
+                                log.warning(
+                                    "Recovery image copy attempt %s failed: "
+                                    "%s; retrying", attempt, error)
+                                time.sleep(copy_attempts_sleep)
+                                continue
+                            self._fail_transfer(
+                                context['recovery_server'],
+                                context['hostname'], source,
+                                local_target, device, error)
+                        else:
+                            step.passed(
+                                "Recovery image copied to '{}' successfully"
+                                .format(local_target))
+                            break
+
+    def verify_golden_image(self,
+                            steps,
+                            device,
+                            connection_alias=CONNECTION_ALIAS,
+                            timeout=TIMEOUT):
+        """Verify every local golden-image target after copying."""
+        context = self._recovery_context
+        with device.temp_default_alias(connection_alias):
+            for index, (target_destinations, target_filename) in enumerate(
+                    context['target_sets']):
+                for directory in target_destinations:
+                    local_target = self._join_device_path(
+                        directory, target_filename)
+                    with steps.start(
+                            "Verify recovery image '{}' on device {}".format(
+                                local_target, device.name)) as step:
+                        try:
+                            # FileUtils owns remote transfer.  The stage only
+                            # verifies the exact local destination here.
+                            dir_output = device.execute('dir {}'.format(directory))
+                            inspection_target = self._inspection_path(
+                                local_target)
+                            name_verified = device.api.verify_file_exists(
+                                file=inspection_target,
+                                size=None,
+                                dir_output=dir_output)
+                        except Exception as error:
+                            self.failed(
+                                "Recovery image was copied to '{}' on device "
+                                "'{}', but verification failed: {}".format(
+                                    local_target, device.name, error))
+                        if not name_verified:
+                            if context['filesystem_sources']:
+                                message = (
+                                    "Recovery image copy completed, but '{}' was "
+                                    "not found on device '{}'.")
+                            else:
+                                message = (
+                                    "Golden image target '{}' was not found on "
+                                    "device '{}'.")
+                            self.failed(message.format(local_target, device.name))
+                        if context.get('verify_size', False):
+                            try:
+                                size_verified = device.api.verify_file_exists(
+                                    file=inspection_target,
+                                    size=context['remote_sizes'][index],
+                                    dir_output=dir_output)
+                            except Exception as error:
+                                self.failed(
+                                    "Unable to verify recovery image size for "
+                                    "'{}' on device '{}': {}".format(
+                                        local_target, device.name, error))
+                            if not size_verified:
+                                self.failed(
+                                    "Recovery image size verification failed "
+                                    "for '{}' on device '{}'. Expected {} "
+                                    "bytes.".format(
+                                        local_target, device.name,
+                                        context['remote_sizes'][index]))
+                        if context.get('verify_md5', False):
+                            local_md5 = device.api.get_md5_hash_of_file(
+                                local_target, timeout=timeout)
+                            expected_md5 = context['remote_md5s'][index]
+                            if not local_md5 or local_md5.lower() != expected_md5.lower():
+                                self.failed(
+                                    "Recovery image MD5 verification failed for "
+                                    "'{}' on device '{}'.".format(
+                                        local_target, device.name))
+                        step.passed("Recovery image verified successfully")
+
+    def update_device_recovery(self,
+                               steps,
+                               device,
+                               update_device_recovery=UPDATE_DEVICE_RECOVERY):
+        """Expose the local target to subsequent recovery stages."""
+        if update_device_recovery:
+            device.clean.setdefault('device_recovery', {})[
+                'golden_image'] = self._recovery_context['golden_images']
+
+
 class WriteErase(BaseStage):
     """ This stage executes 'write erase' on the device
 
@@ -1913,8 +2612,9 @@ apply_configuration:
 
     copy_vdc_all (bool, optional): If 'True' copy on all VDCs. Defaults to False.
 
-    max_time (int, optional): Maximum time in seconds allowed for any
-        verifications. Defaults to 300.
+    max_time (int, optional): Maximum time in seconds allowed for copying the
+        running configuration to startup and any verifications. Defaults to
+        300.
 
     check_interval (int, optional): How often in seconds to check. Defaults to 60.
 
@@ -2042,9 +2742,7 @@ apply_configuration:
                             format(device.name)) as step:
                 try:
                     device.api.execute_copy_run_to_start(
-                        command_timeout=config_timeout,
-                        max_time=max_time,
-                        check_interval=check_interval,
+                        command_timeout=max_time,
                         copy_vdc_all=copy_vdc_all)
                 except Exception as e:
                     step.failed(

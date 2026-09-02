@@ -1,35 +1,34 @@
-import os
 import unittest
-from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.management.configure import configure_ip_ssh_server_algorithm_hostkey
+from unittest import TestCase
+from unittest.mock import Mock
+
+from genie.libs.sdk.apis.iosxe.management.configure import (
+    configure_ip_ssh_server_algorithm_hostkey,
+)
 
 
-class TestConfigureIpSshServerAlgorithmHostkey(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          Bonjour_mDNS:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: c9600
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['Bonjour_mDNS']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureIpSshServerAlgorithmHostkey(TestCase):
 
     def test_configure_ip_ssh_server_algorithm_hostkey(self):
-        result = configure_ip_ssh_server_algorithm_hostkey(self.device, 'rsa-sha2-256')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.state_machine.current_state = "enable"
+        device.configure.return_value = None
+
+        result = configure_ip_ssh_server_algorithm_hostkey(
+            device,
+            "rsa-sha2-256",
+        )
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once()
+
+        sent_command = device.configure.call_args.args[0]
+        self.assertIsInstance(sent_command, str)
+        self.assertEqual(
+            sent_command,
+            "ip ssh server algorithm hostkey rsa-sha2-256",
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()

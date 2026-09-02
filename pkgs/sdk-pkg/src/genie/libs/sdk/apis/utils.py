@@ -18,7 +18,10 @@ import operator
 import psutil
 import pathlib
 import glob
+import math
 import threading
+from collections.abc import Mapping
+from concurrent.futures import ThreadPoolExecutor
 
 from time import strptime
 from datetime import datetime
@@ -51,8 +54,12 @@ from genie.libs.sdk.libs.utils.utils import connect_to_device, get_terminal_serv
                                             device_connection_provider_connect, verify_device_connection
 from genie.libs.sdk.powercycler import powercyclers
 from genie.libs.sdk.powercycler.base import PowerCycler
+from genie.libs.sdk.apis.server_route_lookup import (
+    find_server_route_for_device_ip,
+)
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
 from genie.libs.filetransferutils import FileServer
+from genie.libs.filetransferutils.bases.fileutils import redact_url_credentials
 
 # unicon
 from unicon.eal.dialogs import Dialog, Statement
@@ -62,6 +69,707 @@ from unicon import Connection
 from unicon.core.errors import SubCommandFailure, UniconBackendDecodeError
 
 log = logging.getLogger(__name__)
+
+
+def _runtime_proxy_get(value, key, default=None):
+    """Read a key from mapping-like or attribute-based proxy metadata."""
+    if value is None:
+        return default
+    if hasattr(value, 'get'):
+        return value.get(key, default)
+    return getattr(value, key, default)
+
+
+def _runtime_proxy_names(value):
+    """Normalize configured proxy names while preserving their order."""
+    if isinstance(value, str):
+        value = value.split(',')
+    if not isinstance(value, (list, tuple)):
+        return []
+    return list(dict.fromkeys(
+        str(name).strip() for name in value if str(name).strip()))
+
+
+def _runtime_proxy_ordered_services(server):
+    """Return a server's SSH proxy services in configured order."""
+    services = _runtime_proxy_get(server, 'services', {}) or {}
+    if not isinstance(services, Mapping):
+        return []
+    matches = []
+    for index, (name, service) in enumerate(services.items()):
+        application = _runtime_proxy_get(service, 'application')
+        protocol = _runtime_proxy_get(service, 'protocol')
+        if application != 'proxy' or protocol != 'ssh':
+            continue
+        order = _runtime_proxy_get(service, 'order')
+        matches.append((order if isinstance(order, int) else float('inf'),
+                        index, name, service))
+    matches.sort(key=lambda item: item[:2])
+    return [(name, service) for _, _, name, service in matches]
+
+
+def _runtime_proxy_metadata_candidates(servers):
+    """Return proxy server names ordered by service metadata and insertion."""
+    candidates = []
+    for index, (name, server) in enumerate(servers.items()):
+        services = _runtime_proxy_ordered_services(server)
+        if not services:
+            continue
+        order = _runtime_proxy_get(services[0][1], 'order')
+        candidates.append((order if isinstance(order, int) else float('inf'),
+                           index, name))
+    candidates.sort()
+    return [name for _, _, name in candidates]
+
+
+def _runtime_proxy_candidate_plan(device, fallback_proxy, servers):
+    """Build route scope and exact non-route fallback tiers for a device."""
+    testbed = _runtime_proxy_get(device, 'testbed')
+    testbed_custom = _runtime_proxy_get(testbed, 'custom', {}) or {}
+    devices = _runtime_proxy_get(testbed, 'devices', {}) or {}
+    device_custom = _runtime_proxy_get(device, 'custom', {}) or {}
+    testbed_config = _runtime_proxy_get(
+        testbed_custom, 'proxy_selection', {}) or {}
+    device_config = _runtime_proxy_get(
+        device_custom, 'proxy_selection', {}) or {}
+    global_candidates = _runtime_proxy_names(
+        _runtime_proxy_get(testbed_config, 'candidates', []))
+    device_candidates = _runtime_proxy_names(
+        _runtime_proxy_get(device_config, 'candidates', []))
+    configured = list(dict.fromkeys(device_candidates + global_candidates))
+    metadata = _runtime_proxy_metadata_candidates(servers)
+    rack = _runtime_proxy_get(device_custom, 'rack')
+    row = _runtime_proxy_get(device_custom, 'row')
+
+    rack_matches = [
+        name for name in metadata
+        if rack and _runtime_proxy_get(
+            _runtime_proxy_get(servers[name], 'custom', {}) or {}, 'rack'
+        ) == rack
+    ]
+    row_matches = [
+        name for name in metadata
+        if row and _runtime_proxy_get(
+            _runtime_proxy_get(servers[name], 'custom', {}) or {}, 'row'
+        ) == row
+    ]
+    default = ['proxy'] if 'proxy' in servers else []
+    current_name = str(fallback_proxy) if fallback_proxy is not None else None
+    current = [current_name] if (
+        current_name in servers or current_name in devices) else []
+    route_candidates = list(dict.fromkeys(
+        configured + metadata + rack_matches + row_matches + default +
+        current))
+    # Metadata-only discoveries remain route scope. Without route evidence,
+    # preserve the current static choice first, then honor only explicitly
+    # configured candidates before related rack/row/default fallbacks.
+    fallbacks = list(dict.fromkeys(
+        current + configured + rack_matches + row_matches + default))
+    return route_candidates, fallbacks
+
+
+def _runtime_proxy_device(device, name, server_converter=None):
+    """Resolve a proxy name to a generated server device or testbed device."""
+    try:
+        converter = server_converter
+        if converter is None:
+            converter = device.api.convert_server_to_linux_device
+        proxy = converter(name)
+    except Exception:
+        proxy = None
+    if proxy is None:
+        proxy = (_runtime_proxy_get(
+            _runtime_proxy_get(device, 'testbed'), 'devices', {}) or {}
+        ).get(name)
+    return proxy
+
+
+def _runtime_proxy_is_connected(proxy):
+    """Return whether a proxy reports an active connection."""
+    check = getattr(proxy, 'is_connected', None)
+    if callable(check):
+        try:
+            return check() is True
+        except Exception:
+            return False
+    return getattr(proxy, 'connected', False) is True
+
+
+def _runtime_proxy_disconnect(proxy):
+    """Best-effort disconnect a rejected runtime proxy candidate."""
+    try:
+        proxy.disconnect()
+    except Exception:
+        pass
+
+
+def _runtime_proxy_target_port(device):
+    """Return the active SSH target port for a device, defaulting to 22."""
+    connections = _runtime_proxy_get(device, 'connections', {}) or {}
+    via = _runtime_proxy_get(device, 'via')
+    if via and via in connections:
+        connection = connections[via]
+        protocol = str(
+            _runtime_proxy_get(connection, 'protocol', '')).lower()
+        value = _runtime_proxy_get(connection, 'port')
+        if value and (protocol == 'ssh' or str(via).lower() == 'ssh'):
+            return int(value)
+    for name, connection in connections.items():
+        if (name != 'defaults' and
+                str(_runtime_proxy_get(
+                    connection, 'protocol', '')).lower() == 'ssh' and
+                _runtime_proxy_get(connection, 'port')):
+            return int(_runtime_proxy_get(connection, 'port'))
+    return 22
+
+
+def _runtime_proxy_freeze(value):
+    """Convert nested proxy metadata into a stable, hashable cache value."""
+    if isinstance(value, Mapping):
+        return tuple(
+            (key, _runtime_proxy_freeze(item))
+            for key, item in value.items())
+    if isinstance(value, (list, tuple)):
+        return tuple(_runtime_proxy_freeze(item) for item in value)
+    try:
+        hash(value)
+    except TypeError:
+        return repr(value)
+    return value
+
+
+def _runtime_proxy_cache_state(device, cache=None, create=True):
+    """Return initialized caller- or device-owned runtime proxy cache state."""
+    if cache is not None:
+        state = cache
+    elif create:
+        state = device.__dict__.setdefault('_runtime_proxy_cache', {})
+    else:
+        state = device.__dict__.get('_runtime_proxy_cache')
+    if state is not None:
+        state.setdefault('selected', {})
+        state.setdefault('negative', {})
+    return state
+
+
+def _runtime_proxy_selection_key(
+        device, management_ips, route_candidates, servers, target_port,
+        target_probe, timeout, probe_fallback):
+    """Build the cache key for all inputs that affect proxy selection."""
+    metadata = {
+        name: {
+            key: _runtime_proxy_get(servers[name], key)
+            for key in ('address', 'services', 'management', 'interfaces',
+                        'custom', 'credentials')
+        }
+        for name in route_candidates if name in servers
+    }
+    return (
+        id(_runtime_proxy_get(device, 'testbed')),
+        _runtime_proxy_get(device, 'name'),
+        tuple(management_ips), tuple(route_candidates), target_port,
+        target_probe, timeout, probe_fallback,
+        _runtime_proxy_freeze(metadata),
+    )
+
+
+def _runtime_proxy_route_order(
+        device, management_ips, route_candidates, servers):
+    """Order route-matched candidates by address, prefix, and candidate."""
+    matches = []
+    route_matches = {}
+    for address_index, management_ip in enumerate(management_ips):
+        for candidate_index, name in enumerate(route_candidates):
+            if name not in servers:
+                continue
+            match = find_server_route_for_device_ip(
+                device, management_ip, {name: servers[name]})
+            if match:
+                matches.append((address_index, -match['prefix_length'],
+                                candidate_index, name, management_ip, match))
+    matches.sort()
+    ordered = []
+    for _, _, _, name, management_ip, match in matches:
+        if name not in route_matches:
+            ordered.append(name)
+            route_matches[name] = (management_ip, match)
+    return ordered, route_matches
+
+
+def _log_runtime_proxy_selection_decision(device, result, logger):
+    """Log one concise diagnostic record for a completed proxy decision."""
+    logger.info(
+        "Runtime proxy decision device=%s cache=%s selected_server=%s "
+        "management_ip=%s subnet=%s interface=%s connection=%s probe=%s "
+        "reason=%s",
+        _runtime_proxy_get(device, 'name', '<device>'),
+        'hit' if result.get('cache_hit') else 'miss',
+        result.get('server_name'), result.get('device_ip'),
+        result.get('subnet'), result.get('interface'),
+        'connected' if result.get('connected') else 'failed',
+        result.get('probe_status'), result.get('reason'))
+
+
+def _runtime_proxy_selection_result(
+        name, proxy, route_ip, target_port, route, target_proven,
+        probe_status, probes, failures, reason=None):
+    """Build the stable result dictionary returned by proxy selection."""
+    return {
+        'server_name': name,
+        'proxy_device': proxy,
+        'device_ip': route_ip,
+        'target_port': target_port,
+        'subnet': route['subnet'] if route else None,
+        'interface': route['interface'] if route else None,
+        'route_match': bool(route),
+        'route': route,
+        'connected': True,
+        'target_proven': target_proven,
+        'probe_status': probe_status,
+        'target_probes': probes,
+        'cache_hit': False,
+        'reason': reason or ('target_proven' if target_proven else (
+            'route_match' if route else 'fallback')),
+        'failures': list(failures),
+    }
+
+
+def _connectivity_result(host, port, status, method=None, output=None,
+                         error=None):
+    """Build the stable result shape used by the connectivity APIs."""
+    return {
+        'host': host,
+        'port': port,
+        'status': status,
+        'reachable': status == 'reachable',
+        'method': method,
+        'output': output,
+        'error': str(error) if error is not None else None,
+    }
+
+
+def _validate_tcp_port(port):
+    """Return a validated TCP port as an integer."""
+    try:
+        port = int(port)
+    except (TypeError, ValueError):
+        raise ValueError('port must be an integer between 1 and 65535')
+    if port < 1 or port > 65535:
+        raise ValueError('port must be an integer between 1 and 65535')
+    return port
+
+
+def _validate_tcp_target(host, port):
+    """Return a command-safe IP or hostname and validated TCP port."""
+    if not isinstance(host, str) or not host or host != host.strip():
+        raise ValueError('host must be a valid IP address or hostname')
+    if host.startswith('-'):
+        raise ValueError('host must not begin with "-"')
+
+    try:
+        ip_address(host)
+    except ValueError:
+        hostname = host[:-1] if host.endswith('.') else host
+        labels = hostname.split('.')
+        valid_label = re.compile(
+            r'^[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?$')
+        if (not hostname or len(hostname) > 253 or
+                any(not valid_label.fullmatch(label) for label in labels)):
+            raise ValueError('host must be a valid IP address or hostname')
+
+    return host, _validate_tcp_port(port)
+
+
+def _validate_probe_timeout(timeout):
+    """Return a finite, positive probe timeout in seconds."""
+    try:
+        timeout = float(timeout)
+    except (TypeError, ValueError):
+        raise ValueError('timeout must be a positive number')
+    if not math.isfinite(timeout) or timeout <= 0:
+        raise ValueError('timeout must be a positive number')
+    return timeout
+
+
+def _format_probe_timeout(timeout):
+    """Format a timeout without a redundant decimal for whole seconds."""
+    timeout = float(timeout)
+    return str(int(timeout)) if timeout.is_integer() else str(timeout)
+
+
+def _probe_tcp_host(host, port, timeout=3):
+    """Probe a TCP endpoint directly without an injected SDK device."""
+    try:
+        host, port = _validate_tcp_target(host, port)
+    except ValueError as exc:
+        return _connectivity_result(
+            host, port, 'invalid_target', error=exc)
+
+    try:
+        with socket.create_connection((host, port), timeout=timeout):
+            return _connectivity_result(host, port, 'reachable', 'python')
+    except socket.timeout as exc:
+        return _connectivity_result(
+            host, port, 'timeout', 'python', error=exc)
+    except (socket.gaierror, ConnectionRefusedError, OSError) as exc:
+        return _connectivity_result(
+            host, port, 'unreachable', 'python', error=exc)
+
+
+def probe_tcp_host(device, host, port, timeout=3):
+    """Probe a TCP endpoint from the local host using Python sockets.
+
+    Args:
+        device: pyATS device object. It is unused, but retained as the first
+            argument so the helper can be called through ``device.api``.
+        host (str): Hostname or IPv4/IPv6 address.
+        port (int): TCP port number.
+        timeout (float): Connection timeout in seconds.
+
+    Returns:
+        dict: A dictionary with stable ``host``, ``port``, ``status``,
+            ``reachable``, ``method``, ``output``, and ``error`` keys.
+            ``status`` is one of ``reachable``, ``unreachable``, ``timeout``,
+            or ``invalid_target``. ``method`` is ``python`` when a connection
+            is attempted; ``output`` and ``error`` are ``None`` when absent.
+    """
+    return _probe_tcp_host(host, port, timeout)
+
+
+def probe_tcp_hosts(device, hosts, port, timeout=3, workers=None):
+    """Probe one or more TCP endpoints concurrently from the local host.
+
+    Args:
+        device: pyATS device object. It is unused, but retained as the first
+            argument so the helper can be called through ``device.api``.
+        hosts (str or iterable): Target hostname(s) or IP address(es).
+        port (int): TCP port number used for every target.
+        timeout (float): Per-target connection timeout in seconds.
+        workers (int, optional): Maximum concurrent socket probes. Defaults to
+            the smaller of 32 and the number of targets.
+
+    Returns:
+        list: One stable result dictionary per input host, in input order.
+            Each dictionary contains ``host``, ``port``, ``status``,
+            ``reachable``, ``method``, ``output``, and ``error``. See
+            :func:`probe_tcp_host` for status semantics.
+    """
+    if isinstance(hosts, str):
+        hosts = [hosts]
+    hosts = list(hosts or [])
+    if not hosts:
+        return []
+    with ThreadPoolExecutor(max_workers=workers or min(32, len(hosts))) as pool:
+        return list(pool.map(
+            lambda host: _probe_tcp_host(host, port, timeout), hosts))
+
+
+_NMAP_RESULT_MARKER = '__GENIE_NMAP_RC__'
+_NC_RESULT_MARKER = '__GENIE_NC_RC__'
+
+
+def _remote_connectivity_result(
+        host, port, status, tool=None, command=None, stdout='', stderr='',
+        error=None, elapsed=0.0):
+    """Build the stable remote-probe result and its #4603 output alias."""
+    stdout = str(stdout or '').strip()
+    stderr = str(stderr or '').strip()
+    return {
+        'host': host,
+        'port': port,
+        'reachable': status == 'reachable',
+        'status': status,
+        'method': 'remote',
+        'tool': tool,
+        'command': command,
+        'stdout': stdout,
+        'stderr': stderr,
+        'error': str(error) if error is not None else None,
+        'elapsed': elapsed,
+        'output': stdout or stderr or None,
+    }
+
+
+def _split_command_result(output, marker):
+    """Return command diagnostics and an explicit shell result marker."""
+    output = str(output or '').replace('\r\n', '\n').replace('\r', '\n')
+    match = re.search(
+        r'(?:^|\n){}=(\d+)(?:\n|$)'.format(re.escape(marker)), output)
+    if match is None:
+        return output.strip(), None
+    diagnostics = (output[:match.start()] + output[match.end():]).strip()
+    return diagnostics, int(match.group(1))
+
+
+def _nmap_port_state(diagnostics, host, port):
+    """Return a requested-port state from the target's grepable Host line."""
+    target = str(host).rstrip('.').lower()
+    for line in diagnostics.splitlines():
+        host_record = re.match(
+            r'^Host:\s+(\S+)\s+\(([^)]*)\)\s+Ports:\s+(.+)$', line)
+        if host_record is None:
+            continue
+        reported_host, reported_name, port_fields = host_record.groups()
+        reported_values = {
+            reported_host.rstrip('.').lower(),
+            reported_name.rstrip('.').lower(),
+        }
+        if target not in reported_values:
+            continue
+        for field in port_fields.split(','):
+            parts = field.strip().split('/')
+            if (len(parts) >= 3 and parts[0] == str(port) and
+                    parts[2].lower() == 'tcp'):
+                return parts[1].lower()
+    return None
+
+
+def _remote_probe_result(output, host, port, tool, command, elapsed):
+    """Parse an explicit command outcome for the requested TCP port."""
+    marker = _NMAP_RESULT_MARKER if tool == 'nmap' else _NC_RESULT_MARKER
+    diagnostics, return_code = _split_command_result(output, marker)
+    if return_code is None:
+        return _remote_connectivity_result(
+            host, port, 'execution_error', tool, command,
+            stdout=diagnostics if tool == 'nmap' else '',
+            stderr=diagnostics if tool == 'nc' else '',
+            error='probe command did not return a result marker',
+            elapsed=elapsed), False
+    if return_code in (126, 127):
+        return _remote_connectivity_result(
+            host, port, 'unavailable', tool, command,
+            stdout=diagnostics if tool == 'nmap' else '',
+            stderr=diagnostics if tool == 'nc' else '',
+            error='{} cannot execute'.format(tool), elapsed=elapsed), True
+    if return_code != 0 and tool == 'nmap':
+        return _remote_connectivity_result(
+            host, port, 'execution_error', tool, command,
+            stdout=diagnostics,
+            error='nmap exited with status {}'.format(return_code),
+            elapsed=elapsed), False
+
+    if tool == 'nmap':
+        state = _nmap_port_state(diagnostics, host, port)
+        if state is not None:
+            status = 'reachable' if state == 'open' else 'unreachable'
+        elif re.search(r'host timeout|timed out', diagnostics, re.I):
+            status = 'timeout'
+        else:
+            status = 'unreachable'
+        return _remote_connectivity_result(
+            host, port, status, tool, command, stdout=diagnostics,
+            elapsed=elapsed), False
+
+    status = 'reachable' if return_code == 0 else (
+        'timeout' if re.search(r'timeout|timed out', diagnostics, re.I)
+        else 'unreachable')
+    return _remote_connectivity_result(
+        host, port, status, tool, command, stderr=diagnostics,
+        elapsed=elapsed), False
+
+
+def _remote_probe_command(host, port, timeout, method):
+    safe_host = shlex.quote(str(host))
+    safe_port = shlex.quote(str(port))
+    safe_timeout = shlex.quote(_format_probe_timeout(timeout))
+    if method == 'nmap':
+        ipv6 = '-6 ' if ':' in str(host) else ''
+        return ('nmap {0}-Pn -n -p {1} --host-timeout {2}s -oG - {3} '
+                "2>&1; status=$?; printf '\\n{4}=%s\\n' "
+                '"$status"').format(
+                    ipv6, safe_port, safe_timeout, safe_host,
+                    _NMAP_RESULT_MARKER)
+    if method == 'nc':
+        ipv6 = ' -6' if ':' in str(host) else ''
+        # OpenBSD and traditional netcat commonly require whole seconds.
+        nc_timeout = shlex.quote(str(max(1, math.ceil(timeout))))
+        return ('output=$(nc{0} -vz -w {1} {2} {3} 2>&1); status=$?; '
+                "printf '{4}=%s\\n%s' \"$status\" \"$output\"").format(
+                    ipv6, nc_timeout, safe_host, safe_port,
+                    _NC_RESULT_MARKER)
+    raise ValueError("method must be 'nmap' or 'nc'")
+
+
+def _remote_tool_available(remote, tool):
+    """Return whether a remote probe tool can be resolved."""
+    output = remote.execute('command -v {}'.format(tool))
+    output = str(output or '').strip()
+    return bool(output) and not _remote_tool_unavailable(output, tool)
+
+
+def _remote_tool_unavailable(value, tool):
+    """Return whether output or an exception says a tool cannot execute."""
+    text = str(value or '').strip().lower()
+    return ('{}: command not found'.format(tool) in text or
+            '{}: not found'.format(tool) in text or
+            '{}: permission denied'.format(tool) in text or
+            '{} cannot execute'.format(tool) in text or
+            '{} is not executable'.format(tool) in text)
+
+
+def _remote_probe_exception_result(
+        exc, host, port, tool, command, elapsed=0.0):
+    """Keep timeout, command, and transport failures distinguishable."""
+    text = str(exc).lower()
+    if (isinstance(exc, (socket.timeout, TimeoutError)) or
+            'timeout' in text or 'timed out' in text):
+        status = 'timeout'
+    elif isinstance(exc, SubCommandFailure):
+        status = 'execution_error'
+    else:
+        status = 'transport_error'
+    return _remote_connectivity_result(
+        host, port, status, tool, command, error=exc, elapsed=elapsed)
+
+
+def _execute_remote_probe(remote, host, port, timeout, tool):
+    """Execute one remote probe and report explicit tool unavailability."""
+    command = _remote_probe_command(host, port, timeout, tool)
+    started = time.monotonic()
+    try:
+        output = remote.execute(command, timeout=timeout + 5)
+    except Exception as exc:
+        elapsed = time.monotonic() - started
+        if _remote_tool_unavailable(exc, tool):
+            return _remote_connectivity_result(
+                host, port, 'unavailable', tool, command, error=exc,
+                elapsed=elapsed), True
+        return _remote_probe_exception_result(
+            exc, host, port, tool, command, elapsed), False
+    elapsed = time.monotonic() - started
+    return _remote_probe_result(
+        output, host, port, tool, command, elapsed)
+
+
+def probe_tcp_from_server(device, server, hosts, port, timeout=3):
+    """Probe TCP endpoints from a remote Linux server.
+
+    The server is connected through the pyATS testbed represented by
+    ``device``. The API prefers ``nmap`` and falls back to ``nc`` only when
+    nmap is unavailable or cannot execute. If neither utility is available,
+    probing is reported as unavailable. Results use ``method='remote'`` and
+    identify the selected executable in ``tool``.
+
+    Args:
+        device: Connected or connectable pyATS device whose testbed contains
+            the server definition.
+        server (str or object): Testbed server name or Linux device object.
+        hosts (str or iterable): Target hostname(s) or IP address(es).
+        port (int): TCP port to probe.
+        timeout (float): Per-target timeout in seconds.
+
+    Returns:
+        list: One result per input host, in input order. Each dictionary has
+            stable ``host``, ``port``, ``reachable``, ``status``, ``method``,
+            ``tool``, ``command``, ``stdout``, ``stderr``, ``error``,
+            ``elapsed``, and compatibility ``output`` keys. ``status`` may be
+            ``reachable``, ``unreachable``, ``timeout``, ``invalid_target``,
+            ``unavailable``, ``execution_error``, or ``transport_error``.
+    """
+    if isinstance(hosts, str):
+        hosts = [hosts]
+    hosts = list(hosts or [])
+    try:
+        port = _validate_tcp_port(port)
+    except ValueError as exc:
+        return [_remote_connectivity_result(
+            host, port, 'invalid_target', error=exc) for host in hosts]
+    try:
+        timeout = _validate_probe_timeout(timeout)
+    except ValueError as exc:
+        return [_remote_connectivity_result(
+            host, port, 'invalid_target', error=exc) for host in hosts]
+
+    results = [None] * len(hosts)
+    valid_targets = []
+    for index, host in enumerate(hosts):
+        try:
+            target, _ = _validate_tcp_target(host, port)
+        except ValueError as exc:
+            results[index] = _remote_connectivity_result(
+                host, port, 'invalid_target', error=exc)
+        else:
+            valid_targets.append((index, target))
+
+    if not valid_targets:
+        return results
+
+    remote = convert_server_to_linux_device(device, server) \
+        if isinstance(server, str) else server
+    if remote is None:
+        for index, host in valid_targets:
+            results[index] = _remote_connectivity_result(
+                host, port, 'unavailable', error='server is unavailable')
+        return results
+    if hasattr(remote, 'connect'):
+        remote.connect()
+
+    capability_command = 'command -v nmap'
+    try:
+        nmap_available = _remote_tool_available(remote, 'nmap')
+    except Exception as exc:
+        for index, host in valid_targets:
+            results[index] = _remote_probe_exception_result(
+                exc, host, port, 'nmap', capability_command)
+        return results
+
+    method = 'nmap' if nmap_available else None
+    nc_available = None
+    if method is None:
+        capability_command = 'command -v nc'
+        try:
+            nc_available = _remote_tool_available(remote, 'nc')
+        except Exception as exc:
+            for index, host in valid_targets:
+                results[index] = _remote_probe_exception_result(
+                    exc, host, port, 'nc', capability_command)
+            return results
+        method = 'nc' if nc_available else None
+
+    if not method:
+        for index, host in valid_targets:
+            results[index] = _remote_connectivity_result(
+                host, port, 'unavailable',
+                error='nmap and nc are not available')
+        return results
+
+    for target_position, (index, host) in enumerate(valid_targets):
+        result, tool_unavailable = _execute_remote_probe(
+            remote, host, port, timeout, method)
+        if method == 'nmap' and tool_unavailable:
+            if nc_available is None:
+                capability_command = 'command -v nc'
+                try:
+                    nc_available = _remote_tool_available(remote, 'nc')
+                except Exception as exc:
+                    for remaining_index, remaining_host in valid_targets[
+                            target_position:]:
+                        results[remaining_index] = (
+                            _remote_probe_exception_result(
+                                exc, remaining_host, port, 'nc',
+                                capability_command))
+                    return results
+            if not nc_available:
+                results[index] = result
+                for remaining_index, remaining_host in valid_targets[
+                        target_position + 1:]:
+                    results[remaining_index] = _remote_connectivity_result(
+                        remaining_host, port, 'unavailable',
+                        error='nmap cannot execute and nc is not available')
+                return results
+            method = 'nc'
+            result, tool_unavailable = _execute_remote_probe(
+                remote, host, port, timeout, method)
+        results[index] = result
+        if method == 'nc' and tool_unavailable:
+            for remaining_index, remaining_host in valid_targets[
+                    target_position + 1:]:
+                results[remaining_index] = _remote_connectivity_result(
+                    remaining_host, port, 'unavailable',
+                    error='nc cannot execute')
+            return results
+    return results
+
 
 def _cli(device, cmd, timeout, prompt):
     """ Send command to device and get the output
@@ -1077,6 +1785,171 @@ def bits_to_netmask(bits):
             str((0x0000ff00 & mask) >> 8) + '.' + str((0x000000ff & mask)))
 
 
+def _copy_proxy(device, allow_static_fallback=True):
+    """Return the legacy proxy, optionally replaced by runtime selection."""
+    from genie.libs.sdk.apis import proxy_selection as proxy_api
+
+    proxy = device.api.get_proxy()
+    runtime_config = proxy_api.proxy_selection_config(device)
+    if runtime_config:
+        try:
+            selection = proxy_api.select_runtime_proxy_for_device(
+                device,
+                fallback_proxy=proxy,
+                server_converter=device.api.convert_server_to_linux_device,
+                target_prober=device.api.probe_tcp_from_server,
+            )
+        except Exception as exc:
+            log.warning("Runtime proxy selection unavailable for %s: %s",
+                        getattr(device, 'name', '<device>'), exc)
+        else:
+            if selection:
+                return (selection['proxy_device'], selection['device_ip'],
+                        selection)
+        if not allow_static_fallback:
+            return None, None, None
+
+    if proxy:
+        proxy_dev = device.api.convert_server_to_linux_device(proxy) or \
+            device.testbed.devices.get(proxy)
+    else:
+        proxy_dev = None
+    management_ips = (
+        proxy_api.device_management_ips(device) if runtime_config else [])
+    return proxy_dev, management_ips[0] if management_ips else None, None
+
+
+def _url_authority_host(address):
+    """Bracket an IPv6 literal used as a URL authority."""
+    try:
+        return f'[{address}]' if ip_address(str(address)).version == 6 else str(address)
+    except ValueError:
+        return str(address)
+
+
+def _socat_protocol(protocol, remote_ip):
+    """Choose a relay protocol family from the relay's remote address."""
+    try:
+        family = ip_address(str(remote_ip)).version
+    except ValueError:
+        family = 4
+    return ('UDP' if protocol == 'tftp' else 'TCP') + str(family)
+
+
+def _copy_endpoint(device, *, mgmt_src_from_local=False, interface=None,
+                   require_runtime=False):
+    """Resolve the common local/proxy endpoint used by both copy flows."""
+    proxy_dev, selected_mgmt_ip, selection = _copy_proxy(
+        device, allow_static_fallback=not require_runtime)
+    if require_runtime and not selection:
+        raise RuntimeError('no remaining runtime proxy candidate')
+
+    if proxy_dev:
+        if not selection:
+            proxy_dev.connect()
+        local_ip = proxy_dev.api.get_local_ip()
+        management = getattr(device, 'management', {}) or {}
+        if selected_mgmt_ip:
+            mgmt_ip = selected_mgmt_ip
+        elif ipv4_address := management.get('address', {}).get('ipv4'):
+            try:
+                mgmt_ip = str(ip_interface(str(ipv4_address)).ip)
+            except ValueError:
+                # Preserve legacy device-object behavior for address wrappers
+                # that expose only an ``ip`` attribute.
+                mgmt_ip = str(getattr(ipv4_address, 'ip', ipv4_address))
+        else:
+            raise Exception('Device management IP address not found')
+        _, mgmt_src_ip = proxy_dev.api.get_route_iface_source_ip(
+            destination_ip=mgmt_ip)
+        mgmt_interface = management.get('interface')
+    else:
+        local_ip = device.api.get_local_ip()
+        if mgmt_src_from_local:
+            mgmt_ip, mgmt_src_ip_addresses = \
+                device.api.get_mgmt_ip_and_mgmt_src_ip_addresses(
+                    mgmt_src_ip=local_ip)
+        else:
+            mgmt_ip, mgmt_src_ip_addresses = \
+                device.api.get_mgmt_ip_and_mgmt_src_ip_addresses()
+        mgmt_interface = interface or device.api.get_mgmt_interface(
+            mgmt_ip=mgmt_ip)
+        mgmt_src_ip = local_ip if (
+            local_ip in mgmt_src_ip_addresses or
+            _management_session_uses_gateway(
+                device, mgmt_src_ip_addresses, mgmt_ip=mgmt_ip)
+        ) else None
+
+    if local_ip is None:
+        raise RuntimeError(
+            'Unable to determine local IP address, cannot copy file')
+    return {
+        'local_ip': local_ip,
+        'mgmt_src_ip': mgmt_src_ip,
+        'mgmt_interface': mgmt_interface,
+        'proxy_device': proxy_dev,
+        'selection': selection,
+    }
+
+
+class _ProxyPathError(RuntimeError):
+    """A confirmed failure in the selected proxy relay path."""
+
+
+def _copy_endpoint_authority(endpoint, protocol, local_port):
+    """Create any proxy relay and return the shared URL authority endpoint."""
+    proxy_port = None
+    proxy_dev = endpoint['proxy_device']
+    if proxy_dev:
+        log.info('Setting up port relay via proxy')
+        try:
+            proxy_port = proxy_dev.api.socat_relay(
+                remote_ip=endpoint['local_ip'], remote_port=local_port,
+                protocol=_socat_protocol(protocol, endpoint['local_ip']))
+        except Exception as exc:
+            raise _ProxyPathError(f'proxy relay failed: {exc}') from exc
+        if not proxy_port:
+            raise _ProxyPathError(
+                'proxy relay failed: no relay port was returned')
+    if not endpoint['mgmt_src_ip']:
+        raise RuntimeError(
+            'Unable to determine management IP address for file transfer')
+    return '{}:{}'.format(
+        _url_authority_host(endpoint['mgmt_src_ip']),
+        proxy_port if proxy_dev else local_port,
+    )
+
+
+def _copy_with_runtime_proxy_retry(device, endpoint_kwargs, operation):
+    """Retry one confirmed proxy-path failure with the next candidate."""
+    from genie.libs.sdk.apis import proxy_selection as proxy_api
+
+    first_error = None
+    for attempt in range(2):
+        try:
+            endpoint = _copy_endpoint(
+                device, require_runtime=attempt > 0, **endpoint_kwargs)
+        except Exception:
+            if first_error is not None:
+                raise first_error
+            raise
+        try:
+            return operation(endpoint)
+        except _ProxyPathError as exc:
+            selection = endpoint['selection']
+            if attempt == 0 and selection:
+                first_error = exc
+                proxy_api.invalidate_runtime_proxy_cache(
+                    device, selection['server_name'], reason=str(exc))
+                log.warning(
+                    "Runtime proxy %s failed during file transfer; retrying "
+                    "the next candidate", selection['server_name'])
+                continue
+            if first_error is not None:
+                raise first_error
+            raise
+
+
 def copy_to_device(device,
                    remote_path,
                    local_path=None,
@@ -1089,6 +1962,7 @@ def copy_to_device(device,
                    fu=None,
                    http_auth=True,
                    interface=None,
+                   port=None,
                    **kwargs):
     """
     Copy file from linux server to the device.
@@ -1108,6 +1982,7 @@ def copy_to_device(device,
                             prompting for a username and password
         http_auth (bool): Use http authentication (default: True)
         interface (str): Interface name in string (default: None)
+        port (int): optional server port for HTTP(S) transfers
 
     Returns:
         (str, None): console output if successful, None if not
@@ -1136,7 +2011,12 @@ def copy_to_device(device,
         else:
             server = fu.get_hostname(server, device)
 
-        # build the source address
+        if port and port != {'http': 80, 'https': 443}.get(protocol):
+            if ':' in server and not server.startswith('['):
+                server = '[{}]'.format(server)
+            server = '{}:{}'.format(server, port)
+        # Include the port only when it is not the protocol's default; this
+        # keeps the generated source URL compatible with existing transfers.
         source = '{p}://{s}/{f}'.format(p=protocol, s=server, f=remote_path)
         try:
             if vrf is not None:
@@ -1183,42 +2063,6 @@ def copy_to_device(device,
             else:
                 raise
 
-    # Check if we are connected via proxy device
-    proxy = device.api.get_proxy()
-
-    # check servers and devices for a proxy
-    if proxy:
-        proxy_dev = device.api.convert_server_to_linux_device(proxy) or \
-            device.testbed.devices.get(proxy)
-    else:
-        proxy_dev = None
-
-    # Try to figure out local IP address
-    if proxy_dev:
-        proxy_dev.connect()
-        local_ip = proxy_dev.api.get_local_ip()
-
-        if ipv4_address := device.management.get('address', {}).get('ipv4'):
-            mgmt_ip = str(ipv4_address.ip)
-            _, mgmt_src_ip = proxy_dev.api.get_route_iface_source_ip(destination_ip=mgmt_ip)
-            mgmt_src_ip_addresses = [mgmt_src_ip] if mgmt_src_ip else []
-            mgmt_interface = device.management.get('interface', None)
-        else:
-            raise Exception('Device management IPv4 address not found')
-    else:
-        local_ip = device.api.get_local_ip()
-        mgmt_ip, mgmt_src_ip_addresses = device.api.get_mgmt_ip_and_mgmt_src_ip_addresses()
-        mgmt_interface = kwargs.pop('interface', None) or device.api.get_mgmt_interface(mgmt_ip=mgmt_ip)
-
-        if (local_ip in mgmt_src_ip_addresses or _management_session_uses_gateway(device, mgmt_src_ip_addresses, mgmt_ip=mgmt_ip)):
-            mgmt_src_ip = local_ip
-        else:
-            mgmt_src_ip = None
-
-    if local_ip is None:
-        log.error('Unable to determine local IP address, cannot copy file')
-        return
-
     remote_path_parent = str(pathlib.PurePath(remote_path).parent)
     remote_filename = pathlib.PurePath(remote_path).name
 
@@ -1230,55 +2074,42 @@ def copy_to_device(device,
     # Re-instantiate FileUtils so it loads the correct implementation
     fu = FileUtils.from_device(device, protocol=protocol)
 
-    with FileServer(protocol=protocol,
-                    address=local_ip,
-                    path=remote_path_parent,
-                    custom=dict(http_auth=http_auth)) as fs:
-
-        local_port = fs.get('port')
-
-        proxy_port = None
-
-        if proxy_dev:
-            log.info('Setting up port relay via proxy')
-            socat_protocol = 'UDP4' if protocol == 'tftp' else 'TCP4'
-            proxy_port = proxy_dev.api.socat_relay(remote_ip=local_ip, remote_port=local_port, protocol=socat_protocol)
-
-        if protocol in ['scp', 'http', 'https']:
-            fs_credentials = fs.get('credentials', {}).get(protocol, {})
-            username = fs_credentials.get('username', '')
-            password = to_plaintext(fs_credentials.get('password', ''))
-            source = f'{protocol}://{username}:{password}@'
-        else:
-            source = f'{protocol}://'
-
-        if mgmt_src_ip and proxy_port:
-            source += '{}:{}/{}'.format(mgmt_src_ip, proxy_port, remote_filename)
-        elif mgmt_src_ip:
-            source += '{}:{}/{}'.format(mgmt_src_ip, local_port, remote_filename)
-        else:
-            log.error('Unable to determine management IP address to use to download file')
-            return
-
-        try:
+    def operation(endpoint):
+        with FileServer(protocol=protocol,
+                        address=endpoint['local_ip'],
+                        path=remote_path_parent,
+                        custom=dict(http_auth=http_auth)) as fs:
+            local_port = fs.get('port')
+            authority = _copy_endpoint_authority(
+                endpoint, protocol, local_port)
+            if protocol in ['scp', 'http', 'https']:
+                fs_credentials = fs.get('credentials', {}).get(protocol, {})
+                username = fs_credentials.get('username', '')
+                password = to_plaintext(fs_credentials.get('password', ''))
+                source = f'{protocol}://{username}:{password}@'
+            else:
+                source = f'{protocol}://'
+            source += f'{authority}/{remote_filename}'
             fu.validate_and_update_url = lambda url, *args, **kwargs: url  # override to avoid url changes
             fu.get_server = lambda *args, **kwargs: None  # override to suppress log messages
-
             return fu.copyfile(
                 source=source,
                 destination=local_path,
                 timeout_seconds=timeout,
                 device=device,
                 vrf=vrf,
-                interface=mgmt_interface,
+                interface=endpoint['mgmt_interface'],
                 compact=compact,
                 use_kstack=use_kstack,
                 protocol=protocol,
                 **kwargs)
 
-        except Exception:
-            log.error('Failed to transfer file', exc_info=True)
-            return
+    try:
+        return _copy_with_runtime_proxy_retry(
+            device, {'interface': interface}, operation)
+    except Exception:
+        log.error('Failed to transfer file', exc_info=True)
+        return
 
 
 def copy_from_device(device,
@@ -1290,6 +2121,7 @@ def copy_from_device(device,
                      timeout=300,
                      timestamp=False,
                      http_auth=True,
+                     port=None,
                      **kwargs):
     """
     Copy a file from the device to the server or local system (where the script is running).
@@ -1305,6 +2137,7 @@ def copy_from_device(device,
         timeout('int'): timeout value in seconds, default 300
         timestamp (bool): include timestamp in filename (default: False)
         http_auth (bool): Use http authentication (default: True)
+        port(int): optional server port for HTTP(S) transfers
 
     Returns:
         (str, None): console output if successful, None if not
@@ -1345,6 +2178,14 @@ def copy_from_device(device,
         # re-instantiate FileUtils object, now we have protocol
         fu = FileUtils.from_device(device, protocol=protocol)
 
+        if vrf is not None:
+            server = fu.get_hostname(server, device, vrf=vrf)
+        else:
+            server = fu.get_hostname(server, device)
+        if port and port != {'http': 80, 'https': 443}.get(protocol):
+            if ':' in server and not server.startswith('['):
+                server = '[{}]'.format(server)
+            server = '{}:{}'.format(server, port)
         destination = '{p}://{s}/{f}'.format(p=protocol, s=server, f=remote_path)
 
         if vrf is not None:
@@ -1360,42 +2201,6 @@ def copy_from_device(device,
                                device=device,
                                timeout_seconds=timeout,
                                **kwargs)
-
-    # Check if we are connected via proxy device
-    proxy = device.api.get_proxy()
-
-    # check servers and devices for a proxy
-    if proxy:
-        proxy_dev = device.api.convert_server_to_linux_device(proxy) or \
-            device.testbed.devices.get(proxy)
-    else:
-        proxy_dev = None
-
-    # Try to figure out local IP address
-    if proxy_dev:
-        proxy_dev.connect()
-        local_ip = proxy_dev.api.get_local_ip()
-
-        if ipv4_address := device.management.get('address', {}).get('ipv4'):
-            mgmt_ip = str(ipv4_address.ip)
-            _, mgmt_src_ip = proxy_dev.api.get_route_iface_source_ip(destination_ip=mgmt_ip)
-            mgmt_src_ip_addresses = [mgmt_src_ip] if mgmt_src_ip else []
-            mgmt_interface = device.management.get('interface', None)
-        else:
-            raise Exception('Device management IPv4 address not found')
-    else:
-        local_ip = device.api.get_local_ip()
-        mgmt_ip, mgmt_src_ip_addresses = device.api.get_mgmt_ip_and_mgmt_src_ip_addresses(mgmt_src_ip=local_ip)
-        mgmt_interface = device.api.get_mgmt_interface(mgmt_ip=mgmt_ip)
-
-        if (local_ip in mgmt_src_ip_addresses or _management_session_uses_gateway(device, mgmt_src_ip_addresses, mgmt_ip=mgmt_ip)):
-            mgmt_src_ip = local_ip
-        else:
-            mgmt_src_ip = None
-
-    if local_ip is None:
-        log.error('Unable to determine local IP address, cannot copy file')
-        return
 
     # Determine filename and path
     remote_path = remote_path or '.'
@@ -1421,37 +2226,22 @@ def copy_from_device(device,
     # Re-instantiate FileUtils so it loads the correct implementation
     fu = FileUtils.from_device(device, protocol=protocol)
 
-    with FileServer(protocol=protocol,
-                    address=local_ip,
-                    path=remote_path,
-                    custom=dict(http_auth=http_auth)) as fs:
-
-        local_port = fs.get('port')
-
-        proxy_port = None
-
-        if proxy_dev:
-            log.info('Setting up port relay via proxy')
-            socat_protocal = 'UDP4' if protocol == 'tftp' else 'TCP4'
-            proxy_port = proxy_dev.api.socat_relay(remote_ip=local_ip, remote_port=local_port, protocol=socat_protocal)
-
-        if protocol in ['scp', 'http', 'https']:
-            fs_credentials = fs.get('credentials', {}).get(protocol, {})
-            username = fs_credentials.get('username', '')
-            password = to_plaintext(fs_credentials.get('password', ''))
-            destination = f'{protocol}://{username}:{password}@'
-        else:
-            destination = f'{protocol}://'
-
-        if mgmt_src_ip and proxy_port:
-            destination += '{}:{}/{}'.format(mgmt_src_ip, proxy_port, filename)
-        elif mgmt_src_ip:
-            destination += '{}:{}/{}'.format(mgmt_src_ip, local_port, filename)
-        else:
-            log.error('Unable to determine management IP address to use to upload file')
-            return
-
-        try:
+    def operation(endpoint):
+        with FileServer(protocol=protocol,
+                        address=endpoint['local_ip'],
+                        path=remote_path,
+                        custom=dict(http_auth=http_auth)) as fs:
+            local_port = fs.get('port')
+            authority = _copy_endpoint_authority(
+                endpoint, protocol, local_port)
+            if protocol in ['scp', 'http', 'https']:
+                fs_credentials = fs.get('credentials', {}).get(protocol, {})
+                username = fs_credentials.get('username', '')
+                password = to_plaintext(fs_credentials.get('password', ''))
+                destination = f'{protocol}://{username}:{password}@'
+            else:
+                destination = f'{protocol}://'
+            destination += f'{authority}/{filename}'
             fu.validate_and_update_url = lambda url, *args, **kwargs: url  # override to avoid url changes
             fu.get_server = lambda *args, **kwargs: None  # override to suppress log messages
             return fu.copyfile(source=local_path,
@@ -1459,13 +2249,15 @@ def copy_from_device(device,
                                timeout_seconds=timeout,
                                device=device,
                                vrf=vrf,
-                               interface=mgmt_interface,
+                               interface=endpoint['mgmt_interface'],
                                protocol=protocol,
                                **kwargs)
-
-        except Exception:
-            log.error('Failed to transfer file', exc_info=True)
-            return
+    try:
+        return _copy_with_runtime_proxy_retry(
+            device, {'mgmt_src_from_local': True}, operation)
+    except Exception:
+        log.error('Failed to transfer file', exc_info=True)
+        return
 
 
 
@@ -1500,6 +2292,22 @@ def get_file_size_from_server(device,
                                           protocol,
                                           timeout=timeout,
                                           fu_session=fu)
+
+
+def _raise_redacted_file_size_error(error):
+    """Re-raise file-size errors without exposing URL credentials."""
+    raw_error = str(error)
+    display_error = redact_url_credentials(raw_error)
+
+    if isinstance(error, NotImplementedError):
+        raise NotImplementedError(display_error) from None
+
+    if isinstance(error, FileNotFoundError) or 'not found' in raw_error.lower():
+        raise FileNotFoundError(display_error) from None
+
+    raise Exception(
+        "Failed to get file size : {}".format(display_error)
+    ) from None
 
 
 def _get_file_size_from_server(device,
@@ -1540,7 +2348,10 @@ def _get_file_size_from_server(device,
         parsed = urlsplit(url)
         remote_ip = parsed.hostname
         if not remote_ip:
-            raise Exception(f'Unable to determine remote host from URL: {url}')
+            raise Exception(
+                "Unable to determine remote host from URL: "
+                f"{redact_url_credentials(url)}"
+            )
 
         default_ports = {
             'ftp': '21',
@@ -1561,46 +2372,50 @@ def _get_file_size_from_server(device,
             remote_port=remote_port,
             protocol=socat_protocol)
 
-        # Redirect the URL's netloc to proxy_host:relay_port, keeping any userinfo.
-        proxy_host = fu_session.get_hostname(proxy)
-        userinfo = ''
-        if parsed.username:
-            if parsed.password is not None:
-                userinfo = f'{parsed.username}:{parsed.password}@'
-            else:
-                userinfo = f'{parsed.username}@'
-        proxied_netloc_base = f'{userinfo}{proxy_host}'
-
-        proxied_url = urlunsplit((
-            parsed.scheme,
-            f'{proxied_netloc_base}:{relay_port}',
-            parsed.path,
-            parsed.query,
-            parsed.fragment,
-        ))
-
         try:
-            return fu_session.stat(target=proxied_url, timeout_seconds=timeout).st_size
+            # Redirect the URL's netloc to proxy_host:relay_port, keeping any
+            # userinfo.
+            proxy_host = fu_session.get_hostname(proxy)
+            userinfo = ''
+            if parsed.username:
+                if parsed.password is not None:
+                    userinfo = f'{parsed.username}:{parsed.password}@'
+                else:
+                    userinfo = f'{parsed.username}@'
+            proxied_netloc_base = f'{userinfo}{proxy_host}'
+
+            proxied_url = urlunsplit((
+                parsed.scheme,
+                f'{proxied_netloc_base}:{relay_port}',
+                parsed.path,
+                parsed.query,
+                parsed.fragment,
+            ))
+
+            return fu_session.stat(
+                target=proxied_url,
+                timeout_seconds=timeout,
+            ).st_size
+        except Exception as e:
+            _raise_redacted_file_size_error(e)
         finally:
             proxy_dev.api.stop_socat_relay(relay_id)
 
     # No proxy: do a direct stat on the validated URL.
     url = '{p}://{s}/{f}'.format(p=protocol, s=server, f=path)
-    url = fu_session.validate_and_update_url(url)
+    url = fu_session.validate_and_update_url(url, device=device)
     try:
         return fu_session.stat(target=url, timeout_seconds=timeout).st_size
     except NotImplementedError as e:
         log.warning(
             'The protocol {} does not support file listing, unable to get file '
             'size.'.format(protocol))
-        raise e from None
+        _raise_redacted_file_size_error(e)
     except FileNotFoundError as e:
         log.error("Can not find file {} on server {}".format(path, server))
-        raise e from None
+        _raise_redacted_file_size_error(e)
     except Exception as e:
-        if 'not found' in str(e):
-            raise FileNotFoundError(str(e))
-        raise Exception("Failed to get file size : {}".format(str(e)))
+        _raise_redacted_file_size_error(e)
 
 
 def modify_filename(device,
@@ -1818,6 +2633,23 @@ def tftp_config(device, server, cfg_block, timeout=120):
         device.execute('delete /force ' + FileName)
 
 
+def _ordered_ssh_services(server_block):
+    """Return SSH services by numeric order, then exported insertion order."""
+    services = server_block.get('services', {}) or {}
+    if not isinstance(services, Mapping):
+        return []
+    ordered = []
+    for index, (name, service) in enumerate(services.items()):
+        if not isinstance(service, Mapping) or service.get('protocol') != 'ssh':
+            continue
+        order = service.get('order')
+        ordered.append((service.get('application') != 'proxy',
+                        order if isinstance(order, int) else float('inf'),
+                        index, name, service))
+    ordered.sort(key=lambda item: item[:3])
+    return [(name, service) for _, _, _, name, service in ordered]
+
+
 def convert_server_to_linux_device(device, server):
     """
     Args
@@ -1833,12 +2665,40 @@ def convert_server_to_linux_device(device, server):
         hostname = fu.get_hostname(server)
 
     if server_block:
+        exported = getattr(device.testbed, 'servers', {}).get(
+            server, server_block)
+        exported = exported if isinstance(exported, Mapping) else server_block
+        services = copy.deepcopy(exported.get('services', {}) or {})
+        connection = {
+            'ip': hostname,
+            'protocol': 'ssh',
+            # A user SSH config may disable password authentication. Server
+            # blocks carry their own credentials, so make that authentication
+            # method available to Unicon for this generated connection.
+            'ssh_options': '-o PasswordAuthentication=yes',
+        }
+        ssh_services = _ordered_ssh_services(exported)
+        if ssh_services:
+            port = ssh_services[0][1].get('port')
+            if port is not None:
+                connection['port'] = _validate_tcp_port(port)
+        custom = copy.deepcopy(exported.get('custom', {}) or {})
+        custom.setdefault('abstraction', {'order': ['os']})
         return Device(
             name=server,
             os="linux",
             credentials=server_block.get("credentials"),
-            connections={"linux": {"ip": hostname, "protocol": "ssh"}},
-            custom={"abstraction": {"order": ["os"]}},
+            connections={"linux": connection},
+            custom=custom,
+            services=services,
+            # Credentials can contain pyATS SecretString/NestedAttrDict
+            # instances that are not deepcopy-safe.  They are already passed
+            # to Device through the dedicated credentials argument and are not
+            # server-selection metadata.
+            server_metadata=copy.deepcopy({
+                key: value for key, value in exported.items()
+                if key != 'credentials'
+            }),
             type="linux",
             testbed=device.testbed,
         )
@@ -2397,6 +3257,10 @@ def get_power_cycler_configs(device):
 
     for power_cycler in power_cyclers:
         power_cycler = dict(power_cycler)
+        if not power_cycler.get('host'):
+            raise Exception(
+                f"Powercycler host/IP is missing for device '{device.name}'."
+            )
         # Cyberswitching based powercyclers require the testbed object
         power_cycler['testbed'] = device.testbed
         power_cycler['device'] = device

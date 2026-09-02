@@ -28,19 +28,30 @@ execute:
     config-transaction:
       new_state: configure
     'copy tftp: bootflash:':
-      response:
-        - |-
-          Address or name of remote host [202.153.144.25]? 202.153.144.25
-          Source filename [/auto/tftp-blr-users3/ashpa/test.txt]? /auto/tftp-blr-users3/ashpa/test.txt
-          Destination filename [test.txt]? test.txt
-          Accessing tftp://202.153.144.25//auto/tftp-blr-users3/ashpa/test.txt...
-          Loading /auto/tftp-blr-users3/ashpa/test.txt from 202.153.144.25 (via GigabitEthernet0/0/0): !
-          [OK - 0 bytes]
-          
-          0 bytes copied in 0.028 secs (0 bytes/sec)
-      response_type: circular
+      new_state: copy_tftp_remote_host
     show version: ''
     term length 0: ''
     term width 0: ''
     show version | include operating mode: ''
   prompt: SPOKE3#
+copy_tftp_remote_host:
+  prompt: 'Address or name of remote host [202.153.144.25]? '
+  commands:
+    '202.153.144.25':
+      new_state: copy_tftp_source_filename
+copy_tftp_source_filename:
+  prompt: 'Source filename [/auto/tftp-blr-users3/ashpa/test.txt]? '
+  commands:
+    '/auto/tftp-blr-users3/ashpa/test.txt':
+      new_state: copy_tftp_destination_filename
+copy_tftp_destination_filename:
+  prompt: 'Destination filename [test.txt]? '
+  commands:
+    'test.txt':
+      response: |-
+        Accessing tftp://202.153.144.25//auto/tftp-blr-users3/ashpa/test.txt...
+        Loading /auto/tftp-blr-users3/ashpa/test.txt from 202.153.144.25 (via GigabitEthernet0/0/0): !
+        [OK - 32 bytes]
+
+        32 bytes copied in 0.028 secs (1142 bytes/sec)
+      new_state: execute

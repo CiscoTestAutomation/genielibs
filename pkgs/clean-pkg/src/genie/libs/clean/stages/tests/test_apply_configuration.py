@@ -1,7 +1,7 @@
 import logging
 import unittest
 
-from unittest.mock import Mock, call
+from unittest.mock import ANY, Mock, call
 
 from genie.libs.clean.stages.stages import ApplyConfiguration
 from genie.libs.clean.stages.tests.utils import  create_test_device
@@ -160,3 +160,25 @@ class Applyconfiguration(unittest.TestCase):
         # Steps should have been executed even without configuration
         self.assertGreater(len(steps.details), 0)
 
+
+class ApplyConfigurationTimeouts(unittest.TestCase):
+
+    def test_copy_run_start_uses_default_max_time(self):
+        steps = Steps()
+        configuration = 'interface ethernet2/1\nno shutdown'
+        device = Mock()
+        device.name = 'PE1'
+
+        stage = ApplyConfiguration()
+        stage.apply_configuration(
+            steps=steps, device=device, configuration=configuration,
+            config_stable_time=0,
+        )
+
+        device.configure.assert_called_once_with(
+            configuration, timeout=60, reply=ANY,
+        )
+        device.api.execute_copy_run_to_start.assert_called_once_with(
+            command_timeout=300,
+            copy_vdc_all=False,
+        )

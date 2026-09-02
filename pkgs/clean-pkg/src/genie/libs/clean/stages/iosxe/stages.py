@@ -687,6 +687,7 @@ class InstallRemoveInactive(BaseStage):
                     "install remove inactive",
                     service_dialog=install_remove_inactive_dialog,
                     timeout=timeout,
+                    prompt_recovery=False,
                 )
             except Exception as e:
                 step.failed("Failed to remove inactive packages",
@@ -724,6 +725,9 @@ class InstallImage(BaseStage):
 
         install_retry_attempts (int, optional): Number of times to retry install.
             Defaults to 2.
+
+        install_space_factor (int or float, optional): Multiplier on image size
+            used to verify free space before install. Defaults to 1.25.
 
         reload_wait (int, optional): The maximum time allowed, in seconds,
             to check the auto reload. Defaults to 150.
@@ -773,6 +777,11 @@ class InstallImage(BaseStage):
     VERIFY_RUNNING_IMAGE = True
     RELOAD_WAIT = 150
     INSTALL_RETRY_ATTEMPTS = 2
+    # 'install add' prechecks the payload size only and budgets nothing for the
+    # temporary working space bundle expansion needs. On IE-3300,
+    # 1.03x the image size cleared the precheck but died extracting rpboot,
+    # while 1.25x completed.
+    INSTALL_SPACE_FACTOR = 1.25
 
     # ============
     # Stage Schema
@@ -802,6 +811,8 @@ class InstallImage(BaseStage):
             default=VERIFY_RUNNING_IMAGE,
         ):
         bool,
+        Optional("install_space_factor"):
+        Or(int, float),
         Optional("reload_service_args"): {
             Optional("reload_creds"): str,
             Optional("prompt_recovery"): bool,
@@ -822,6 +833,7 @@ class InstallImage(BaseStage):
         "verify_ignore_startup_config",
         "verify_boot_variable",
         "verify_running_image",
+        "verify_install_space",
         "install_image"
     ]
 
@@ -987,6 +999,107 @@ class InstallImage(BaseStage):
                     step.failed(f"Boot variables are not correctly set to "
                                 f"{self.new_boot_var}")
 
+    def verify_install_space(self,
+                             steps,
+                             device,
+                             images,
+                             install_space_factor=INSTALL_SPACE_FACTOR):
+        with steps.start(
+                "Verify free space for bundle expansion") as step:
+
+            image_size = device.api.get_file_size(images[0])
+            if not image_size:
+                step.skipped(
+                    f"Could not determine the size of '{images[0]}'. Relying on "
+                    "the device precheck to validate free space.")
+                return
+
+            required_size = int(image_size * install_space_factor)
+
+            try:
+                if device.is_ha:
+                    directory = device.api.get_platform_default_dir(all_rp=True)
+                else:
+                    directory = device.api.get_platform_default_dir()
+            except Exception as e:
+                step.skipped(
+                    f"Could not determine the default directory on {device.name}, "
+                    f"skipping the free space check: {e}")
+                return
+
+            available_size = device.api.get_available_space(
+                directory[0] if device.is_ha else directory)
+
+            if device.is_ha:
+                # Use the lowest available space across all RP destinations.
+                # Treat any directory returning None as unverifiable.
+                for d in directory[1:]:
+                    avail = device.api.get_available_space(d)
+                    if avail is None:
+                        available_size = None
+                        break
+                    if available_size is None or avail < available_size:
+                        available_size = avail
+
+            log.info(
+                f"Image size {image_size} bytes, requiring {required_size} bytes "
+                f"free ({install_space_factor}x) for bundle expansion. "
+                f"Currently available: {available_size} bytes.")
+
+            if available_size is not None and available_size >= required_size:
+                step.passed(
+                    f"Device {device.name} has {available_size} bytes free, "
+                    f"{required_size} bytes required.")
+                return
+
+            log.info(
+                f"Freeing up disk space on {device.name} to reach "
+                f"{required_size} bytes.")
+
+            protected_files = get_protected_files(device, images[0])
+            if protected_files is None:
+                # packages.conf is missing or unreadable in bundle mode.
+                protected_files = [images[0].split(":")[-1].lstrip("/")]
+
+            # get_protected_files only covers the incoming image and the
+            # packages listed in packages.conf, so the image the device is
+            # currently running is otherwise a deletion candidate.
+            running_image = device.api.get_running_image()
+            if running_image:
+                running_image = running_image.split(":")[-1].lstrip("/")
+                if running_image not in protected_files:
+                    protected_files.append(running_image)
+
+            log.debug(f"Protected files are {protected_files}")
+
+            if device.is_ha:
+                protected_files = {
+                    def_dir: protected_files for def_dir in directory}
+
+            try:
+                free_space = device.api.free_up_disk_space(
+                    destination=directory,
+                    required_size=required_size,
+                    protected_files=protected_files,
+                    allow_deletion_failure=True,
+                    skip_deletion=False)
+            except Exception as e:
+                step.passx(
+                    f"Could not free up space on {device.name} because of {e}. "
+                    "Continuing with the install.")
+                return
+
+            if not free_space:
+                # The device precheck may still pass, so let the install run.
+                step.passx(
+                    f"Unable to reach {required_size} bytes free on "
+                    f"{device.name}. The device precheck only validates the "
+                    "payload size, so bundle expansion may still fail while "
+                    "extracting packages.")
+            else:
+                step.passed(
+                    f"Device {device.name} has enough space for bundle expansion.")
+
     def install_image(
         self,
         steps,
@@ -1039,7 +1152,7 @@ class InstallImage(BaseStage):
             if current_image == images[0]:
                 step.skipped("Images is already installed on the device.")
 
-            not_enough_space_pattern =  r".*FAILED: /(flash|bootflash) requires (\d+) KB of free space.*"
+            not_enough_space_pattern = r".*FAILED: /?(flash|bootflash):? requires (\d+) KB of free space.*"
 
             def _check_disk_space(spawn, context, session):
                 """Match the required space from the error message and set the flag to clean up space"""
@@ -1078,19 +1191,42 @@ class InstallImage(BaseStage):
                 setattr(device, 'issu_in_progress', True)
                 raise Exception("ISSU operation detected - device marked as in progress")
 
+            def _collect_install_log():
+                """Collect diagnostics without replacing the install error.
+
+                The device state after an install timeout is uncertain (it
+                may be rebooting, at a login/user EXEC prompt, or the
+                session may have dropped), so collect_install_log() is asked
+                to resynchronize the connection and reach enable mode
+                (reconnect=True) before running diagnostic commands.
+                """
+                try:
+                    device.api.collect_install_log(
+                        reconnect=True, reconnect_timeout=reload_wait)
+                except Exception as diagnostic_exception:
+                    log.error(
+                        "Install log collection failed after the original "
+                        "install error: %s",
+                        diagnostic_exception,
+                        exc_info=True,
+                    )
+                    return diagnostic_exception
+                return None
+
             def install_image_failing(device, step, context):
                 """
                 Handle install image failure by collecting install logs and
                 failing the step.
                 """
                 exception = context.get('exception')
-                try:
-                    device.api.collect_install_log()
-                except Exception as log_exc:
-                    log.error("Exception during collect_install_log: %s", log_exc, exc_info=True)
-                    step.failed("Failed to install the image (and collect_install_log also failed)", from_exception=exception)
-                else:
-                    step.failed("Failed to install the image", from_exception=exception)
+                diagnostic_exception = _collect_install_log()
+                reason = "Failed to install the image"
+                if diagnostic_exception:
+                    reason += (
+                        "; diagnostic collection also failed: "
+                        f"{diagnostic_exception}"
+                    )
+                step.failed(reason, from_exception=exception)
 
             install_success_detected = False
 
@@ -1143,7 +1279,11 @@ class InstallImage(BaseStage):
                     trim_buffer=False,
                 ),
                 Statement(
-                    pattern=r".*FAILED: install_add_activate_commit",
+                    pattern=(
+                        r".*FAILED: install_add"
+                        r"(?:_activate(?:_issu)?_commit)?"
+                        r"(?:\s+exit\(\d+\))?.*"
+                    ),
                     action=install_image_failing,
                     args={'device': device, 'step': step},
                     loop_continue=False,
@@ -1247,10 +1387,6 @@ class InstallImage(BaseStage):
                             "Install command reported success before reload handling "
                             "completed. Continuing with reload handling.")
                         break
-                    try:
-                        device.api.collect_install_log()
-                    except Exception as log_exc:
-                        log.error("Exception during collect_install_log: %s", log_exc, exc_info=True)
                     if getattr(device, 'issu_in_progress', None):
                         retry_count += 1
                         if retry_count < install_retry_attempts:
@@ -1299,8 +1435,22 @@ class InstallImage(BaseStage):
                                     log.info(f"Successfully created enough space for image on device {device.name}")
                             except Exception as e:
                                 step.failed(f"Could not free up space on the device {device.name} beacuse of {e}")
+                        else:
+                            step.failed(
+                                f"Failed to install image after {install_retry_attempts} attempts due to "
+                                f"insufficient space on device {device.name}.")
                     else:
-                        step.failed("Failed to install the image due to an unexpected error", from_exception=e)
+                        diagnostic_exception = _collect_install_log()
+                        reason = (
+                            "Failed to install the image "
+                            "due to an unexpected error"
+                        )
+                        if diagnostic_exception:
+                            reason += (
+                                "; diagnostic collection also failed: "
+                                f"{diagnostic_exception}"
+                            )
+                        step.failed(reason, from_exception=e)
 
             # Usually the device does auto reload after install operation
             # This logic is to handle if the device did not reload
@@ -3944,14 +4094,7 @@ class Connect(BaseStage):
         logout=LOGOUT
     ):
 
-        # If recovery is enabled, ignore rollup for all steps
-        section = self.parameters.internal.get('section')
-        disable_rollup = bool(section and getattr(section.parent, 'device_recovery_processor', None))
-
         with steps.start("Connecting to the device") as step:
-
-            if disable_rollup:
-                step.result_rollup = False
 
             log.info("Checking connection to device: %s" % device.name)
             # Create a timeout that will loop
@@ -4017,9 +4160,6 @@ class Connect(BaseStage):
                 f"Checking the current state of the device: {device.name}"
         ) as step:
 
-            if disable_rollup:
-                step.result_rollup = False
-
             log.info(
                 f"Checking the current state of the device: {device.name}")
 
@@ -4061,9 +4201,6 @@ class Connect(BaseStage):
                     "Setting the rommon variables and Booting the device from rommon"
             ) as step:
 
-                if disable_rollup:
-                    step.result_rollup = False
-
                 log.info(
                     "Setting the rommon variables and Booting the device from rommon"
                 )
@@ -4089,9 +4226,6 @@ class Connect(BaseStage):
 
         else:
             with steps.start("Log out from the device") as step:
-
-                if disable_rollup:
-                    step.result_rollup = False
 
                 # by default logout set as true
                 if logout:
@@ -4128,9 +4262,6 @@ class Connect(BaseStage):
         device.default.mit = False
         device.default.learn_hostname = False
         with steps.start("Initialize the device connection") as step:
-
-            if disable_rollup:
-                step.result_rollup = False
 
             try:
                 device.connection_provider.init_connection()
@@ -4500,17 +4631,11 @@ class SetControllerMode(BaseStage):
 
             _, password = device.api.get_username_password()
 
-            # Username: admin
-            # Password:
-            # Default admin password needs to be changed.
-            #
-            #
-            # Enter new password:
-            # Confirm password:
-            #
-            # Router# pnpa service discovery stop
-            generic_statements = GenericStatements()
-
+            # Statements specific to the `controller-mode` command and the
+            # default-admin password change it forces after the NVRAM reset.
+            # These are kept here because the platform reload dialog handles
+            # them with generic credential handling, which does not send the
+            # factory-default `admin` credentials or the configured password.
             controller_mode_dialog = Dialog([
                 Statement(
                     pattern=r"Continue\? \[confirm\]",
@@ -4548,30 +4673,15 @@ class SetControllerMode(BaseStage):
                     loop_continue=True,
                     continue_timer=False,
                 ),
-                Statement(
-                    pattern=r"Press RETURN to get started.*",
-                    action=f"sendline()",
-                    loop_continue=True,
-                    continue_timer=False,
-                ),
-                Statement(
-                    pattern=
-                    r"(.*?)Would you like to enter the initial configuration dialog\? \[yes/no\]:\s*",
-                    action=f"sendline(no)",
-                    loop_continue=True,
-                    continue_timer=False,
-                ),
-                Statement(
-                    pattern=
-                    r"(.*?)Would you like to enter the initial configuration dialog\? \[yes/no\]:\s*",
-                    action=f"sendline(no)",
-                    loop_continue=True,
-                    continue_timer=False,
-                ),
-                generic_statements.syslog_msg_stmt,
-                generic_statements.enable_secret_stmt,
-                generic_statements.enter_your_selection_stmt,
             ])
+
+            # Include the platform's reload dialog so that devices
+            # entering the grub prompt after reload are handled by
+            # the Unicon platform layer.
+            try:
+                controller_mode_dialog += device.reload.dialog
+            except AttributeError:
+                pass
 
             try:
                 device.execute(

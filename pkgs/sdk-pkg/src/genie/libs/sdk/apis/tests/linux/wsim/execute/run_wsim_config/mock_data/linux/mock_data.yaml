@@ -1,17 +1,3 @@
-configure:
-  commands:
-    end:
-      new_state: execute
-    line console 0:
-      new_state: configure_line
-    no logging console: ''
-  prompt: vSTA#
-configure_line:
-  commands:
-    end:
-      new_state: execute
-    exec-timeout 0: ''
-  prompt: vSTA#
 connect:
   commands:
     '':
@@ -23,16 +9,12 @@ connect:
   prompt: ''
 execute:
   commands:
-    config term:
-      new_state: configure
-    config-transaction:
-      new_state: configure
     configure client number total 1 ap 1:
       response:
         - |-
           Creating wireless client id 1 to 1
           Waiting... it may take minutes to clean up!
-           initializing the setup
+          initializing the setup
           00000000 reset system...
           00000603 stopped all clients
           00002621 stopped all virtual APs
@@ -59,7 +41,7 @@ execute:
           00000085 Wireless client mac and mtu set.
           00000094 Wireless client interfaces are link-up.
           00000122 Wireless client interface IPv6 disabled.
-          00000126 Wireless client id 1 to 1 are ready. 
+          00000126 Wireless client id 1 to 1 are ready.
           Start wpa_supplicant daemons...
           Done. [19ms]
           Start WebAutth daemon...
@@ -77,36 +59,44 @@ execute:
         - |-
           Applying WLC certificate...
           ...Connecting to ssh://9.2.45.15:22 (logfile is /tmp/wlc_ssh_session.log)...
-          
-          % Enter PEM-formatted CA certificate.
-          % End with a blank line or "quit" on a line by itself.
+
+          % Enter PEM-formatted CA certificate.
+
+          % End with a blank line or "quit" on a line by itself.
+
           ...Sending CA certificate...
-          % Enter PEM-formatted encrypted private General Purpose key.
-          % End with "quit" on a line by itself.
+          % Enter PEM-formatted encrypted private General Purpose key.
+
+          % End with "quit" on a line by itself.
+
           ...Sending private General Purpose key...
-          % Enter PEM-formatted General Purpose certificate.
-          % End with a blank line or "quit" on a line by itself.
+          % Enter PEM-formatted General Purpose certificate.
+
+          % End with a blank line or "quit" on a line by itself.
+
           ...Sending private General Purpose certificate...
-          % PEM files import succeeded.
-          
+          % PEM files import succeeded.
+
           ewlc_2#show wireless management trustpoint
-          
+
           Trustpoint Name  : manual_certs
           Certificate Info : Available
           Certificate Type : SSC
           Certificate Hash : 79df56bf1dc160ed44a83966e9b08e258a9b6c21
           Private key Info : Available
           FIPS suitability : Not Applicable
-          
+
           ewlc_2#write
           Building configuration...
           [OK]
+          vSTA#
+          vSTA#
       response_type: circular
     run wlc get capwap:
       response:
         - |-
           ...Connecting to ssh://9.2.45.15:22 (logfile is /tmp/wlc_ssh_session.log)...
-          
+
           Got capwap 17.9.2.52 from "show ap image file summary"
           CAPWAP version is set to 17.9.2.52
       response_type: circular
@@ -115,24 +105,20 @@ execute:
         - |-
           Removing WLC certificate...
           ...Connecting to ssh://9.2.45.15:22 (logfile is /tmp/wlc_ssh_session.log)...
-          
+
           ewlc_2(config)#no crypto pki trustpoint manual_certs
-          
+
           % Removing an enrolled trustpoint will destroy all certificates
-           received from the related Certificate Authority.
-          
+          received from the related Certificate Authority.
+
           Are you sure you want to do this? [yes/no]: y
           y
-          
+
           % Be sure to ask the CA administrator to revoke your certificates.
-          
+
           ewlc_2(config)#crypto key zeroize rsa manual_certs
           % Keys to be removed are named 'manual_certs'.
           % All router certs issued using these keys will also be removed.
           Do you really want to remove these keys? [yes/no]: y
       response_type: circular
-    show version: ''
-    term length 0: ''
-    term width 0: ''
-    show version | include operating mode: ''
   prompt: vSTA#

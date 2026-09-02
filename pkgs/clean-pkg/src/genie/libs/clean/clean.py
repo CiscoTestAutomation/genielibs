@@ -12,6 +12,7 @@ from pyats.aetest.container import TestContainer
 from pyats.log.utils import banner
 from pyats.aetest import processors
 from pyats.clean.bases import BaseCleaner
+from pyats.clean.exceptions import CleanRetryRequest
 from pyats.aetest.parameters import ParameterDict
 from pyats.aetest.sections import TestSection
 
@@ -25,7 +26,7 @@ from genie.libs.clean.utils import (
     get_image_handler)
 from genie.metaparser.util.schemaengine import Schema, Optional
 from genie.libs.clean.recovery import recovery_processor, block_section
-from genie.libs.clean.recovery.recovery import RecoveryOutcome, CONTINUE_RECOVERY
+from genie.libs.clean.recovery.recovery import RecoveryOutcome
 
 # Logger
 log = logging.getLogger(__name__)
@@ -213,27 +214,13 @@ class CleanTestcase(Testcase):
                 cls.history = self.history
                 cls.history[cls.uid] = cls
 
-                defer_result_rollup = (
-                    self.device_recovery_processor and
-                    cls.uid in CONTINUE_RECOVERY)
-
-                # Defer rollup so recovery can replace eligible stage failures.
-                new_section = StageSection(
-                    cls,
-                    parent=self,
-                    result_rollup=not defer_result_rollup)
+                new_section = StageSection(cls, parent=self)
 
                 # For some unknown reason, this is required for internal arguments
                 # like 'steps' and 'section' to be propagated. Do not remove.
                 cls.parameters.internal = new_section.parameters.internal
 
                 yield new_section
-
-                # Preserve results from execution paths that return before
-                # AEtest restores the deferred rollup.
-                if defer_result_rollup and not new_section.result_rollup:
-                    new_section.result_rollup = True
-                    new_section.result = new_section.result
 
                 # Recovery processors record flow decisions on the testcase so
                 # the stage result remains owned by the stage itself.
@@ -246,6 +233,9 @@ class CleanTestcase(Testcase):
                     recovery_outcome and recovery_outcome.continue_clean)
                 recovery_terminate = bool(
                     recovery_outcome and recovery_outcome.terminate_clean)
+
+                if recovery_outcome and recovery_outcome.retry_clean:
+                    self.parameters['clean_retry_request'] = recovery_outcome
 
                 if recovery_outcome and \
                         recovery_outcome.clean_flow_result is not None:
@@ -401,6 +391,20 @@ class DeviceClean(BaseCleaner):
             # 1. Figure out what section to run
             # 2. Run them
             result = clean_testcase()
+
+            retry_request = clean_testcase.parameters.get(
+                'clean_retry_request')
+
+            if retry_request:
+                # Reset AEtest flow state so the next worker begins at the
+                # first configured stage instead of inheriting this attempt's
+                # termination signal.
+                aetest.executer.goto_result = results.Skipped
+                aetest.executer.goto = []
+
+                raise CleanRetryRequest(
+                    retry_request.reason,
+                    stage=retry_request.stage_uid)
 
             if not result:
                 # change back to defaults so consecutive runs in a script wont

@@ -8,7 +8,8 @@ from dataclasses import dataclass
 
 # pyATS
 from pyats.async_ import pcall
-from pyats.results import Blocked, Failed, Passed, Passx
+from pyats.results import Blocked, Failed, Passed
+from pyats.aetest.steps import Steps
 from pyats.log.utils import banner
 
 from unicon.eal.dialogs import Statement
@@ -24,9 +25,6 @@ from genie.metaparser.util.schemaengine import Optional, Or
 # Logger
 log = logging.getLogger(__name__)
 
-CONTINUE_RECOVERY = ['Connect']
-
-
 @dataclass
 class RecoveryOutcome:
     stage_uid: str
@@ -36,6 +34,7 @@ class RecoveryOutcome:
     data: object = None
     continue_clean: bool = False
     terminate_clean: bool = False
+    retry_clean: bool = False
     block_following_sections: bool = False
     clean_flow_result: object = None
     from_exception: Exception = None
@@ -268,6 +267,7 @@ def recovery_processor(
         configure_console_speed=True,
         *,
         processor=None,
+        steps=None,
         ):
 
     '''
@@ -367,144 +367,196 @@ def recovery_processor(
     log.info('Starting Device Recovery checks!')
     # Get device
     device = section.parameters['device']
+    if steps is None:
+        steps = Steps()
+
     recovery_is_required = False
-    #check if device is in any known state
-    log.info(f'Check device {device.name} has valid unicon state.')
-    try:
-        if device.chassis_type == "quad":
-            for index, connection in enumerate(device.subconnections,1):
-                if device.get_rp_state(target=connection.alias) != 'IN_CHASSIS_STANDBY':
+    recovery_from_rommon = False
+
+    with steps.start('Check device reachability', continue_=True) as step:
+        #check if device is in any known state
+        log.info(f'Check device {device.name} has valid unicon state.')
+        try:
+            if device.chassis_type == "quad":
+                for index, connection in enumerate(device.subconnections,1):
+                    if device.get_rp_state(
+                            target=connection.alias) != 'IN_CHASSIS_STANDBY':
+                        bring_to_any_state(connection, connection_timeout)
+                        log.info(
+                            f'subconnection {index} is in '
+                            f'{connection.state_machine.current_state}')
+            elif hasattr(device, 'is_ha') and device.is_ha:
+                log.info('Device is HA! checking all the subconnections.')
+                for index, connection in enumerate(device.subconnections,1):
                     bring_to_any_state(connection, connection_timeout)
                     log.info(f'subconnection {index} is in {connection.state_machine.current_state}')
-        elif hasattr(device, 'is_ha') and device.is_ha:
-            log.info('Device is HA! checking all the subconnections.')
-            for index, connection in enumerate(device.subconnections,1):
-                bring_to_any_state(connection, connection_timeout)
-                log.info(f'subconnection {index} is in {connection.state_machine.current_state}')
-        else:
-            bring_to_any_state(device, connection_timeout)
-            log.info(f'Device is in {device.state_machine.current_state}')
-
-    except Exception as e:
-        log.exception(f'Could not bring device to any valid state! Continue with recovery because of {e}.')
-        recovery_is_required = True
-    # Device is in rommon. try to boot the device before continuing with other recovery steps
-    if hasattr(device, 'is_ha') and device.is_ha:
-        if not recovery_is_required and check_all_in_same_state(device, 'enable'):
-            log.info('Device is already connected. No need for device recovery.')
-            return
-        elif not recovery_is_required and check_all_in_same_state(device, 'rommon'):
-            log.info(f'device {device.name} is in rommon, booting the device!')
-            try:
-                device.api.device_recovery_boot()
-            except Exception as e:
-                log.exception('Could not boot device from rommon. Power cycling the device')
-                recovery_is_required = True
             else:
-                log.info('Successfully booted the device. No need for device recovery.')
-                return
+                bring_to_any_state(device, connection_timeout)
+                log.info(f'Device is in {device.state_machine.current_state}')
 
-        # Device is in valid unicon state but its not rommon or enable will try to disconnect and connect.
-        elif not recovery_is_required and check_any_connection_in_rommon(device):
-            log.info("One of the subconnection's is in rommon.\n"
-                    "device should be recovered.")
+        except Exception as e:
+            log.exception(
+                'Could not bring device to any valid state! Continue with '
+                f'recovery because of {e}.')
             recovery_is_required = True
-        elif not recovery_is_required:
-            if not _disconnect_reconnect(device):
-                recovery_is_required =True
-            else:
-                log.info('Successfully disconnect and connect to device.\n'
-                        'No Need to recover the device.')
-                return
-    # Single RP devices
-    else:
-        if not recovery_is_required and device.state_machine.current_state == 'rommon':
-            log.info(f'device {device.name} is in rommon booting the device!')
-            try:
-                device.api.device_recovery_boot()
-            except Exception as e:
-                log.info('Could not boot device from rommon. Power cycling the device')
+            step.errored(
+                'Could not bring device to any valid state.',
+                from_exception=e)
+
+        # Device is in rommon. try to boot the device before continuing with
+        # other recovery steps
+        if hasattr(device, 'is_ha') and device.is_ha:
+            if check_all_in_same_state(device, 'enable'):
+                log.info(
+                    'Device is already connected. No need for device recovery.')
+                step.passed('Device is already connected.')
+            elif check_all_in_same_state(device, 'rommon'):
+                recovery_is_required = True
+                recovery_from_rommon = True
+
+            # Device is in valid unicon state but its not rommon or enable
+            # will try to disconnect and connect.
+            elif check_any_connection_in_rommon(device):
+                log.info("One of the subconnection's is in rommon.\n"
+                        "device should be recovered.")
                 recovery_is_required = True
             else:
-                log.info('Successfully booted the device. No need for device recovery.')
-                return
+                try:
+                    reconnected = _disconnect_reconnect(device)
+                except Exception as e:
+                    recovery_is_required = True
+                    step.errored(
+                        'Could not validate device reachability.',
+                        from_exception=e)
+                if reconnected:
+                    log.info('Successfully disconnect and connect to device.\n'
+                            'No Need to recover the device.')
+                    step.passed('Device reconnect succeeded.')
+                else:
+                    recovery_is_required = True
+        # Single RP devices
+        else:
+            if device.state_machine.current_state == 'rommon':
+                recovery_is_required = True
+                recovery_from_rommon = True
 
-        # Device is in valid unicon state but its not rommon or enable will try to disconnect and connect.
-        elif not recovery_is_required and device.state_machine.current_state != 'enable':
-            if not _disconnect_reconnect(device):
-                recovery_is_required =True
+            # Device is in valid unicon state but its not rommon or enable
+            # will try to disconnect and connect.
+            elif device.state_machine.current_state != 'enable':
+                try:
+                    reconnected = _disconnect_reconnect(device)
+                except Exception as e:
+                    recovery_is_required = True
+                    step.errored(
+                        'Could not validate device reachability.',
+                        from_exception=e)
+                if reconnected:
+                    log.info('Successfully disconnect and connect to device.\n'
+                            'No Need to recover the device.')
+                    step.passed('Device reconnect succeeded.')
+                else:
+                    recovery_is_required = True
             else:
-                log.info('Successfully disconnect and connect to device.\n'
-                        'No Need to recover the device.')
-                return
+                step.passed('Device is already connected.')
 
-    if recovery_is_required:
-        # Not good! Lets attempt recovery
-        log.warning("Device '{}' is unreachable. Attempting to recover.".\
-                    format(device.name))
+        if recovery_is_required:
+            step.failed('Device recovery is required.')
 
-        # Start Recovery Processor
-        log.info(banner('Recovery Processor'))
-        log.info('''\
+    recovery_exception = None
+    recovery_succeeded = False
+    with steps.start('Recover the device', continue_=True) as step:
+        if not recovery_is_required:
+            step.skipped('Device recovery is not required.')
+
+        try:
+            if recovery_from_rommon:
+                log.info(
+                    f'device {device.name} is in rommon, booting the device!')
+                try:
+                    device.api.device_recovery_boot()
+                except Exception:
+                    log.exception(
+                        'Could not boot device from rommon. Power cycling '
+                        'the device')
+                else:
+                    log.info('Successfully booted the device.')
+                    recovery_succeeded = True
+
+            if not recovery_succeeded:
+                # Not good! Lets attempt recovery
+                log.warning(
+                    "Device '{}' is unreachable. Attempting to "
+                    "recover.".format(device.name))
+
+                # Start Recovery Processor
+                log.info(banner('Recovery Processor'))
+                log.info('''\
 Recovery Steps:
 1. Attempt to bring device to a valid state - Failed
 2. Clear line if provided
 3. Powercycler the device if provided
 4. From rommon, boot the device with golden image or TFTP boot ''')
+                _recovery_steps(device, clear_line, powercycler,
+                              powercycler_delay, reconnect_delay,
+                              configure_console_speed)
 
-        try:
-            _recovery_steps(device, clear_line, powercycler,
-                          powercycler_delay, reconnect_delay, configure_console_speed)
+            if post_recovery_configuration and not recovery_succeeded:
+                log.info('Applying post recovery configuration to the device')
+                device.configure(post_recovery_configuration)
         except Exception as e:
-            # Could not recover the device!
-            log.error(banner("*** Terminating Genie Clean ***"))
-            reason = "Recovery has failed to restore the device - Blocking clean"
-            _process_recovery_outcome(
-                section,
-                processor=processor,
-                processor_result=Failed,
-                reason=reason,
-                attempted=True,
-                terminate_clean=True,
-                block_following_sections=True,
-                clean_flow_result=Failed,
-                from_exception=e)
-            return
+            recovery_exception = e
+            step.failed('Device recovery failed.', from_exception=e)
+        else:
+            step.passed('Device recovery succeeded.')
 
-        if post_recovery_configuration:
-            log.info('Applying post recovery configuration to the device')
-            device.configure(post_recovery_configuration)
+    if recovery_succeeded and not recovery_exception:
+        log.info(
+            'Successfully booted the device. No need for device recovery.')
+        if processor is not None:
+            processor.passed(reason='Successfully booted the device.')
+        return
 
-    if recovery_is_required and section.uid not in CONTINUE_RECOVERY:
-        # Did not fail to recover but still terminate clean because the stage
-        # was not in CONTINUE_RECOVERY.
+    if not recovery_is_required:
+        log.info(
+            f'Device {device.name} is still connected. '
+            'No need to recover the device.')
+        return
+
+    processor_result = steps.result
+
+    if recovery_exception:
+        # Could not recover the device!
         log.error(banner("*** Terminating Genie Clean ***"))
-        reason = "Device '{d}' has been recovered - Terminating clean".format(
-            d=device.name)
+        reason = "Recovery has failed to restore the device - Blocking clean"
         _process_recovery_outcome(
             section,
             processor=processor,
-            processor_result=Passed,
+            processor_result=processor_result,
             reason=reason,
             attempted=True,
             terminate_clean=True,
             block_following_sections=True,
-            clean_flow_result=Blocked)
+            clean_flow_result=processor_result,
+            from_exception=recovery_exception)
         return
 
-    if recovery_is_required:
-        reason = "Device has been recovered. Continuing with pyATS Clean."
-        _process_recovery_outcome(
-            section,
-            processor=processor,
-            processor_result=Passx,
-            reason=reason,
-            attempted=True,
-            continue_clean=True,
-            section_result=Passx)
-        return
-    else:
-        log.info(f'Device {device.name} is still connected. No need to recover the device.')
+    # Recovery can invalidate work completed by earlier stages. End this
+    # attempt and let the Kleenex engine restart the complete device Clean
+    # workflow within its bounded retry budget.
+    log.error(banner("*** Terminating Genie Clean ***"))
+    reason = ("Device '{d}' has been recovered - Requesting a full "
+              "Clean retry").format(d=device.name)
+    _process_recovery_outcome(
+        section,
+        processor=processor,
+        processor_result=Passed,
+        reason=reason,
+        attempted=True,
+        terminate_clean=True,
+        retry_clean=True,
+        block_following_sections=True,
+        clean_flow_result=Blocked)
+    return
 
 def block_section(section):
     block = section.parent.parameters.get('clean_block')

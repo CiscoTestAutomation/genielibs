@@ -7286,3 +7286,83 @@ def configure_platform_filesystem_harddisk_online(device):
         raise SubCommandFailure(
             f"Failed to configure {cfg_cmd} on device {device.name}. Error:\n{e}"
         )
+
+
+def configure_platform_inspect_match_statistics_per_filter(device):
+    """ Enable ZBFW per-filter match statistics on device
+
+        Args:
+            device (`obj`): Device object
+        Returns:
+            output (`str`): Console output of the configure command
+        Raises:
+            SubCommandFailure
+    """
+    cmd = 'platform inspect match-statistics per-filter'
+    try:
+        return device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure {cmd} on device {device.name}. "
+            f"Error:\n{e}"
+        )
+
+
+def unconfigure_platform_inspect_match_statistics_per_filter(device):
+    """ Disable ZBFW per-filter match statistics on device
+
+        Args:
+            device (`obj`): Device object
+        Returns:
+            output (`str`): Console output of the configure command
+        Raises:
+            SubCommandFailure
+    """
+    cmd = 'no platform inspect match-statistics per-filter'
+    try:
+        return device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure {cmd} on device {device.name}. "
+            f"Error:\n{e}"
+        )
+
+
+def configure_platform_inspect_disable_all(device):
+    """ Disable all Zone-Based Firewall processing on device
+
+        Args:
+            device (`obj`): Device object
+        Returns:
+            output (`str`): Console output of the configure command
+        Raises:
+            SubCommandFailure
+    """
+    cmd = 'platform inspect disable-all'
+    try:
+        return device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure {cmd} on device {device.name}. "
+            f"Error:\n{e}"
+        )
+
+
+def unconfigure_platform_inspect_disable_all(device):
+    """ Re-enable all Zone-Based Firewall processing on device
+
+        Args:
+            device (`obj`): Device object
+        Returns:
+            output (`str`): Console output of the configure command
+        Raises:
+            SubCommandFailure
+    """
+    cmd = 'no platform inspect disable-all'
+    try:
+        return device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure {cmd} on device {device.name}. "
+            f"Error:\n{e}"
+        )

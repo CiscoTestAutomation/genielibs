@@ -12,7 +12,10 @@ import stat as libstat
 
 from urllib.parse import urlparse
 
-from genie.libs.filetransferutils.bases.fileutils import FileUtilsBase
+from genie.libs.filetransferutils.bases.fileutils import (
+    FileUtilsBase,
+    redact_url_credentials,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -50,20 +53,21 @@ class FileUtils(FileUtilsBase):
         """
         parsed_url = urlparse(url)
         username, password = self.get_auth(parsed_url.hostname)
+        display_url = redact_url_credentials(url)
         if parsed_url.username and parsed_url.username != username:
             logger.warning(
-                "The username {} passed as part of the url {} for method {} "
+                "The username passed as part of the url {} for method {} "
                 "does not match the username from the testbed object. The "
                 "fileutils module {} is ignoring the username from the url.".
-                format(parsed_url.username, url, calling_method,
+                format(display_url, calling_method,
                        self.__module__))
 
         if parsed_url.password and parsed_url.password != password:
             logger.warning(
-                "The password {} passed as part of the url {} for method {} "
+                "The password passed as part of the url {} for method {} "
                 "does not match the password from the testbed object. The "
                 "fileutils module {} is ignoring the password from the url.".
-                format(parsed_url.password, url, calling_method,
+                format(display_url, calling_method,
                        self.__module__))
 
         server_name_or_ip = parsed_url.hostname
@@ -120,7 +124,8 @@ class FileUtils(FileUtilsBase):
             *args, **kwargs):
 
         logger.info("Copying file from {} to {} ...".\
-            format(source, destination))
+            format(redact_url_credentials(source),
+                   redact_url_credentials(destination)))
 
         parsed_source = urlparse(source)
         parsed_destination = urlparse(destination)
@@ -152,7 +157,7 @@ class FileUtils(FileUtilsBase):
              timeout_seconds=DEFAULT_TIMEOUT_SECONDS, *args, **kwargs):
 
         logger.info("Retrieving directory listing for {} ...".\
-            format(target))
+            format(redact_url_credentials(target)))
 
         parsed_url = urlparse(target)
         scheme = parsed_url.scheme
@@ -173,7 +178,11 @@ class FileUtils(FileUtilsBase):
     def stat(self, target,
              timeout_seconds=DEFAULT_TIMEOUT_SECONDS, *args, **kwargs):
 
-        logger.info("Retrieving details for file {} ...".format(target))
+        logger.info(
+            "Retrieving details for file {} ...".format(
+                redact_url_credentials(target)
+            )
+        )
 
         parsed_url = urlparse(target)
         scheme = parsed_url.scheme
@@ -194,7 +203,7 @@ class FileUtils(FileUtilsBase):
              timeout_seconds=DEFAULT_TIMEOUT_SECONDS, *args, **kwargs):
 
         logger.info("Setting permissions of file {} to {} ...".\
-            format(target, libstat.filemode(mode)))
+            format(redact_url_credentials(target), libstat.filemode(mode)))
 
         parsed_url = urlparse(target)
         scheme = parsed_url.scheme
@@ -215,7 +224,8 @@ class FileUtils(FileUtilsBase):
     def deletefile(self, target,
              timeout_seconds=DEFAULT_TIMEOUT_SECONDS, *args, **kwargs):
 
-        logger.info("Deleting file {} ...".format(target))
+        logger.info("Deleting file {} ...".format(
+            redact_url_credentials(target)))
 
         parsed_url = urlparse(target)
         scheme = parsed_url.scheme
@@ -236,7 +246,8 @@ class FileUtils(FileUtilsBase):
             timeout_seconds=DEFAULT_TIMEOUT_SECONDS, *args, **kwargs):
 
         logger.info("Renaming file {} to {} ...".\
-            format(source, destination))
+            format(redact_url_credentials(source),
+                   redact_url_credentials(destination)))
 
         parsed_source = urlparse(source)
         parsed_destination = urlparse(destination)
@@ -282,7 +293,8 @@ class FileUtils(FileUtilsBase):
         timeout_seconds : `int`
             Maximum allowed amount of time for the operation.
         """
-        logger.info("Retrieving available disk space at {}...".format(target))
+        logger.info("Retrieving available disk space at {}...".format(
+            redact_url_credentials(target)))
         parsed_url = urlparse(target)
         scheme = parsed_url.scheme
         if self.is_local(target):
@@ -337,7 +349,7 @@ class FileUtils(FileUtilsBase):
             command returns a result.
         """
         if command:
-            logger.info("Executing command %s" % command)
+            logger.info("Executing command %s" % redact_url_credentials(command))
             args = shlex.split(command)
             subprocess.check_call(args, timeout=timeout_seconds, shell=False,
                 **kwargs)

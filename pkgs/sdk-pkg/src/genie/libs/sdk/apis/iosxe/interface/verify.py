@@ -1613,3 +1613,157 @@ def verify_interface_counters_increment(
                     return False
         timeout.sleep()
     return False
+
+
+def verify_interfaces_trunk(
+        device, interface, mode=None, encapsulation=None, status=None,
+        native_vlan=None, vlans_allowed_on_trunk=None,
+        vlans_allowed_active_in_mgmt_domain=None,
+        vlans_in_stp_forwarding_not_pruned=None, max_time=300, interval=5
+    ):
+    '''Verify args in show interface trunk output
+    Args:
+        device (`obj`): Device object
+        interface (`str`): Interface name
+        mode (`str`): Interface mode
+        encapsulation (`str`): Interface encapsulation
+        status (`str`): Interface status
+        native_vlan (`str`): Interface native_vlan
+        vlans_allowed_on_trunk (`str`): Interface vlans_allowed_on_trunk
+        vlans_allowed_active_in_mgmt_domain (`str`):
+            Interface vlans_allowed_active_in_mgmt_domain
+        vlans_in_stp_forwarding_not_pruned (`str`):
+            Interface vlans_in_stp_forwarding_not_pruned
+        max_time (`int`): max time
+        interval (`int`): check interval
+    Returns:
+        True/False
+    '''
+    def check_interfaces_trunk(
+            device, interface, mode, encapsulation, status, native_vlan,
+            vlans_allowed_on_trunk, vlans_allowed_active_in_mgmt_domain,
+            vlans_in_stp_forwarding_not_pruned
+        ):
+        result = device.parse(f'show interfaces {interface} trunk')
+        intf_turnk = result['interface'].get(interface, None)
+        if intf_turnk is None:
+            msg = f'Interface {interface} not found in ' + \
+                  'show interfaces trunk output'
+            return ('False', msg)
+        if mode and intf_turnk['mode'] != mode:
+            msg = f'Expect Interface {interface} mode {mode}, ' + \
+                  f'but got {intf_turnk["mode"]}'
+            return ('False', msg)
+        if encapsulation and intf_turnk['encapsulation'] != encapsulation:
+            msg = f'Expect Interface {interface} encapsulation ' +\
+                  f'{encapsulation}, but got {intf_turnk["encapsulation"]}'
+            return ('False', msg)
+        if status and intf_turnk['status'] != status:
+            msg = f'Expect Interface {interface} status {status}, ' + \
+                  f'but got {intf_turnk["status"]}'
+            return ('False', msg)
+        if native_vlan and intf_turnk['native_vlan'] != native_vlan:
+            msg = f'Expect Interface {interface} native_vlan {native_vlan}' + \
+                  f', but got {intf_turnk["native_vlan"]}'
+            return ('False', msg)
+        if vlans_allowed_on_trunk and \
+                intf_turnk['vlans_allowed_on_trunk'] != vlans_allowed_on_trunk:
+            msg = f'Expect Interface {interface} vlans_allowed_on_trunk ' + \
+                  f'{vlans_allowed_on_trunk}, ' +\
+                  f'but got {intf_turnk["vlans_allowed_on_trunk"]}'
+            return ('False', msg)
+        if vlans_allowed_active_in_mgmt_domain and \
+                intf_turnk['vlans_allowed_active_in_mgmt_domain'] != \
+                    vlans_allowed_active_in_mgmt_domain:
+            msg = f'Expect Interface {interface} ' + \
+                  'vlans_allowed_active_in_mgmt_domain ' + \
+                  f'{vlans_allowed_active_in_mgmt_domain}, but got ' + \
+                  f'{intf_turnk["vlans_allowed_active_in_mgmt_domain"]}'
+            return ('False', msg)
+        if vlans_in_stp_forwarding_not_pruned and \
+                intf_turnk['vlans_in_stp_forwarding_not_pruned'] != \
+                    vlans_in_stp_forwarding_not_pruned:
+            msg = f'Expect Interface {interface} ' + \
+                  'vlans_in_stp_forwarding_not_pruned ' + \
+                  f'{vlans_in_stp_forwarding_not_pruned}, ' + \
+                  f'but got {intf_turnk["vlans_in_stp_forwarding_not_pruned"]}'
+            return ('False', msg)
+        return (True, '')
+    timeout = Timeout(max_time, interval)
+    while timeout.iterate():
+        res = check_interfaces_trunk(
+                device, interface, mode, encapsulation, status, native_vlan,
+                vlans_allowed_on_trunk, vlans_allowed_active_in_mgmt_domain,
+                vlans_in_stp_forwarding_not_pruned
+            )
+        if res[0] is True:
+            return True
+        else:
+            log.warning(res[1])
+            timeout.sleep()
+    else:
+        log.error(res[1])
+        return False
+
+
+def verify_show_interfaces_switchport(
+        device, interface, switchport_mode=None, operational_mode=None,
+        access_vlan=None, native_vlan=None, max_time=60, interval=10
+    ):
+    '''Verify args in show interface switchport output
+    Args:
+        device (`obj`): Device object
+        interface (`str`): Interface name
+        switchport_mode (`str`): Interface switchport_mode
+        operational_mode (`str`): Interface operational_mode
+        access_vlan (`str`): Interface access_vlan
+        native_vlan (`str`): Interface native_vlan
+        max_time (`int`): max time
+        interval (`int`): check interval
+    Returns:
+        True/False
+    '''
+    def check_show_interfaces_switchport(
+            device, interface, switchport_mode,
+            operational_mode, access_vlan, native_vlan
+        ):
+        res = device.parse(f'show interfaces {interface} switchport')
+        if switchport_mode is not None:
+            if res[interface]['switchport_mode'] != switchport_mode:
+                msg = f'Verify "show interfaces {interface} switchport" ' + \
+                      f'Failed: Expect switchport_mode {switchport_mode}, ' + \
+                      f'but got {res[interface]["switchport_mode"]}'
+                return (False, msg)
+        if operational_mode is not None:
+            if res[interface]['operational_mode'] != operational_mode:
+                msg = f'Verify "show interfaces {interface} switchport" ' + \
+                      f'Failed: Expect operational_mode {operational_mode}' + \
+                      f', but got {res[interface]["operational_mode"]}'
+                return (False, msg)
+        if access_vlan is not None:
+            if res[interface]['access_vlan'] != access_vlan:
+                msg = f'Verify "show interfaces {interface} switchport" ' + \
+                      f'Failed: Expect access_vlan {access_vlan}, ' + \
+                      f'but got {res[interface]["access_vlan"]}'
+                return (False, msg)
+        if native_vlan is not None:
+            if res[interface]['encapsulation']['native_vlan'] != native_vlan:
+                msg = f'Verify "show interfaces {interface} switchport" ' + \
+                      f'Failed: Expect native_vlan {native_vlan}, but ' + \
+                      f'got {res[interface]["encapsulation"]["native_vlan"]}'
+                return (False, msg)
+        return (True, '')
+    timeout = Timeout(max_time, interval)
+    while timeout.iterate():
+        res = check_show_interfaces_switchport(
+                device, interface, switchport_mode,
+                operational_mode, access_vlan, native_vlan
+            )
+        if res[0] is True:
+            return True
+        else:
+            log.warning(res[1])
+            timeout.sleep()
+    else:
+        log.error(res[1])
+        return False

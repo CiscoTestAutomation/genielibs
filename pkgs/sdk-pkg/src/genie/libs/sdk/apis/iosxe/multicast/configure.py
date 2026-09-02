@@ -938,7 +938,7 @@ def configure_ipv6_pim_rp_address(device, address):
         ])
     except SubCommandFailure as e:
         raise SubCommandFailure(
-            "Could not configure ipv6 pim rp-address {address}. Error:\n{error}".format(naaddressme=address, error=e)
+            "Could not configure ipv6 pim rp-address {address}. Error:\n{error}".format(address=address, error=e)
         )
 
 def unconfigure_ipv6_pim_rp_address(device, address):
@@ -960,49 +960,70 @@ def unconfigure_ipv6_pim_rp_address(device, address):
             "Could not unconfigure ipv6 pim rp-address {address}. Error:\n{error}".format(address=address, error=e)
         )
 
-def configure_ipv6_mld_join_group(device, address, interface_id):
-    """ Configure Enable ipv6 mld join-group
+def configure_ipv6_mld_join_group(device, address, interface_id, source=None):
+    """Configure an IPv6 MLD join group with an optional source.
+
     Args:
         device (`obj`): Device object
-        address ('str'): ipv6 address
-        interface_id ('str'): id of the interface to be configured
-    Return:
+        address (`str`): IPv6 multicast group address
+        interface_id (`str`): Interface to be configured
+        source (`str`, optional): IPv6 source address
+
+    Returns:
         None
-    Raise:
-        SubCommandFailure: Failed configuring
+
+    Raises:
+        SubCommandFailure: Failed to configure the MLD join group
     """
+    join_group_cmd = f"ipv6 mld join-group {address}"
+
+    if source is not None:
+        join_group_cmd += f" include {source}"
+
     cmd = [
-            f"interface {interface_id}",
-            f"ipv6 mld join-group {address}",
-          ]
+        f"interface {interface_id}",
+        join_group_cmd,
+    ]
+
     try:
         device.configure(cmd)
-
     except SubCommandFailure as e:
         raise SubCommandFailure(
-            "Could not configure ipv6 mld join-group  {address}. Error:\n{error}".format(address=address, error=e)
+            f"Could not configure IPv6 MLD join-group {address} "
+            f"on interface {interface_id}. Error:\n{e}"
         )
-def unconfigure_ipv6_mld_join_group(device, address, interface_id):
-    """ Unconfigure Enable ipv6 mld join-group
+
+def unconfigure_ipv6_mld_join_group(device, address, interface_id, source=None):
+    """Unconfigure an IPv6 MLD join group with an optional source.
+
     Args:
         device (`obj`): Device object
-        address ('str'): ipv6 address
-        interface_id ('str'): id of the interface to be configured
-    Return:
+        address (`str`): IPv6 multicast group address
+        interface_id (`str`): Interface to be unconfigured
+        source (`str`, optional): IPv6 source address
+
+    Returns:
         None
-    Raise:
-        SubCommandFailure: Failed configuring
+
+    Raises:
+        SubCommandFailure: Failed to unconfigure the MLD join group
     """
+    join_group_cmd = f"no ipv6 mld join-group {address}"
+
+    if source is not None:
+        join_group_cmd += f" include {source}"
+
     cmd = [
-            f"interface {interface_id}",
-            f"no ipv6 mld join-group {address}",
-          ]
+        f"interface {interface_id}",
+        join_group_cmd,
+    ]
+
     try:
         device.configure(cmd)
-
     except SubCommandFailure as e:
         raise SubCommandFailure(
-            "Could not unconfigure ipv6 mld join-group  {address}. Error:\n{error}".format(address=address, error=e)
+            f"Could not unconfigure IPv6 MLD join-group {address} "
+            f"on interface {interface_id}. Error:\n{e}"
         )
 
 def configure_ipv6_mld_snooping_vlan_static_interface(device, vlan_id, address, interface_id):
@@ -2235,3 +2256,103 @@ def unconfigure_ip_igmp_access_group(device, interface, acl_name):
         raise SubCommandFailure(
             f"Could not unconfigure ip igmp access-group {acl_name} on interface. Error:\n{e}")
     return out
+
+def configure_ipv6_mld_version(device, interface, version):
+    """Configure IPv6 MLD version on an interface.
+
+    Args:
+        device (`obj`): Device object
+        interface (`str`): Interface to be configured
+        version (`int` or `str`): MLD version
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure: Failed configuring IPv6 MLD version
+    """
+    cmd = [
+        f"interface {interface}",
+        f"ipv6 mld version {version}",
+    ]
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure IPv6 MLD version "
+            f"{version} on interface {interface}. Error:\n{e}"
+        )
+
+def unconfigure_ipv6_mld_version(device, interface, version):
+    """Unconfigure IPv6 MLD version on an interface.
+
+    Args:
+        device (`obj`): Device object
+        interface (`str`): Interface to be unconfigured
+        version (`int` or `str`): MLD version
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure: Failed unconfiguring IPv6 MLD version
+    """
+    cmd = [
+        f"interface {interface}",
+        f"no ipv6 mld version {version}",
+    ]
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure IPv6 MLD version "
+            f"{version} on interface {interface}. Error:\n{e}"
+        )
+
+def configure_pim_spt_threshold(device, threshold):
+    """Configure the PIM SPT threshold.
+
+    Args:
+        device (`obj`): Device object
+        threshold (`str` or `int`): PIM SPT threshold value
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure: Failed to configure the PIM SPT threshold
+    """
+    cmd = f"ip pim spt-threshold {threshold}"
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure PIM SPT threshold {threshold}. "
+            f"Error:\n{e}"
+        )
+
+def unconfigure_pim_spt_threshold(device, threshold):
+    """Unconfigure the PIM SPT threshold.
+
+    Args:
+        device (`obj`): Device object
+        threshold (`str` or `int`): PIM SPT threshold value
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure: Failed to unconfigure the PIM SPT threshold
+    """
+    cmd = f"no ip pim spt-threshold {threshold}"
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure PIM SPT threshold {threshold}. "
+            f"Error:\n{e}"
+        )

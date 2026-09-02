@@ -4,6 +4,7 @@
 import re
 import logging
 from datetime import datetime
+from genie.utils.timeout import Timeout
 
 # Genie
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
@@ -12,7 +13,6 @@ from genie.metaparser.util.exceptions import SchemaEmptyParserError
 from genie.libs.sdk.apis.iosxe.logging.get import get_logging_logs
 
 log = logging.getLogger(__name__)
-
 
 def is_logging_string_matching_regex_logged(device, oldest_timestamp, regex):
     """ Verifies string that matches regex is logged - ignoring logs from before passed timestamp
@@ -127,3 +127,125 @@ def is_logging_static_route_down_logged(*args, **kwargs):
         *args,
         **kwargs
     )
+
+
+def _check_logging(device, log_list, check_count=False, expect_exist=True):
+    """Check whether expected log message(s) exist in device `show logging`.
+
+        Args:
+            device (`obj`): Device object
+            log_list (`str` or `list`): Expected log message(s) in
+                "show logging". All top-level logs in the list are checked.
+                If any of them is not found, return False. A nested list is
+                treated as an OR condition, for example:
+                log_list = [['log1', 'log2'], 'log3'] means check log1 OR
+                log2 AND log3.
+            check_count (`bool`, optional): Whether to check the log count in
+                "show logging". Defaults to False.
+            expect_exist (`bool`, optional): Whether the log is expected to
+                exist. Defaults to True.
+
+        Returns:
+            list: [True, message] if check passes, [False, message] otherwise
+    """
+    logging_list = device.api.get_platform_logging(command='show logging')
+    if not isinstance(logging_list, list):
+        raise TypeError(f'Get logging failed, '
+                        f'expect list but got {type(logging_list)}')
+    logging = '\r\n'.join(logging_list)
+    if isinstance(log_list, str):
+        log_list = [log_list]
+    for log_group in log_list:
+        if isinstance(log_group, str):
+            if expect_exist is True and check_count is True:
+                if logging.count(log_group) != 1:
+                    msg = 'Check logging failed: Expect only one of ' + \
+                            f'"{log_group}" in "show logging"'
+                    return [False, msg]
+            elif expect_exist is True and check_count is False:
+                if logging.count(log_group) < 1:
+                    msg = 'Check logging failed: Expect ' + \
+                            f'"{log_group}" in "show logging"'
+                    return [False, msg]
+            else:    # expect_exist is False
+                if logging.count(log_group) > 0:
+                    msg = 'Check logging failed: Expect ' + \
+                            f'"{log_group}" not in "show logging"'
+                    return [False, msg]
+        elif isinstance(log_group, list):
+            if expect_exist is True:
+                if check_count is True:
+                    count = 0
+                    for or_log in log_group:
+                        if or_log in logging:
+                            count = count + logging.count(or_log)
+                    if count != 1:
+                        msg = 'Check logging failed: Expect only one of ' + \
+                                f'"{log_group}" in "show logging"'
+                        return [False, msg]
+                else:
+                    or_group_matched = False
+                    for or_log in log_group:
+                        if or_log in logging:
+                            or_group_matched = True
+                            break
+                    if not or_group_matched:
+                        msg = 'Check logging failed: Expect at least one' + \
+                            f' of "{log_group}" in "show logging"'
+                        return [False, msg]
+            else:    # expect_exist is False
+                for or_log in log_group:
+                    if or_log in logging:
+                        msg = 'Check logging failed: Expect none of ' + \
+                                f'"{log_group}" in "show logging"'
+                        return [False, msg]
+        else:
+            return [False, f'Unknown {log_group} type {type(log_group)}']
+    return [True, 'Check logging passed']
+
+
+def verify_logging(device, log_list, max_time=20, interval_time=2,
+                   check_count=False, clear_log=True, expect_exist=True):
+    '''
+    Verify logging with Aetest step
+    Args:
+        device (`obj`): Device object
+        log_list (`str` or `list`): Expected log message(s) in "show logging".
+            All top-level logs in the list are checked. If any of them is not
+            found, return False. A nested list is treated as an OR condition,
+            for example: log_list = [['log1', 'log2'], 'log3'] means check
+            log1 OR log2 AND log3.
+        max_time (`int`, optional): Polling max time in seconds. Defaults to 20.
+        interval_time (`int`, optional): Polling interval in seconds.
+            Defaults to 2.
+        check_count (`bool`, optional): Whether to check the log count in
+            "show logging". Defaults to False.
+        clear_log (`bool`, optional): Whether to clear logging after
+            verification. Defaults to True.
+        expect_exist (`bool`, optional): Whether the log is expected to exist.
+            Defaults to True.
+    Returns:
+        bool: True if check passes, False otherwise
+    '''
+    timeout1 = Timeout(max_time, interval_time)
+    while timeout1.iterate():
+        res, msg = _check_logging(device, log_list, check_count, expect_exist)
+        if expect_exist is True:
+            if res is True:
+                break
+            else:
+                log.debug(msg)
+                timeout1.sleep()
+        else:
+            if res is True:
+                timeout1.sleep()
+            else:
+                log.debug(msg)
+                return False
+    else:
+        if expect_exist is True:
+            log.debug(msg)
+            return False
+    if clear_log is True:
+        device.api.clear_logging()
+    return True

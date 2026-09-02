@@ -33,6 +33,7 @@ class TestConfigureManagement(unittest.TestCase):
 
     def setUp(self):
         self.device.api.configure_management_master_key = Mock(return_value=True)
+        self.device.api.unshut_interface = Mock()
 
     def test_configure_management(self):
         result = configure_management(self.device)
@@ -73,6 +74,9 @@ class TestConfigureManagement(unittest.TestCase):
             vlan=10,
             mode='access'
         )
+        self.device.api.unshut_interface.assert_called_once_with(
+            interface='GigabitEthernet0/0'
+        )
 
     @patch('genie.libs.sdk.apis.iosxe.management.configure.log')
     def test_configure_management_with_switchport_trunk(self, mock_log):
@@ -108,6 +112,9 @@ class TestConfigureManagement(unittest.TestCase):
             vlan_id=20,
             oper='add'
         )
+        self.device.api.unshut_interface.assert_called_once_with(
+            interface='GigabitEthernet1/0'
+        )
 
     @patch('genie.libs.sdk.apis.iosxe.management.configure.log')
     def test_configure_management_with_switchport_no(self, mock_log):
@@ -135,6 +142,7 @@ class TestConfigureManagement(unittest.TestCase):
             dhcp_timeout=30,
             no_switchport=True
         )
+        self.device.api.unshut_interface.assert_not_called()
 
     @patch('genie.libs.sdk.apis.iosxe.management.configure.log')
     def test_configure_management_switchport_access_without_vlan_raises_exception(self, mock_log):
@@ -232,6 +240,7 @@ class TestConfigureManagement(unittest.TestCase):
         device.api.configure_management_vrf = Mock()
         device.api.configure_management_ip = Mock()
         device.api.configure_interface_switchport_trunk = Mock()
+        device.api.unshut_interface = Mock()
         device.api.configure_management_gateway = Mock()
         device.api.configure_management_routes = Mock()
         device.api.configure_management_protocols = Mock()
@@ -254,6 +263,9 @@ class TestConfigureManagement(unittest.TestCase):
             interfaces=['GigabitEthernet0/0'],
             vlan_id=100,
             oper='add'
+        )
+        device.api.unshut_interface.assert_called_once_with(
+            interface='GigabitEthernet0/0'
         )
 
     @patch('genie.libs.sdk.apis.iosxe.management.configure.log')

@@ -1,13 +1,17 @@
 
 import re
+import socket
 import unittest
 from ipaddress import IPv4Interface
 from textwrap import dedent
-from unittest.mock import MagicMock, Mock, call, patch, PropertyMock
+from types import SimpleNamespace
+from unittest.mock import ANY, MagicMock, Mock, call, patch, PropertyMock
 
 
 from ats.topology import Device
+from pyats.topology.credentials import Credentials
 from unittest import mock
+from unicon.core.errors import SubCommandFailure
 
 from genie.libs.clean.stages.tests.utils import create_test_device
 from genie.libs.sdk.apis.utils import (
@@ -16,6 +20,8 @@ from genie.libs.sdk.apis.utils import (
     time_to_int, slugify_filename, get_file_size_from_server,
     get_interface_from_yaml, convert_server_to_linux_device, get_proxy,
     _management_session_uses_gateway, _infer_management_gateway_addresses)
+from genie.libs.sdk.apis.utils import (
+    _probe_tcp_host, probe_tcp_host, probe_tcp_hosts, probe_tcp_from_server)
 
 
 class TestUtilsApi(unittest.TestCase):
@@ -23,6 +29,291 @@ class TestUtilsApi(unittest.TestCase):
     def setUp(self):
         self.device = Device(name='aDevice')
         self.device.os = 'iosxe'
+
+    @patch('genie.libs.sdk.apis.utils.socket.create_connection')
+    def test_probe_tcp_host_reachable(self, create_connection):
+        result = probe_tcp_host(self.device, '192.0.2.1', 443)
+        self.assertEqual(result, {
+            'host': '192.0.2.1',
+            'port': 443,
+            'status': 'reachable',
+            'reachable': True,
+            'method': 'python',
+            'output': None,
+            'error': None,
+        })
+        create_connection.assert_called_once_with(('192.0.2.1', 443),
+                                                   timeout=3)
+
+    def test_probe_tcp_host_invalid_target(self):
+        result = probe_tcp_host(self.device, '', 443)
+        self.assertEqual(result, {
+            'host': '',
+            'port': 443,
+            'status': 'invalid_target',
+            'reachable': False,
+            'method': None,
+            'output': None,
+            'error': 'host must be a valid IP address or hostname',
+        })
+
+    @patch('genie.libs.sdk.apis.utils.socket.create_connection')
+    def test_probe_tcp_host_timeout(self, create_connection):
+        create_connection.side_effect = socket.timeout('timed out')
+
+        result = probe_tcp_host(self.device, 'example.com', 443, timeout=1)
+
+        self.assertEqual(result, {
+            'host': 'example.com',
+            'port': 443,
+            'status': 'timeout',
+            'reachable': False,
+            'method': 'python',
+            'output': None,
+            'error': 'timed out',
+        })
+
+    @patch('genie.libs.sdk.apis.utils.socket.create_connection')
+    def test_probe_tcp_host_unreachable(self, create_connection):
+        create_connection.side_effect = ConnectionRefusedError('refused')
+
+        result = _probe_tcp_host('example.com', 22)
+
+        self.assertEqual(result, {
+            'host': 'example.com',
+            'port': 22,
+            'status': 'unreachable',
+            'reachable': False,
+            'method': 'python',
+            'output': None,
+            'error': 'refused',
+        })
+
+    @patch('genie.libs.sdk.apis.utils._probe_tcp_host')
+    def test_probe_tcp_hosts_preserves_input_order(self, probe):
+        probe.side_effect = lambda host, port, timeout: {
+            'host': host, 'port': port, 'status': 'reachable',
+            'reachable': True, 'method': 'python', 'output': None,
+            'error': None}
+        result = probe_tcp_hosts(self.device, ['one', 'two'], 22, workers=2)
+        self.assertEqual([item['host'] for item in result], ['one', 'two'])
+        self.assertEqual(probe.call_count, 2)
+
+    def test_probe_tcp_from_server_prefers_nmap(self):
+        remote = MagicMock()
+        stdout = 'Host: 192.0.2.1 ()\tPorts: 443/open/tcp//https///'
+        remote.execute.side_effect = [
+            '/usr/bin/nmap', '{}\n__GENIE_NMAP_RC__=0\n'.format(stdout)]
+        result = probe_tcp_from_server(self.device, remote, '192.0.2.1', 443)
+        self.assertEqual(result, [{
+            'host': '192.0.2.1',
+            'port': 443,
+            'reachable': True,
+            'status': 'reachable',
+            'method': 'remote',
+            'tool': 'nmap',
+            'command': remote.execute.call_args_list[1][0][0],
+            'stdout': stdout,
+            'stderr': '',
+            'error': None,
+            'elapsed': ANY,
+            'output': stdout,
+        }])
+        self.assertIn('nmap -Pn', remote.execute.call_args_list[1][0][0])
+
+    def test_probe_tcp_accepts_unconnected_server_device(self):
+        class Remote:
+            def connect(remote_self):
+                remote_self.execute = Mock(side_effect=[
+                    '/usr/bin/nmap',
+                    ('Host: 192.0.2.1 ()\tPorts: '
+                     '443/open/tcp//https///\n__GENIE_NMAP_RC__=0\n'),
+                ])
+
+        remote = Remote()
+        with patch(
+                'genie.libs.sdk.apis.utils.convert_server_to_linux_device'
+        ) as converter:
+            result = probe_tcp_from_server(
+                self.device, remote, '192.0.2.1', 443)
+
+        converter.assert_not_called()
+        self.assertTrue(result[0]['reachable'])
+
+    def test_probe_tcp_from_server_uses_exact_ipv6_nmap_command(self):
+        remote = MagicMock()
+        remote.execute.side_effect = [
+            '/usr/bin/nmap',
+            ('Host: 2001:db8::1 ()\tPorts: 22/open/tcp//ssh///\n'
+             '__GENIE_NMAP_RC__=0\n')]
+
+        probe_tcp_from_server(self.device, remote, '2001:db8::1', 22)
+
+        remote.execute.assert_has_calls([
+            call('command -v nmap'),
+            call("nmap -6 -Pn -n -p 22 --host-timeout 3s -oG - "
+                 "2001:db8::1 2>&1; status=$?; printf "
+                 "'\\n__GENIE_NMAP_RC__=%s\\n' \"$status\"",
+                 timeout=8.0),
+        ])
+
+    def test_probe_tcp_from_server_uses_nc_exit_status_marker(self):
+        remote = MagicMock()
+        remote.execute.side_effect = [
+            '', '/usr/bin/nc',
+            '__GENIE_NC_RC__=0\nConnection to 2001:db8::1 succeeded']
+        result = probe_tcp_from_server(
+            self.device, remote, '2001:db8::1', 22, timeout=3.0)
+        self.assertTrue(result[0]['reachable'])
+        self.assertEqual(result[0]['tool'], 'nc')
+        self.assertEqual(
+            result[0]['stderr'], 'Connection to 2001:db8::1 succeeded')
+        command = remote.execute.call_args_list[2][0][0]
+        self.assertIn('nc -6 -vz', command)
+        self.assertIn('-w 3 ', command)
+        self.assertNotIn('-w 3.0 ', command)
+        self.assertIn('__GENIE_NC_RC__', command)
+
+    def test_probe_tcp_from_server_accepts_ncat_crlf_output(self):
+        remote = MagicMock()
+        remote.execute.side_effect = [
+            '', '/usr/bin/nc',
+            ('__GENIE_NC_RC__=0\r\n'
+             'Ncat: Version 7.92 ( https://nmap.org/ncat )\r\n'
+             'Ncat: Connected to 5.28.18.8:22.\r\n'),
+        ]
+
+        result = probe_tcp_from_server(
+            self.device, remote, '5.28.18.8', 22, timeout=5)
+
+        self.assertTrue(result[0]['reachable'])
+        self.assertEqual(result[0]['status'], 'reachable')
+        self.assertIn('Ncat: Connected', result[0]['stderr'])
+
+    def test_probe_tcp_from_server_falls_back_when_nmap_cannot_execute(self):
+        remote = MagicMock()
+        remote.execute.side_effect = [
+            '/usr/bin/nmap',
+            'nmap: command not found\n__GENIE_NMAP_RC__=127\n',
+            '/usr/bin/nc', '__GENIE_NC_RC__=0\nConnection succeeded']
+        result = probe_tcp_from_server(self.device, remote, '192.0.2.1', 443)
+        self.assertTrue(result[0]['reachable'])
+        self.assertEqual(result[0]['tool'], 'nc')
+        self.assertEqual(remote.execute.call_args_list[2], call('command -v nc'))
+        self.assertIn('nc -vz', remote.execute.call_args_list[3][0][0])
+
+    def test_probe_tcp_from_server_does_not_fallback_after_valid_result(self):
+        cases = (
+            (('Host: 192.0.2.1 ()\tPorts: 443/closed/tcp//https///\n'
+              '__GENIE_NMAP_RC__=0\n'), 'unreachable'),
+            ('Host timed out\n__GENIE_NMAP_RC__=0\n', 'timeout'),
+        )
+        for output, status in cases:
+            with self.subTest(status=status):
+                remote = MagicMock()
+                remote.execute.side_effect = ['/usr/bin/nmap', output]
+
+                result = probe_tcp_from_server(
+                    self.device, remote, '192.0.2.1', 443)
+
+                self.assertEqual(result[0]['status'], status)
+                self.assertEqual(result[0]['method'], 'remote')
+                self.assertEqual(remote.execute.call_count, 2)
+
+    def test_probe_tcp_from_server_rejects_misleading_nmap_diagnostic(self):
+        remote = MagicMock()
+        remote.execute.side_effect = [
+            '/usr/bin/nmap',
+            'Failed to open device eth0\n__GENIE_NMAP_RC__=1\n']
+
+        result = probe_tcp_from_server(
+            self.device, remote, '192.0.2.1', 443)
+
+        self.assertFalse(result[0]['reachable'])
+        self.assertEqual(result[0]['status'], 'execution_error')
+        self.assertEqual(result[0]['tool'], 'nmap')
+        self.assertEqual(remote.execute.call_count, 2)
+
+    def test_probe_tcp_requires_target_host_record(self):
+        remote = MagicMock()
+        remote.execute.side_effect = [
+            '/usr/bin/nmap',
+            ('WARNING: Ports: 443/open/tcp//https///\n'
+             'Host: 198.51.100.2 ()\tPorts: 443/open/tcp//https///\n'
+             '__GENIE_NMAP_RC__=0\n')]
+
+        result = probe_tcp_from_server(
+            self.device, remote, '192.0.2.1', 443)
+
+        self.assertFalse(result[0]['reachable'])
+        self.assertEqual(result[0]['status'], 'unreachable')
+        self.assertEqual(result[0]['method'], 'remote')
+        self.assertEqual(result[0]['tool'], 'nmap')
+
+    def test_probe_tcp_capability_exceptions_do_not_fallback(self):
+        cases = (
+            (socket.timeout('capability timed out'), 'timeout'),
+            (OSError('transport failed'), 'transport_error'),
+            (SubCommandFailure('capability command failed'),
+             'execution_error'),
+        )
+        for error, status in cases:
+            with self.subTest(status=status):
+                remote = MagicMock()
+                remote.execute.side_effect = error
+
+                result = probe_tcp_from_server(
+                    self.device, remote, '192.0.2.1', 443)
+
+                self.assertEqual(result[0]['status'], status)
+                self.assertEqual(result[0]['tool'], 'nmap')
+                self.assertEqual(result[0]['command'], 'command -v nmap')
+                self.assertEqual(result[0]['error'], str(error))
+                self.assertEqual(remote.execute.call_count, 1)
+
+    def test_probe_tcp_from_server_reports_unavailable(self):
+        remote = MagicMock()
+        remote.execute.side_effect = ['', '']
+
+        result = probe_tcp_from_server(
+            self.device, remote, 'example.com', 443)
+
+        self.assertEqual(result, [{
+            'host': 'example.com',
+            'port': 443,
+            'reachable': False,
+            'status': 'unavailable',
+            'method': 'remote',
+            'tool': None,
+            'command': None,
+            'stdout': '',
+            'stderr': '',
+            'error': 'nmap and nc are not available',
+            'elapsed': 0.0,
+            'output': None,
+        }])
+
+    def test_probe_tcp_from_server_rejects_option_injection(self):
+        remote = MagicMock()
+
+        result = probe_tcp_from_server(
+            self.device, remote, '--script=default', 443)
+
+        self.assertEqual(result, [{
+            'host': '--script=default',
+            'port': 443,
+            'reachable': False,
+            'status': 'invalid_target',
+            'method': 'remote',
+            'tool': None,
+            'command': None,
+            'stdout': '',
+            'stderr': '',
+            'error': 'host must not begin with "-"',
+            'elapsed': 0.0,
+            'output': None,
+        }])
+        remote.execute.assert_not_called()
 
     def test_modify_filename_exceed(self):
         truncated = modify_filename(device=self.device,
@@ -58,6 +349,44 @@ class TestUtilsApi(unittest.TestCase):
         device.execute = Mock()
         copy_from_device(device, local_path='flash:test.txt', protocol='http')
         assert re.search(r'copy flash:test.txt http://\w+:\w+@127.0.0.1:\d+/router_test.txt', str(device.execute.call_args))
+
+    @patch('genie.libs.sdk.apis.utils.FileUtils.from_device')
+    def test_copy_from_device_supports_server_port(self, from_device):
+        device = MagicMock()
+        file_utils = from_device.return_value
+        file_utils.get_server_block.return_value = {'protocol': 'https'}
+        file_utils.get_hostname.return_value = 'server.example.com'
+
+        copy_from_device(device, local_path='flash:test.txt',
+                         remote_path='uploads/test.txt', server='server',
+                         protocol='https', port=8443)
+
+        file_utils.copyfile.assert_called_once_with(
+            source='flash:test.txt',
+            destination='https://server.example.com:8443/uploads/test.txt',
+            device=device,
+            timeout_seconds=300)
+
+    @patch('genie.libs.sdk.apis.utils.FileUtils.from_device')
+    def test_copy_from_device_supports_server_port_and_vrf(self, from_device):
+        device = MagicMock()
+        file_utils = from_device.return_value
+        file_utils.get_server_block.return_value = {'protocol': 'https'}
+        file_utils.get_hostname.return_value = 'management.example.com'
+
+        copy_from_device(device, local_path='flash:test.txt',
+                         remote_path='uploads/test.txt', server='server',
+                         protocol='https', vrf='management', port=8443)
+
+        file_utils.get_hostname.assert_called_once_with(
+            'server', device, vrf='management')
+        file_utils.copyfile.assert_called_once_with(
+            source='flash:test.txt',
+            destination=(
+                'https://management.example.com:8443/uploads/test.txt'),
+            device=device,
+            vrf='management',
+            timeout_seconds=300)
 
     def test_copy_from_device_session_source_is_gateway(self):
         device = MagicMock()
@@ -153,6 +482,256 @@ class TestUtilsApi(unittest.TestCase):
         copy_from_device(device, local_path='flash:test.txt', protocol='http')
         assert re.search(r'copy flash:test.txt http://\w+:\w+@127.0.0.2:2000/router_test.txt', str(device.execute.call_args))
 
+    @patch('genie.libs.sdk.apis.utils.FileUtils')
+    @patch('genie.libs.sdk.apis.utils.FileServer')
+    @patch(
+        'genie.libs.sdk.apis.proxy_selection.select_runtime_proxy_for_device')
+    @patch(
+        'genie.libs.sdk.apis.proxy_selection.proxy_selection_config',
+        return_value={'mode': 'runtime'})
+    def test_copy_from_device_uses_connected_runtime_proxy(
+            self, _config, selector, file_server, file_utils):
+        device = MagicMock()
+        device.hostname = 'router'
+        device.os = 'iosxe'
+        device.management = {
+            'address': {'ipv4': IPv4Interface('127.0.0.2/24')},
+            'interface': 'Management0',
+        }
+        device.api.get_proxy.return_value = 'legacy-proxy'
+        proxy = MagicMock()
+        proxy.api.get_local_ip.return_value = '127.0.0.1'
+        proxy.api.get_route_iface_source_ip.return_value = (
+            'eth0', '127.0.0.2')
+        proxy.api.socat_relay.return_value = 2000
+        selector.return_value = {
+            'server_name': 'route-proxy', 'proxy_device': proxy,
+            'device_ip': '127.0.0.2', 'connected': True,
+        }
+        server_context = file_server.return_value.__enter__.return_value
+        server_context.get.side_effect = lambda key, default=None: {
+            'port': 8080,
+            'credentials': {'http': {'username': 'user', 'password': 'pass'}},
+        }.get(key, default)
+        fu = file_utils.from_device.return_value
+
+        copy_from_device(
+            device, local_path='flash:test.txt', protocol='http')
+
+        selector.assert_called_once_with(
+            device, fallback_proxy='legacy-proxy',
+            server_converter=device.api.convert_server_to_linux_device,
+            target_prober=device.api.probe_tcp_from_server)
+        proxy.connect.assert_not_called()
+        self.assertEqual(
+            fu.copyfile.call_args.kwargs['destination'],
+            'http://user:pass@127.0.0.2:2000/router_test.txt')
+
+    @patch('genie.libs.sdk.apis.utils.FileUtils')
+    @patch('genie.libs.sdk.apis.utils.FileServer')
+    def test_copy_flow_keeps_current_fallback_over_unrouted_global_candidate(
+            self, file_server, file_utils):
+        class Proxy:
+            def __init__(self):
+                self.connected = False
+                self.connect = Mock(side_effect=self._connect)
+                self.api = SimpleNamespace(
+                    get_local_ip=Mock(return_value='127.0.0.1'),
+                    get_route_iface_source_ip=Mock(
+                        return_value=('eth0', '127.0.0.2')),
+                    socat_relay=Mock(return_value=2000))
+
+            def _connect(self):
+                self.connected = True
+
+            def is_connected(self):
+                return self.connected
+
+        global_proxy, current_proxy = Proxy(), Proxy()
+        services = {'ssh': {
+            'application': 'proxy', 'protocol': 'ssh', 'port': 2201,
+            'order': 1}}
+        servers = {
+            'global': {
+                'services': services,
+                'management': {'routes': {'ipv4': [{
+                    'subnet': '192.0.2.0/24', 'interface': 'eth0'}]}},
+                'interfaces': {'eth0': {'ipv4': '192.0.2.10/24'}},
+            },
+            'current': {'services': services},
+        }
+        proxies = {'global': global_proxy, 'current': current_proxy}
+        api = SimpleNamespace(
+            get_proxy=Mock(return_value='current'),
+            convert_server_to_linux_device=Mock(
+                side_effect=lambda name: proxies[name]),
+            probe_tcp_from_server=Mock())
+        device = SimpleNamespace(
+            name='router', hostname='router', os='iosxe', via='cli',
+            connections={'cli': {'port': 22}}, custom={}, api=api,
+            management={
+                'address': {'ipv4': IPv4Interface('10.20.1.5/24')},
+                'interface': 'Management0'},
+            testbed=SimpleNamespace(
+                custom={'proxy_selection': {
+                    'mode': 'runtime', 'candidates': ['global']}},
+                servers=servers, devices=proxies))
+        fs = file_server.return_value.__enter__.return_value
+        fs.get.side_effect = lambda key, default=None: {
+            'port': 8080,
+            'credentials': {'http': {
+                'username': 'user', 'password': 'pass'}},
+        }.get(key, default)
+
+        copy_from_device(
+            device, local_path='flash:test.txt', protocol='http')
+
+        global_proxy.connect.assert_not_called()
+        current_proxy.connect.assert_called_once_with()
+        destination = file_utils.from_device.return_value.copyfile.call_args \
+            .kwargs['destination']
+        self.assertEqual(
+            destination, 'http://user:pass@127.0.0.2:2000/router_test.txt')
+
+    def test_copy_flows_retry_next_runtime_candidate_after_relay_failure(self):
+        class Proxy:
+            def __init__(self, relay):
+                self.connected = False
+                self.connect = Mock(side_effect=self._connect)
+                self.api = SimpleNamespace(
+                    get_local_ip=Mock(return_value='127.0.0.1'),
+                    get_route_iface_source_ip=Mock(
+                        return_value=('eth0', '127.0.0.2')),
+                    socat_relay=relay)
+
+            def _connect(self):
+                self.connected = True
+
+            def is_connected(self):
+                return self.connected
+
+        server = {
+            'management': {'routes': {'ipv4': [{
+                'subnet': '10.20.0.0/16', 'interface': 'eth0'}]}},
+            'interfaces': {'eth0': {'ipv4': '192.0.2.10/24'}},
+        }
+        file_utils_path = 'genie.libs.sdk.apis.utils.FileUtils'
+        file_server_path = 'genie.libs.sdk.apis.utils.FileServer'
+        for relay_failure in ('exception', 'empty'):
+            for direction in ('to', 'from'):
+                with self.subTest(
+                        relay_failure=relay_failure, direction=direction), \
+                        patch(file_utils_path) as file_utils, \
+                        patch(file_server_path) as file_server:
+                    first_relay = (Mock(
+                        side_effect=RuntimeError('relay failed'))
+                        if relay_failure == 'exception'
+                        else Mock(return_value=None))
+                    first = Proxy(first_relay)
+                    second = Proxy(Mock(return_value=2000))
+                    proxies = {'first': first, 'second': second}
+                    api = SimpleNamespace(
+                        get_proxy=Mock(return_value=None),
+                        convert_server_to_linux_device=Mock(
+                            side_effect=lambda name: proxies[name]),
+                        probe_tcp_from_server=Mock())
+                    device = SimpleNamespace(
+                        name='router', hostname='router', os='iosxe',
+                        via='cli', connections={'cli': {'port': 22}},
+                        custom={'proxy_selection': {
+                            'candidates': ['first', 'second']}}, api=api,
+                        management={
+                            'address': {
+                                'ipv4': IPv4Interface('10.20.1.5/24')},
+                            'interface': 'Management0'},
+                        testbed=SimpleNamespace(
+                            custom={'proxy_selection': {'mode': 'runtime'}},
+                            servers={'first': server, 'second': server},
+                            devices=proxies))
+                    fs = file_server.return_value.__enter__.return_value
+                    fs.get.side_effect = lambda key, default=None: {
+                        'port': 8080,
+                        'credentials': {'http': {
+                            'username': 'user', 'password': 'pass'}},
+                    }.get(key, default)
+
+                    if direction == 'to':
+                        copy_to_device(
+                            device, remote_path='/tmp/test.txt',
+                            protocol='http')
+                    else:
+                        copy_from_device(
+                            device, local_path='flash:test.txt',
+                            protocol='http')
+
+                    first.api.socat_relay.assert_called_once_with(
+                        remote_ip='127.0.0.1', remote_port=8080,
+                        protocol='TCP4')
+                    second.api.socat_relay.assert_called_once_with(
+                        remote_ip='127.0.0.1', remote_port=8080,
+                        protocol='TCP4')
+                    copyfile = file_utils.from_device.return_value.copyfile
+                    self.assertEqual(copyfile.call_count, 1)
+
+    @patch('genie.libs.sdk.apis.utils.FileUtils')
+    @patch('genie.libs.sdk.apis.utils.FileServer')
+    @patch(
+        'genie.libs.sdk.apis.proxy_selection.select_runtime_proxy_for_device')
+    @patch(
+        'genie.libs.sdk.apis.proxy_selection.invalidate_runtime_proxy_cache')
+    def test_copyfile_error_does_not_invalidate_or_reselect_proxy(
+            self, invalidate, selector, file_server, file_utils):
+        proxy = MagicMock()
+        proxy.api.get_local_ip.return_value = '127.0.0.1'
+        proxy.api.get_route_iface_source_ip.return_value = (
+            'eth0', '127.0.0.2')
+        proxy.api.socat_relay.return_value = 2000
+        selector.return_value = {
+            'server_name': 'proxy-a', 'proxy_device': proxy,
+            'device_ip': '10.20.1.5', 'connected': True,
+        }
+        api = SimpleNamespace(
+            get_proxy=Mock(return_value='proxy-a'),
+            convert_server_to_linux_device=Mock(return_value=proxy),
+            probe_tcp_from_server=Mock())
+        device = SimpleNamespace(
+            name='router', hostname='router', os='iosxe', via='cli',
+            connections={'cli': {'port': 22}}, custom={}, api=api,
+            management={
+                'address': {'ipv4': IPv4Interface('10.20.1.5/24')},
+                'interface': 'Management0'},
+            testbed=SimpleNamespace(
+                custom={'proxy_selection': {'mode': 'runtime'}},
+                servers={'proxy-a': {}}, devices={}))
+        fs = file_server.return_value.__enter__.return_value
+        fs.get.side_effect = lambda key, default=None: {
+            'port': 8080,
+            'credentials': {'http': {
+                'username': 'user', 'password': 'pass'}},
+        }.get(key, default)
+        fu = file_utils.from_device.return_value
+        errors = (
+            FileNotFoundError('source file missing'),
+            OSError('destination filesystem full'),
+            SubCommandFailure('device rejected copy'),
+        )
+        for error in errors:
+            with self.subTest(error=type(error).__name__):
+                selector.reset_mock()
+                invalidate.reset_mock()
+                proxy.api.socat_relay.reset_mock()
+                fu.copyfile.reset_mock()
+                fu.copyfile.side_effect = error
+
+                result = copy_from_device(
+                    device, local_path='flash:test.txt', protocol='http')
+
+                self.assertIsNone(result)
+                selector.assert_called_once()
+                invalidate.assert_not_called()
+                proxy.api.socat_relay.assert_called_once()
+                fu.copyfile.assert_called_once()
+
     def test_convert_server_to_linux_device_missing_server_block(self):
         device = MagicMock()
         device.testbed = object()
@@ -171,6 +750,77 @@ class TestUtilsApi(unittest.TestCase):
         fileutils.get_server_block.assert_called_once_with('fileserver')
         fileutils.get_hostname.assert_called_once_with('fileserver')
         device_cls.assert_not_called()
+
+    def test_convert_server_preserves_ordered_ssh_services_and_port(self):
+        device = MagicMock()
+        services = {
+            'ssh-maintenance': {
+                'application': 'maintenance', 'protocol': 'ssh',
+                'port': 2222, 'order': 0,
+            },
+            'ssh-later': {
+                'application': 'proxy', 'protocol': 'ssh',
+                'port': 2202, 'order': 2,
+            },
+            'ssh-first': {
+                'application': 'proxy', 'protocol': 'ssh',
+                'port': 2201, 'order': 1,
+            },
+            'file-transfer': {
+                'application': 'files', 'protocol': 'scp',
+                'port': 22, 'order': 0,
+            },
+        }
+        server_block = {
+            'address': '192.0.2.10',
+            'credentials': {'default': {
+                'username': 'user', 'password': 'pass'}},
+            'services': services,
+            'custom': {'rack': 'rack-a'},
+        }
+        device.testbed.servers = {'proxy': server_block}
+        fileutils = MagicMock()
+        fileutils.get_server_block.return_value = server_block
+        fileutils.get_hostname.return_value = '192.0.2.10'
+
+        with patch('genie.libs.sdk.apis.utils.FileUtils') as fileutils_cls, \
+                patch('genie.libs.sdk.apis.utils.Device') as device_cls:
+            fileutils_cls.return_value.__enter__.return_value = fileutils
+            convert_server_to_linux_device(device, 'proxy')
+
+        kwargs = device_cls.call_args.kwargs
+        self.assertEqual(kwargs['connections']['linux']['port'], 2201)
+        self.assertEqual(
+            kwargs['connections']['linux']['ssh_options'],
+            '-o PasswordAuthentication=yes')
+        self.assertEqual(list(kwargs['services']), list(services))
+        self.assertEqual(kwargs['services'], services)
+        self.assertEqual(kwargs['server_metadata']['services'], services)
+        self.assertEqual(kwargs['custom']['rack'], 'rack-a')
+
+    def test_convert_server_does_not_deepcopy_credentials_as_metadata(self):
+        device = MagicMock()
+        credentials = Credentials({
+            'default': {'username': 'user', 'password': 'pass'},
+        })
+        server_block = {
+            'address': '192.0.2.10',
+            'credentials': credentials,
+            'services': {'ssh': {'protocol': 'ssh', 'port': 22}},
+        }
+        device.testbed.servers = {'proxy': server_block}
+        fileutils = MagicMock()
+        fileutils.get_server_block.return_value = server_block
+        fileutils.get_hostname.return_value = '192.0.2.10'
+
+        with patch('genie.libs.sdk.apis.utils.FileUtils') as fileutils_cls, \
+                patch('genie.libs.sdk.apis.utils.Device') as device_cls:
+            fileutils_cls.return_value.__enter__.return_value = fileutils
+            convert_server_to_linux_device(device, 'proxy')
+
+        kwargs = device_cls.call_args.kwargs
+        self.assertIs(kwargs['credentials'], credentials)
+        self.assertNotIn('credentials', kwargs['server_metadata'])
 
     def test_get_proxy_without_via_metadata(self):
         device = type('DeviceMock', (), {})()
@@ -195,6 +845,30 @@ class TestUtilsApi(unittest.TestCase):
         copy_to_device(device, remote_path='/tmp/test.txt', protocol='http')
         assert re.search(r'copy http://\w+:\w+@127.0.0.1:\d+/test.txt flash:', str(device.execute.call_args))
 
+    @patch('genie.libs.sdk.apis.utils.FileUtils.from_device')
+    def test_copy_to_device_preserves_positional_vrf_with_port(
+            self, from_device):
+        device = MagicMock()
+        file_utils = from_device.return_value
+        file_utils.get_server_block.return_value = {'protocol': 'https'}
+        file_utils.get_hostname.return_value = '10.0.0.1'
+
+        copy_to_device(
+            device, 'image.bin', 'bootflash:image.bin', 'server', 'https',
+            'management', port=8443)
+
+        file_utils.get_hostname.assert_called_once_with(
+            'server', device, vrf='management')
+        file_utils.copyfile.assert_called_once_with(
+            source='https://10.0.0.1:8443/image.bin',
+            destination='bootflash:image.bin',
+            device=device,
+            vrf='management',
+            timeout_seconds=300,
+            compact=False,
+            use_kstack=False,
+            protocol='https')
+
     def test_copy_to_device_via_proxy(self):
         device = MagicMock()
         device.is_ha = False
@@ -214,6 +888,152 @@ class TestUtilsApi(unittest.TestCase):
         device.execute = Mock()
         copy_to_device(device, remote_path='/tmp/test.txt', protocol='http')
         assert re.search(r'copy http://\w+:\w+@127.0.0.2:2000/test.txt flash:', str(device.execute.call_args))
+
+    @patch(
+        'genie.libs.sdk.apis.proxy_selection.select_runtime_proxy_for_device')
+    @patch(
+        'genie.libs.sdk.apis.proxy_selection.proxy_selection_config',
+        return_value=None)
+    def test_copy_to_device_default_does_not_select_runtime_proxy(
+            self, _config, selector):
+        device = MagicMock()
+        device.os = 'iosxe'
+        device.management = {
+            'address': {'ipv4': IPv4Interface('127.0.0.2/24')}}
+        proxy = MagicMock()
+        proxy.api.get_local_ip.return_value = '127.0.0.1'
+        proxy.api.get_route_iface_source_ip.return_value = (None, '127.0.0.2')
+        proxy.api.socat_relay.return_value = 2000
+        device.api.get_proxy.return_value = 'legacy-proxy'
+        device.api.convert_server_to_linux_device.return_value = proxy
+        device.execute = Mock()
+
+        copy_to_device(device, remote_path='/tmp/test.txt', protocol='http')
+
+        selector.assert_not_called()
+        device.api.get_proxy.assert_called_once_with()
+        proxy.connect.assert_called_once_with()
+
+    @patch('genie.libs.sdk.apis.utils.FileUtils')
+    @patch('genie.libs.sdk.apis.utils.FileServer')
+    @patch(
+        'genie.libs.sdk.apis.proxy_selection.select_runtime_proxy_for_device')
+    @patch(
+        'genie.libs.sdk.apis.proxy_selection.proxy_selection_config',
+        return_value={'mode': 'runtime'})
+    def test_copy_to_device_runtime_proxy_is_already_connected_and_ipv6_safe(
+            self, _config, selector, file_server, file_utils):
+        device = MagicMock()
+        device.os = 'iosxe'
+        device.management = {
+            'address': {'ipv6': '2001:db8:2::10/64'},
+            'interface': 'Management0',
+        }
+        device.api.get_proxy.return_value = 'legacy-proxy'
+        proxy = MagicMock()
+        proxy.api.get_local_ip.return_value = '2001:db8:1::100'
+        proxy.api.get_route_iface_source_ip.return_value = (
+            'eth0', '2001:db8:1::1')
+        proxy.api.socat_relay.return_value = 2000
+        selector.return_value = {
+            'server_name': 'route-proxy', 'proxy_device': proxy,
+            'device_ip': '2001:db8:2::10', 'connected': True,
+        }
+        server_context = file_server.return_value.__enter__.return_value
+        server_context.get.side_effect = lambda key, default=None: {
+            'port': 8080,
+            'credentials': {'http': {'username': 'user', 'password': 'pass'}},
+        }.get(key, default)
+        fu = file_utils.from_device.return_value
+
+        copy_to_device(device, remote_path='/tmp/test.txt', protocol='http')
+
+        selector.assert_called_once_with(
+            device, fallback_proxy='legacy-proxy',
+            server_converter=device.api.convert_server_to_linux_device,
+            target_prober=device.api.probe_tcp_from_server)
+        proxy.connect.assert_not_called()
+        proxy.api.socat_relay.assert_called_once_with(
+            remote_ip='2001:db8:1::100', remote_port=8080, protocol='TCP6')
+        self.assertEqual(
+            fu.copyfile.call_args.kwargs['source'],
+            'http://user:pass@[2001:db8:1::1]:2000/test.txt')
+
+    @patch('genie.libs.sdk.apis.utils.FileUtils')
+    @patch('genie.libs.sdk.apis.utils.FileServer')
+    def test_copy_to_device_uses_real_runtime_route_and_probe_helpers(
+            self, file_server, file_utils):
+        class Proxy:
+            def __init__(self):
+                self.connected = False
+                self.connect = Mock(side_effect=self._connect)
+                self.execute = Mock(side_effect=[
+                    '/usr/bin/nmap',
+                    ('Host: 10.20.1.5 ()\tPorts: '
+                     '2022/open/tcp//ssh///\n__GENIE_NMAP_RC__=0\n'),
+                ])
+                self.api = SimpleNamespace(
+                    get_local_ip=Mock(return_value='192.0.2.10'),
+                    get_route_iface_source_ip=Mock(
+                        return_value=('eth0', '192.0.2.1')),
+                    socat_relay=Mock(return_value=2000),
+                )
+
+            def _connect(self):
+                self.connected = True
+
+            def is_connected(self):
+                return self.connected
+
+        proxy = Proxy()
+        server = {
+            'services': {'ssh': {
+                'application': 'proxy', 'protocol': 'ssh', 'port': 2201}},
+            'management': {'routes': {'ipv4': [{
+                'subnet': '10.20.0.0/16', 'interface': 'eth0'}]}},
+            'interfaces': {'eth0': {'ipv4': '192.0.2.10/24'}},
+        }
+        api = SimpleNamespace(
+            get_proxy=Mock(return_value=None),
+            convert_server_to_linux_device=Mock(return_value=proxy),
+        )
+        device = SimpleNamespace(
+            name='router', hostname='router', os='iosxe', via='cli',
+            connections={'cli': {'protocol': 'ssh', 'port': 2022}},
+            custom={}, api=api,
+            management={
+                'address': {'ipv4': IPv4Interface('10.20.1.5/24')},
+                'interface': 'Management0'},
+            testbed=SimpleNamespace(
+                custom={'proxy_selection': {
+                    'mode': 'runtime', 'candidates': ['proxy'],
+                    'target_probe': True}},
+                servers={'proxy': server}, devices={'proxy': proxy}),
+        )
+        api.probe_tcp_from_server = lambda remote, hosts, port, timeout: \
+            probe_tcp_from_server(
+                device, remote, hosts, port, timeout=timeout)
+        fs = file_server.return_value.__enter__.return_value
+        fs.get.side_effect = lambda key, default=None: {
+            'port': 8080,
+            'credentials': {'http': {
+                'username': 'user', 'password': 'pass'}},
+        }.get(key, default)
+
+        copy_to_device(device, remote_path='/tmp/test.txt', protocol='http')
+
+        result = next(iter(device._runtime_proxy_cache['selected'].values()))
+        self.assertEqual(result['server_name'], 'proxy')
+        self.assertEqual(result['device_ip'], '10.20.1.5')
+        self.assertEqual(result['target_port'], 2022)
+        self.assertTrue(result['route_match'])
+        self.assertTrue(result['target_proven'])
+        self.assertEqual(result['probe_status'], 'reachable')
+        self.assertIn('-p 2022', proxy.execute.call_args_list[1][0][0])
+        self.assertEqual(
+            file_utils.from_device.return_value.copyfile.call_args.kwargs[
+                'source'],
+            'http://user:pass@192.0.2.1:2000/test.txt')
 
     def test_copy_to_device_via_proxy_ha(self):
         device = MagicMock()
@@ -380,10 +1200,14 @@ class TestUtilsApi(unittest.TestCase):
 
         fu = MagicMock()
         fu.get_hostname = Mock(return_value='proxy.host')
-        fu.validate_and_update_url = Mock(return_value='ftp://user:pass@1.1.1.1/path/file.bin')
-        fu.stat = Mock(side_effect=FileNotFoundError('missing'))
+        url = 'ftp://user:pass@1.1.1.1/path/file.bin'
+        proxied_url = 'ftp://user:pass@proxy.host:2000/path/file.bin'
+        fu.validate_and_update_url = Mock(return_value=url)
+        fu.stat = Mock(side_effect=FileNotFoundError(
+            f'not found: {proxied_url}'
+        ))
 
-        with self.assertRaises(FileNotFoundError):
+        with self.assertRaises(FileNotFoundError) as context:
             get_file_size_from_server(device=device,
                                       server='1.1.1.1',
                                       path='path/file.bin',
@@ -392,6 +1216,274 @@ class TestUtilsApi(unittest.TestCase):
                                       fu_session=fu)
 
         proxy_dev.api.stop_socat_relay.assert_called_once_with('1234')
+        self.assertNotIn('user', str(context.exception))
+        self.assertNotIn('pass', str(context.exception))
+        self.assertIn(
+            'not found: ftp://****:****@proxy.host:2000/path/file.bin',
+            str(context.exception),
+        )
+
+    def test_get_file_size_from_server_via_proxy_redacts_stat_error(self):
+        device = MagicMock()
+        device.api.get_proxy = Mock(return_value='js')
+        device.api.convert_server_to_linux_device = Mock(return_value=None)
+
+        proxy_dev = MagicMock()
+        proxy_dev.api.start_socat_relay = Mock(return_value=(4321, '1234'))
+        proxy_dev.api.stop_socat_relay = Mock()
+        device.testbed.devices = {'js': proxy_dev}
+
+        fu = MagicMock()
+        fu.get_hostname = Mock(return_value='proxy.example')
+        url = 'https://user:p%40ssword@server.example/path/file.bin'
+        proxied_url = 'https://user:p%40ssword@proxy.example:4321/path/file.bin'
+        fu.validate_and_update_url = Mock(return_value=url)
+        fu.stat = Mock(side_effect=Exception(
+            f'Failed to retrieve {proxied_url}'
+        ))
+
+        with self.assertRaises(Exception) as context:
+            get_file_size_from_server(
+                device=device,
+                server='server.example',
+                path='path/file.bin',
+                protocol='https',
+                timeout=10,
+                fu_session=fu,
+            )
+
+        fu.stat.assert_called_once_with(
+            target=proxied_url,
+            timeout_seconds=10,
+        )
+        proxy_dev.api.stop_socat_relay.assert_called_once_with('1234')
+        self.assertNotIn('user', str(context.exception))
+        self.assertNotIn('p%40ssword', str(context.exception))
+        self.assertIn(
+            'https://****:****@proxy.example:4321/path/file.bin',
+            str(context.exception),
+        )
+        self.assertTrue(context.exception.__suppress_context__)
+
+    def test_get_file_size_from_server_via_proxy_redacts_not_implemented_error(self):
+        device = MagicMock()
+        device.api.get_proxy = Mock(return_value='js')
+        device.api.convert_server_to_linux_device = Mock(return_value=None)
+
+        proxy_dev = MagicMock()
+        proxy_dev.api.start_socat_relay = Mock(return_value=(4321, '1234'))
+        proxy_dev.api.stop_socat_relay = Mock()
+        device.testbed.devices = {'js': proxy_dev}
+
+        fu = MagicMock()
+        fu.get_hostname = Mock(return_value='proxy.example')
+        url = 'https://user:p%40ssword@server.example/path/file.bin'
+        proxied_url = 'https://user:p%40ssword@proxy.example:4321/path/file.bin'
+        fu.validate_and_update_url = Mock(return_value=url)
+        fu.stat = Mock(side_effect=NotImplementedError(
+            f'Unsupported URL: {proxied_url}'
+        ))
+
+        with self.assertRaises(NotImplementedError) as context:
+            get_file_size_from_server(
+                device=device,
+                server='server.example',
+                path='path/file.bin',
+                protocol='https',
+                timeout=10,
+                fu_session=fu,
+            )
+
+        proxy_dev.api.stop_socat_relay.assert_called_once_with('1234')
+        self.assertNotIn('user', str(context.exception))
+        self.assertNotIn('p%40ssword', str(context.exception))
+        self.assertTrue(context.exception.__suppress_context__)
+
+    def test_get_file_size_from_server_via_proxy_stops_relay_on_url_error(self):
+        device = MagicMock()
+        device.api.get_proxy = Mock(return_value='js')
+        device.api.convert_server_to_linux_device = Mock(return_value=None)
+
+        proxy_dev = MagicMock()
+        proxy_dev.api.start_socat_relay = Mock(return_value=(4321, '1234'))
+        proxy_dev.api.stop_socat_relay = Mock()
+        device.testbed.devices = {'js': proxy_dev}
+
+        fu = MagicMock()
+        url = 'https://user:p%40ssword@server.example/path/file.bin'
+        fu.get_hostname = Mock(side_effect=Exception(
+            f'Unable to build proxy URL: {url}'
+        ))
+        fu.validate_and_update_url = Mock(return_value=url)
+        fu.stat = Mock()
+
+        with self.assertRaises(Exception) as context:
+            get_file_size_from_server(
+                device=device,
+                server='server.example',
+                path='path/file.bin',
+                protocol='https',
+                timeout=10,
+                fu_session=fu,
+            )
+
+        fu.stat.assert_not_called()
+        proxy_dev.api.stop_socat_relay.assert_called_once_with('1234')
+        self.assertNotIn('user', str(context.exception))
+        self.assertNotIn('p%40ssword', str(context.exception))
+        self.assertTrue(context.exception.__suppress_context__)
+
+    def test_get_file_size_from_server_via_proxy_redacts_invalid_url(self):
+        device = MagicMock()
+        device.api.get_proxy = Mock(return_value='js')
+        device.api.convert_server_to_linux_device = Mock(return_value=None)
+
+        proxy_dev = MagicMock()
+        device.testbed.devices = {'js': proxy_dev}
+
+        fu = MagicMock()
+        fu.validate_and_update_url = Mock(
+            return_value='https://user:password@/path/file.bin'
+        )
+
+        with self.assertRaises(Exception) as context:
+            get_file_size_from_server(
+                device=device,
+                server='server.example',
+                path='path/file.bin',
+                protocol='https',
+                timeout=10,
+                fu_session=fu,
+            )
+
+        self.assertNotIn('user', str(context.exception))
+        self.assertNotIn('password', str(context.exception))
+        self.assertIn(
+            'https://****:****@/path/file.bin',
+            str(context.exception),
+        )
+
+    def test_get_file_size_from_server_redacts_credentials_from_error(self):
+        device = MagicMock()
+        device.api.get_proxy = Mock(return_value=None)
+
+        fu = MagicMock()
+        url = 'https://user:p%40ssword@server.example/path/file.bin'
+        fu.validate_and_update_url = Mock(return_value=url)
+        fu.stat = Mock(side_effect=Exception(
+            f'Failed to retrieve {url}'
+        ))
+
+        with self.assertRaises(Exception) as context:
+            get_file_size_from_server(
+                device=device,
+                server='server.example',
+                path='path/file.bin',
+                protocol='https',
+                timeout=10,
+                fu_session=fu,
+            )
+
+        fu.stat.assert_called_once_with(
+            target=url,
+            timeout_seconds=10,
+        )
+        fu.validate_and_update_url.assert_called_once_with(
+            'https://server.example/path/file.bin', device=device)
+        self.assertNotIn('user', str(context.exception))
+        self.assertNotIn('p%40ssword', str(context.exception))
+        self.assertIn(
+            'https://****:****@server.example/path/file.bin',
+            str(context.exception),
+        )
+        self.assertTrue(context.exception.__suppress_context__)
+
+    def test_get_file_size_from_server_redacts_file_not_found_error(self):
+        device = MagicMock()
+        device.api.get_proxy = Mock(return_value=None)
+
+        fu = MagicMock()
+        url = 'https://user:p%40ssword@server.example/path/file.bin'
+        fu.validate_and_update_url = Mock(return_value=url)
+        fu.stat = Mock(side_effect=FileNotFoundError(
+            f'not found: {url}'
+        ))
+
+        with self.assertRaises(FileNotFoundError) as context:
+            get_file_size_from_server(
+                device=device,
+                server='server.example',
+                path='path/file.bin',
+                protocol='https',
+                timeout=10,
+                fu_session=fu,
+            )
+
+        self.assertNotIn('user', str(context.exception))
+        self.assertNotIn('p%40ssword', str(context.exception))
+        self.assertIn(
+            'not found: https://****:****@server.example/path/file.bin',
+            str(context.exception),
+        )
+        self.assertTrue(context.exception.__suppress_context__)
+
+    def test_get_file_size_from_server_redacts_not_implemented_error(self):
+        device = MagicMock()
+        device.api.get_proxy = Mock(return_value=None)
+
+        fu = MagicMock()
+        url = 'https://user:p%40ssword@server.example/path/file.bin'
+        fu.validate_and_update_url = Mock(return_value=url)
+        fu.stat = Mock(side_effect=NotImplementedError(
+            f'unsupported URL: {url}'
+        ))
+
+        with self.assertRaises(NotImplementedError) as context:
+            get_file_size_from_server(
+                device=device,
+                server='server.example',
+                path='path/file.bin',
+                protocol='https',
+                timeout=10,
+                fu_session=fu,
+            )
+
+        self.assertNotIn('user', str(context.exception))
+        self.assertNotIn('p%40ssword', str(context.exception))
+        self.assertIn(
+            'unsupported URL: https://****:****@server.example/path/file.bin',
+            str(context.exception),
+        )
+        self.assertTrue(context.exception.__suppress_context__)
+
+    def test_get_file_size_from_server_detects_case_insensitive_not_found(self):
+        device = MagicMock()
+        device.api.get_proxy = Mock(return_value=None)
+
+        fu = MagicMock()
+        url = 'https://user:p%40ssword@server.example/path/file.bin'
+        fu.validate_and_update_url = Mock(return_value=url)
+        fu.stat = Mock(side_effect=Exception(
+            f'FILE NOT FOUND: {url}'
+        ))
+
+        with self.assertRaises(FileNotFoundError) as context:
+            get_file_size_from_server(
+                device=device,
+                server='server.example',
+                path='path/file.bin',
+                protocol='https',
+                timeout=10,
+                fu_session=fu,
+            )
+
+        self.assertNotIn('user', str(context.exception))
+        self.assertNotIn('p%40ssword', str(context.exception))
+        self.assertIn(
+            'FILE NOT FOUND: https://****:****@server.example/path/file.bin',
+            str(context.exception),
+        )
+        self.assertTrue(context.exception.__suppress_context__)
 
     def test_device_recovery_boot(self):
         device = create_test_device(name='aDevice', os='iosxe')

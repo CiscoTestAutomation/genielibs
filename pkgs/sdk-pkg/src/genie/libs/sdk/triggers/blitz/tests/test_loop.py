@@ -15,6 +15,8 @@ from genie.conf.base import Testbed, Device
 from genie.libs.sdk.triggers.blitz.blitz import Blitz
 from genie.libs.sdk.triggers.blitz.actions import actions
 from genie.libs.sdk.triggers.blitz.advanced_actions import loop
+from genie.libs.sdk.triggers.blitz.advanced_actions_helper import \
+    _loop_iterator_item_update
 from genie.libs.sdk.triggers.blitz.markup import get_variable
 from genie.libs.ops.platform.nxos.platform import Platform
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
@@ -256,6 +258,67 @@ class TestLoop(unittest.TestCase):
                 - print:
                     item:
                       value: "%VARIABLES{range}"
+    """
+
+    loop_with_empty_value = """
+            loop_variable_name: sub_id
+            value: []
+            actions:
+              - execute:
+                  command: "show %VARIABLES{sub_id}"
+                  device: PE1
+    """
+
+    loop_with_saved_empty_value = """
+            loop_variable_name: sub_id
+            value: "%VARIABLES{dyn_sub_id_lst}"
+            actions:
+              - execute:
+                  command: "show %VARIABLES{sub_id}"
+                  device: PE1
+    """
+
+    loop_with_missing_value = """
+            loop_variable_name: sub_id
+            value: "%VARIABLES{does_not_exist}"
+            actions:
+              - execute:
+                  command: "show %VARIABLES{sub_id}"
+                  device: PE1
+    """
+
+    loop_with_empty_range = """
+            range: 0
+            loop_variable_name: sub_id
+            actions:
+              - execute:
+                  command: "show %VARIABLES{sub_id}"
+                  device: PE1
+    """
+
+    loop_with_three_values = """
+            loop_variable_name: sub_id
+            value: [1, 2, 3]
+            actions:
+              - execute:
+                  command: "show %VARIABLES{sub_id}"
+                  device: PE1
+    """
+
+    cleanup_dyn_with_empty_parser = """
+            - parse:
+                command: show telemetry ietf subscription all
+                device: PE1
+                save:
+                - filter: contains_key_value("type", "Dynamic").get_values('id')
+                  variable_name: dyn_sub_id_lst
+            - loop:
+                actions:
+                - execute:
+                    command: clear telemetry subscription dynamic %VARIABLES{sub_id}
+                    device: PE1
+                loop_variable_name: sub_id
+                value: '%VARIABLES{dyn_sub_id_lst}'
     """
 
     def setUp(self):
@@ -599,6 +662,128 @@ class TestLoop(unittest.TestCase):
       self.kwargs.update({'steps': steps, 'action_item': data})
       out = loop(**self.kwargs)
       self.assertEqual(steps.result, Passed)
+
+    def test_loop_with_empty_value(self):
+
+      steps = Steps()
+      data = yaml.safe_load(self.loop_with_empty_value)
+      self.kwargs.update({'steps': steps, 'action_item': data})
+      out = loop(**self.kwargs)
+
+      self.testbed.devices['PE1'].execute.assert_not_called()
+      self.assertEqual(out['substeps'], [])
+      self.assertEqual(
+          self.blitz_obj.parameters['save_variable_name']['sub_id'], '')
+
+    def test_loop_value_requires_sequence_or_mapping(self):
+
+      for value in ({'one', 'two'}, (item for item in range(2))):
+        steps = mock.Mock()
+        action_item = {'loop_variable_name': 'sub_id', 'value': value}
+
+        result = _loop_iterator_item_update(
+            self.blitz_obj, self.kwargs['section'], action_item, steps)
+
+        self.assertIsNone(result)
+        steps.errored.assert_called_once_with(
+            'Loop value must resolve to a sequence or mapping')
+
+    def test_loop_with_false_value(self):
+
+      steps = Steps()
+      data = yaml.safe_load(self.loop_with_empty_value)
+      data['value'] = False
+      self.kwargs.update({'steps': steps, 'action_item': data})
+      loop(**self.kwargs)
+
+      self.testbed.devices['PE1'].execute.assert_not_called()
+      self.assertEqual(steps.result, Errored)
+
+    def test_loop_with_empty_saved_value(self):
+
+      steps = Steps()
+      data = yaml.safe_load(self.loop_with_saved_empty_value)
+      self.blitz_obj.parameters.setdefault('save_variable_name', {})
+      self.blitz_obj.parameters['save_variable_name'].update(
+          {'dyn_sub_id_lst': []})
+      self.kwargs.update({'steps': steps, 'action_item': data})
+      out = loop(**self.kwargs)
+
+      self.testbed.devices['PE1'].execute.assert_not_called()
+      self.assertEqual(out['substeps'], [])
+      self.assertEqual(
+          self.blitz_obj.parameters['save_variable_name']['sub_id'], '')
+
+    def test_loop_with_empty_saved_value_clears_stale_variable(self):
+
+      steps = Steps()
+      data = yaml.safe_load(self.loop_with_saved_empty_value)
+      self.blitz_obj.parameters.setdefault('save_variable_name', {})
+      self.blitz_obj.parameters['save_variable_name'].update(
+          {'dyn_sub_id_lst': [], 'sub_id': 5})
+      self.kwargs.update({'steps': steps, 'action_item': data})
+      out = loop(**self.kwargs)
+
+      self.testbed.devices['PE1'].execute.assert_not_called()
+      self.assertEqual(out['substeps'], [])
+      self.assertEqual(
+          self.blitz_obj.parameters['save_variable_name']['sub_id'], '')
+
+    def test_loop_with_missing_value(self):
+
+      steps = Steps()
+      data = yaml.safe_load(self.loop_with_missing_value)
+      self.kwargs.update({'steps': steps, 'action_item': data})
+      loop(**self.kwargs)
+
+      self.testbed.devices['PE1'].execute.assert_not_called()
+      self.assertEqual(steps.result, Errored)
+
+    def test_loop_with_empty_range_clears_stale_variable(self):
+
+      steps = Steps()
+      data = yaml.safe_load(self.loop_with_empty_range)
+      self.blitz_obj.parameters.setdefault('save_variable_name', {})
+      self.blitz_obj.parameters['save_variable_name']['sub_id'] = 5
+      self.kwargs.update({'steps': steps, 'action_item': data})
+      out = loop(**self.kwargs)
+
+      self.testbed.devices['PE1'].execute.assert_not_called()
+      self.assertEqual(out['substeps'], [])
+      self.assertEqual(
+          self.blitz_obj.parameters['save_variable_name']['sub_id'], '')
+
+    def test_loop_with_three_values(self):
+
+      steps = Steps()
+      data = yaml.safe_load(self.loop_with_three_values)
+      self.kwargs.update({'steps': steps, 'action_item': data})
+      out = loop(**self.kwargs)
+
+      self.assertEqual(self.testbed.devices['PE1'].execute.call_count, 3)
+      self.assertEqual(len(out['substeps']), 3)
+      self.assertEqual(
+          self.blitz_obj.parameters['save_variable_name']['sub_id'], 3)
+
+    def test_cleanup_dyn_with_empty_parser(self):
+
+      steps = Steps()
+      data = yaml.safe_load(self.cleanup_dyn_with_empty_parser)
+      self.blitz_obj.parameters.setdefault('save_variable_name', {})
+      self.blitz_obj.parameters['save_variable_name']['sub_id'] = 5
+      self.testbed.devices['PE1'].parse.side_effect = SchemaEmptyParserError({})
+
+      self.blitz_obj.dispatcher(
+          steps=steps,
+          testbed=self.testbed,
+          section=self.kwargs['section'],
+          data=data)
+
+      self.testbed.devices['PE1'].execute.assert_not_called()
+      self.assertEqual(
+          self.blitz_obj.parameters['save_variable_name']['dyn_sub_id_lst'], [])
+      self.assertEqual(
+          self.blitz_obj.parameters['save_variable_name']['sub_id'], '')
 
 
 if __name__ == '__main__':

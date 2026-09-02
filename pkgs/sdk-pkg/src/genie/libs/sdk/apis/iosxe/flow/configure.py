@@ -1305,7 +1305,8 @@ def unconfigure_ipv6_flow_monitor(device, interface, monitor_name,direction):
         )
 
 def configure_flow_exporter(device, exporter_name, dest_ip=None, udp_port=None, dscp=None,
-    ttl=None, data_timeout=None, table_type=None, table_timeout=None, source_int=None, export_proto=None):
+    ttl=None, data_timeout=None, table_type=None, table_timeout=None, source_int=None,
+    export_proto=None, dest_vrf=None):
     """ Configure Flow Exporter on Device
         Args:
             device ('obj'): Device object
@@ -1319,6 +1320,7 @@ def configure_flow_exporter(device, exporter_name, dest_ip=None, udp_port=None, 
             table_timeout ('str', optional): option table timeout value. Default is None
             source_int ('str', optional): Source interface. Default int None
             export_proto ('str', optional): export-protocol. Default is None
+            dest_vrf ('str', optional): Destination VRF. Default is None
         Return:
             None
         Raise:
@@ -1327,7 +1329,9 @@ def configure_flow_exporter(device, exporter_name, dest_ip=None, udp_port=None, 
 
     config = [f'flow exporter {exporter_name}']
     if dest_ip:
-        config.append(f'destination {dest_ip}')
+        config.append(
+            f'destination {dest_ip}{f" vrf {dest_vrf}" if dest_vrf else ""}'
+        )
     if udp_port:
         config.append(f'transport udp {udp_port}')
     if dscp:
