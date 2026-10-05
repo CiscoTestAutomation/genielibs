@@ -933,6 +933,7 @@ class InstallImage(BaseStage):
                 try:
                     device.api.execute_set_boot_variable(
                         boot_images=[self.new_boot_var], timeout=60)
+                    self.image_to_boot = self.new_boot_var
                 except Exception as e:
                     step.failed("Failed to configure the boot variable",
                                 from_exception=e)

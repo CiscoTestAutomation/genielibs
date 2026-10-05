@@ -18,7 +18,6 @@
     * Added a disk-space check before recovery-image copies. When size verification is enabled, the stage deletes unprotected files as needed while preserving configured golden files and recovery-image targets that are not being replaced.
 
 * clean/stages
-    * Avoid a false ROMMON timeout when IOS XE reloads automatically after installing an image. The configured ``packages.conf`` boot variable is still used for the reload.
     * Increased the default IOS XE install_remove_inactive timeout from 180 to 300 seconds to allow package removal to complete on slower devices.
     * Boot the IOS XE installed image from the generated ``packages.conf`` during the install image reload.
     * Modified ``copy_to_device`` to automatically protect an existing target image when the copy operation is skipped, preventing later free-space cleanup from deleting an image required by subsequent clean stages.
