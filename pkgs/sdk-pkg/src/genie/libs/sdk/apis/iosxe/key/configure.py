@@ -14,8 +14,8 @@ from genie.metaparser.util.exceptions import SchemaEmptyParserError
 
 logger = logging.getLogger(__name__)
 
-def generate_crypto_key(device, 
-                        key_type, 
+def generate_crypto_key(device,
+                        key_type,
                         key_label=None,
                         modulus=None,
                         key_size=None,
@@ -26,7 +26,7 @@ def generate_crypto_key(device,
             device ('obj')    : device to use
             key_type ('str', optional)  : iosxe routers support rsa and ec keys
             key_label ('str', optional) : Name of the keypair
-            modulus ('int', optional) : Size of the key that will be generated. <512-4096> 
+            modulus ('int', optional) : Size of the key that will be generated. <512-4096>
             keysize ('int', optional) : Size of the EC keys. <256,384,521>
             exportable ('boolean', optional) : Allows the key to be exported. Default value is False
             timeout('int', optional): timeout for exec command execution, default is 30
@@ -63,7 +63,7 @@ def generate_crypto_key(device,
                 elif exportable is False:
                     configs = (f"crypto key generate {key_type}")
 
-                    
+
         elif key_label is not None:
             if modulus is not None:
                 if exportable is True:
@@ -99,11 +99,11 @@ def generate_crypto_key(device,
         raise SubCommandFailure("Could not generate keys")
 
 
-def crypto_key_export (device, 
-                        key_type, 
-                        key_label, 
+def crypto_key_export (device,
+                        key_type,
+                        key_label,
                         export_via,
-                        encryption, 
+                        encryption,
                         passphrase,
                         timeout=30
                         ):
@@ -144,7 +144,7 @@ def generate_crypto_key_execute(device, key_type, modulus=''):
         Args:
             device ('obj')    : device to use
             key_type ('str')  : iosxe routers support rsa and ec keys
-            modulus ('int', optional) : Size of the key that will be generated. <512-4096> 
+            modulus ('int', optional) : Size of the key that will be generated. <512-4096>
         Returns:
             None
         Raises:
@@ -216,55 +216,105 @@ def configure_key_config_key_password_encrypt(device, encrypt_key, old_key=None)
         )
 
 
-def unconfigure_key_config_key_password_encrypt(device, old_key=None):
+def unconfigure_key_config_key_password_encrypt(
+        device,
+        old_key=None,
+        password=None):
     """Remove 'key config-key password-encrypt' from a device.
 
-    The 'no' form prompts for confirmation and may ask for Old key / New key / Confirm key
-    (send empty to clear).
+    This API is backward-compatible with existing callers using the
+    ``password`` argument and also supports the newer ``old_key`` argument.
 
     Args:
-        device ('obj'): device to use
-        old_key ('str', optional): The old encryption key if prompted
+        device ('obj'): Device object.
+        password ('str', optional): Legacy argument containing the old
+            encryption key.
+        old_key ('str', optional): Old encryption key if prompted.
 
     Returns:
         None
 
     Raises:
-        SubCommandFailure
+        ValueError: If password and old_key contain different values.
+        SubCommandFailure: If the command fails.
     """
 
+    if (
+        password is not None
+        and old_key is not None
+        and password != old_key
+    ):
+        raise ValueError(
+            "'password' and 'old_key' were provided with different values"
+        )
+
+    key = old_key if old_key is not None else password
+
     remove_dialog = Dialog([
+        # This must come before the generic yes/no handler.
         Statement(
-            pattern=r'\[yes/no\]|\[confirm\]|Continue\?|proceed\?|Are you sure',
+            pattern=(
+                r'(?i)Do you want to proceed with setting '
+                r'a new master key\?\s*\[yes/no\]\s*:\s*$'
+            ),
+            action='sendline(no)',
+            loop_continue=True,
+            continue_timer=False
+        ),
+        Statement(
+            pattern=(
+                r'(?i)Continue with master key deletion\s*\?'
+                r'\s*\[yes/no\]\s*:\s*$'
+            ),
             action='sendline(yes)',
             loop_continue=True,
             continue_timer=False
         ),
         Statement(
-            pattern=r'Old key:',
-            action='sendline({})'.format(old_key if old_key else ''),
+            pattern=r'(?i)Old key\s*:\s*$',
+            action='sendline({})'.format(
+                key if key is not None else ''
+            ),
             loop_continue=True,
             continue_timer=False
         ),
         Statement(
-            pattern=r'New key:',
+            pattern=r'(?i)New key\s*:\s*$',
             action='sendline()',
             loop_continue=True,
             continue_timer=False
         ),
         Statement(
-            pattern=r'Confirm key:',
+            pattern=r'(?i)Confirm key\s*:\s*$',
             action='sendline()',
             loop_continue=True,
             continue_timer=False
         ),
+        Statement(
+            pattern=r'(?i)Are you sure.*(?:\[yes/no\]|\[confirm\])',
+            action='sendline(yes)',
+            loop_continue=True,
+            continue_timer=False
+        ),
+        Statement(
+            pattern=r'(?i)\[confirm\]\s*$',
+            action='sendline()',
+            loop_continue=True,
+            continue_timer=False
+        )
     ])
+
     try:
         device.configure(
-            "no key config-key password-encrypt",
+            'no key config-key password-encrypt',
             reply=remove_dialog
         )
+
     except SubCommandFailure as e:
         raise SubCommandFailure(
-            f"Failed to unconfigure key config-key password-encrypt. Error:\n{e}"
-        )
+            "Failed to unconfigure key config-key password-encrypt "
+            "on {device}. Error:\n{error}".format(
+                device=device,
+                error=e
+            )
+        ) from e

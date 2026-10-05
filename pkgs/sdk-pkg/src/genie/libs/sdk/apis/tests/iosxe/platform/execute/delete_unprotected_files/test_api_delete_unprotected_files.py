@@ -35,6 +35,10 @@ class TestDeleteUnprotectedFiles(TestCase):
                             'permissions': '-rw-',
                             'size': '1024',
                         },
+                        'unknown-entry': {
+                            'permissions': '',
+                            'size': '2048',
+                        },
                     },
                 },
             },
@@ -53,7 +57,46 @@ class TestDeleteUnprotectedFiles(TestCase):
             )
 
         file_utils.deletefile.assert_called_once_with(
-            'bootflash:/old-crashinfo.log', force=True, device=device)
+            'bootflash:/old-crashinfo.log', timeout_seconds=300,
+            force=True, device=device)
+
+    def test_deletion_timeout_is_capped_by_cleanup_deadline(self):
+        device = MagicMock()
+        device.parse.return_value = {
+            'dir': {
+                'dir': 'bootflash:/',
+                'bootflash:/': {
+                    'files': {
+                        'old.log': {
+                            'permissions': '-rw-',
+                            'size': '1024',
+                        },
+                    },
+                },
+            },
+        }
+        file_utils = MagicMock()
+
+        with patch(
+                'genie.libs.sdk.apis.iosxe.platform.execute.'
+                'FileUtils.from_device',
+                return_value=file_utils), patch(
+                    'genie.libs.sdk.apis.iosxe.platform.execute.'
+                    'time.monotonic',
+                    side_effect=[100, 101, 102]):
+            delete_unprotected_files(
+                device,
+                directory='bootflash:/',
+                protected=[],
+                files_to_delete=['old.log'],
+                dir_output='captured output',
+                destination='bootflash:/',
+                deadline=110,
+            )
+
+        file_utils.deletefile.assert_called_once_with(
+            'bootflash:/old.log', timeout_seconds=9,
+            force=True, device=device)
 
     def test_recursive_deletion_traverses_directory(self):
         device = MagicMock()
@@ -128,11 +171,13 @@ class TestDeleteUnprotectedFiles(TestCase):
             call('dir bootflash:/core/nested/', timeout=300),
         ])
         file_utils.deletefile.assert_has_calls([
+            call('bootflash:/core/crashinfo.log', timeout_seconds=300,
+                 force=True, device=device),
             call(
                 'bootflash:/core/nested/nested-crashinfo.log',
+                timeout_seconds=300,
                 force=True,
                 device=device),
-            call('bootflash:/core/crashinfo.log', force=True, device=device),
         ])
         self.assertEqual(file_utils.deletefile.call_count, 2)
 
@@ -209,11 +254,13 @@ class TestDeleteUnprotectedFiles(TestCase):
             call('dir bootflash:/core/modules/', timeout=300),
         ])
         file_utils.deletefile.assert_has_calls([
+            call('bootflash:/core/big.core.gz', timeout_seconds=300,
+                 force=True, device=device),
             call(
                 'bootflash:/core/modules/module.log',
+                timeout_seconds=300,
                 force=True,
                 device=device),
-            call('bootflash:/core/big.core.gz', force=True, device=device),
         ])
         self.assertEqual(file_utils.deletefile.call_count, 2)
 
@@ -267,7 +314,8 @@ class TestDeleteUnprotectedFiles(TestCase):
             )
 
         file_utils.deletefile.assert_called_once_with(
-            'bootflash:/core/delete.log', force=True, device=device)
+            'bootflash:/core/delete.log', timeout_seconds=300,
+            force=True, device=device)
 
     def test_recursive_deletion_stops_when_stop_check_succeeds(self):
         device = MagicMock()
@@ -322,5 +370,6 @@ class TestDeleteUnprotectedFiles(TestCase):
 
         self.assertTrue(result)
         file_utils.deletefile.assert_called_once_with(
-            'bootflash:/core/second.log', force=True, device=device)
+            'bootflash:/core/second.log', timeout_seconds=300,
+            force=True, device=device)
         stop_check.assert_called_once()

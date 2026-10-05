@@ -486,12 +486,13 @@ def verify_enough_disk_space(device,
 
     available_space = device.api.get_available_space(directory=directory,
                                                      output=dir_output)
-    if not available_space:
-        available_space = -1
+    if available_space is None:
+        log.error('Available disk space could not be verified')
+        return False
 
     log.info("Space required: {} bytes,\nSpace available : {} bytes".format(
         required_size if required_size > -1 else 'Unknown',
-        available_space if available_space > -1 else 'Unknown'))
+        available_space))
 
     return available_space > int(required_size)
 

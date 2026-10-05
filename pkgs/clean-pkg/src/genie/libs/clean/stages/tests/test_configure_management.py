@@ -1,8 +1,9 @@
 import unittest
 
 from unittest.mock import call, Mock
-from pyats.results import Passed
+from pyats.aetest.signals import TerminateStepSignal
 from pyats.aetest.steps import Steps
+from pyats.results import Failed, Passed
 
 from genie.libs.clean.stages.stages import ConfigureInterfaces
 from genie.libs.clean.stages.tests.utils import create_test_device
@@ -157,6 +158,30 @@ class TestConfigureManagement(unittest.TestCase):
                  timeout=120,
                  count=5)
         ], )
+
+    def test_configure_management_ping_gateway_without_address(self):
+        self.device.management = {
+            'interface': 'Gi1/0',
+            'vrf': 'Mgmt-vrf',
+            'gateway': {
+                'ipv4': '2.2.2.1'
+            },
+        }
+        steps = Steps()
+        self.device.ping = Mock()
+
+        with self.assertRaises(TerminateStepSignal):
+            self.cls.ping_gateway(
+                device=self.device,
+                steps=steps,
+            )
+
+        self.assertEqual(
+            "no IPv4/IPv6 management address available",
+            steps.details[0].result.reason,
+        )
+        self.assertEqual(Failed, steps.details[0].result)
+        self.device.ping.assert_not_called()
 
     def test_configure_management_check_management_interface_status(self):
         self.device.management = {

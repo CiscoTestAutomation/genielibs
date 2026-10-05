@@ -19,7 +19,8 @@ from genie.libs.sdk.apis.utils import (
     configure_management_console, configure_peripheral_terminal_server,
     time_to_int, slugify_filename, get_file_size_from_server,
     get_interface_from_yaml, convert_server_to_linux_device, get_proxy,
-    _management_session_uses_gateway, _infer_management_gateway_addresses)
+    _management_session_uses_gateway, _infer_management_gateway_addresses,
+    question_mark_retrieve)
 from genie.libs.sdk.apis.utils import (
     _probe_tcp_host, probe_tcp_host, probe_tcp_hosts, probe_tcp_from_server)
 
@@ -29,6 +30,24 @@ class TestUtilsApi(unittest.TestCase):
     def setUp(self):
         self.device = Device(name='aDevice')
         self.device.os = 'iosxe'
+
+    @patch('genie.libs.sdk.apis.utils._cli')
+    def test_question_mark_retrieve_clears_line_without_ctrl_c(self, cli):
+        cli.return_value = SimpleNamespace(match_output='')
+        self.device.state_machine = Mock()
+        self.device.state_machine.current_state = 'enable'
+        self.device.state_machine.get_state.return_value = SimpleNamespace(
+            pattern=r'^(Router#)$')
+
+        question_mark_retrieve(self.device, 'cflow')
+
+        self.assertEqual(cli.call_args.args[1], 'cflow?')
+        prompt = cli.call_args.args[3]
+        self.assertEqual(prompt.action.__name__, 'sendline')
+        self.assertEqual(prompt.args, {'key': '\x01\x0b'})
+        spawn = Mock()
+        prompt.action(spawn, **prompt.args)
+        spawn.sendline.assert_called_once_with('\x01\x0b')
 
     @patch('genie.libs.sdk.apis.utils.socket.create_connection')
     def test_probe_tcp_host_reachable(self, create_connection):
@@ -526,6 +545,8 @@ class TestUtilsApi(unittest.TestCase):
         self.assertEqual(
             fu.copyfile.call_args.kwargs['destination'],
             'http://user:pass@127.0.0.2:2000/router_test.txt')
+        self.assertEqual(
+            fu.copyfile.call_args.kwargs['interface'], 'Management0')
 
     @patch('genie.libs.sdk.apis.utils.FileUtils')
     @patch('genie.libs.sdk.apis.utils.FileServer')
@@ -869,6 +890,28 @@ class TestUtilsApi(unittest.TestCase):
             use_kstack=False,
             protocol='https')
 
+    @patch('genie.libs.sdk.apis.utils.FileUtils.from_device')
+    def test_copy_to_device_server_passes_source_interface(
+            self, from_device):
+        device = MagicMock()
+        file_utils = from_device.return_value
+        file_utils.get_server_block.return_value = {'protocol': 'http'}
+        file_utils.get_hostname.return_value = '10.0.0.1'
+
+        copy_to_device(
+            device, 'image.bin', 'bootflash:image.bin', 'server', 'http',
+            interface='GigabitEthernet1')
+
+        file_utils.copyfile.assert_called_once_with(
+            source='http://10.0.0.1/image.bin',
+            destination='bootflash:image.bin',
+            device=device,
+            timeout_seconds=300,
+            compact=False,
+            use_kstack=False,
+            protocol='http',
+            interface='GigabitEthernet1')
+
     def test_copy_to_device_via_proxy(self):
         device = MagicMock()
         device.is_ha = False
@@ -958,6 +1001,8 @@ class TestUtilsApi(unittest.TestCase):
         self.assertEqual(
             fu.copyfile.call_args.kwargs['source'],
             'http://user:pass@[2001:db8:1::1]:2000/test.txt')
+        self.assertEqual(
+            fu.copyfile.call_args.kwargs['interface'], 'Management0')
 
     @patch('genie.libs.sdk.apis.utils.FileUtils')
     @patch('genie.libs.sdk.apis.utils.FileServer')

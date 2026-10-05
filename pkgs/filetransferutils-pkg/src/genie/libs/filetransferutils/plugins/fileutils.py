@@ -239,6 +239,31 @@ class FileUtils(FileUtilsCommonDeviceBase):
 
         return output
 
+    def _ensure_temporary_transfer_route(self, device=None, **kwargs):
+        """ Optionally install a temporary route towards the transfer
+            endpoint for the duration of the transfer.
+
+            The base implementation is intentionally a no-op so that every
+            OS keeps its current behaviour. OS specific plugins may override
+            this method and return a description of the route they added.
+
+            Returns
+            -------
+                `None` when nothing was configured, otherwise a dict which is
+                handed back to :meth:`_remove_temporary_transfer_route` for
+                cleanup.
+        """
+        return None
+
+    def _remove_temporary_transfer_route(self, device, temporary_route):
+        """ Remove a route previously installed by
+            :meth:`_ensure_temporary_transfer_route`.
+
+            Only the exact route recorded at install time is removed, so a
+            pre-existing route is never touched.
+        """
+        return None
+
     @contextlib.contextmanager
     def file_transfer_config(self, server=None, interface=None, **kwargs):
         """ Context manager to try configuring a device for an upcoming file
@@ -262,6 +287,15 @@ class FileUtils(FileUtilsCommonDeviceBase):
         # device might be a connection, get actual device
         device = device.device
 
+        # Optionally install a temporary route towards the transfer
+        # endpoint. This is a no-op unless the OS plugin implements it, and
+        # the route is removed again during cleanup below.
+        temporary_route_kwargs = dict(kwargs)
+        temporary_route_kwargs['device'] = device
+        temporary_route_kwargs['interface'] = interface
+        temporary_route = self._ensure_temporary_transfer_route(
+            **temporary_route_kwargs)
+
         vrf = kwargs.get('vrf')
         # Retrieve correct config template for this OS
         if vrf:
@@ -278,7 +312,7 @@ class FileUtils(FileUtilsCommonDeviceBase):
                 config_send = []
                 config_restore = []
                 for each_config in copy_config:
-                    cfg_include = each_config.split('{')[0]
+                    cfg_include = each_config.split('{', 1)[0].strip()
                     if interface:
                         each_config = each_config.format(vrf=vrf,
                                                          interface=interface,
@@ -289,10 +323,21 @@ class FileUtils(FileUtilsCommonDeviceBase):
                                     '',
                                     output,
                                     flags=re.S)
-                    if cfg_include not in output:
+                    running_configs = [line.strip() for line in output.splitlines()
+                                       if (line.strip() == cfg_include or
+                                           line.strip().startswith(
+                                               cfg_include + ' '))]
+                    if each_config.strip() not in running_configs:
                         # prepare configure config and restore config
                         config_send.append(each_config)
-                        if each_config.startswith('no '):
+                        if running_configs:
+                            # A source-interface command can already exist with
+                            # a different interface. Restore that exact command
+                            # after the transfer instead of leaving the device
+                            # configured with the transfer interface.
+                            config_restore.append('no ' + each_config)
+                            config_restore.extend(running_configs)
+                        elif each_config.startswith('no '):
                             config_restore.append(each_config[3:])
                         else:
                             config_restore.append('no ' + each_config)
@@ -309,17 +354,22 @@ class FileUtils(FileUtilsCommonDeviceBase):
             yield
 
         finally:
-            if config_restore:
-                try:
-                    device.configure(config_restore)
-                    # If specified, wait for a period of time after restoring
-                    # configuration to let it settle
-                    wait_time = kwargs.get('wait_after_restore', 1)
-                    time.sleep(wait_time)
-                except Exception:
-                    logger.warning(
-                        'Failed to restore configuration on %s' % str(device),
-                        exc_info=True)
+            try:
+                if config_restore:
+                    try:
+                        device.configure(config_restore)
+                        # If specified, wait for a period of time after
+                        # restoring configuration to let it settle
+                        wait_time = kwargs.get('wait_after_restore', 1)
+                        time.sleep(wait_time)
+                    except Exception:
+                        logger.warning(
+                            'Failed to restore configuration on %s'
+                            % str(device), exc_info=True)
+            finally:
+                if temporary_route:
+                    self._remove_temporary_transfer_route(
+                        device, temporary_route)
 
     @lru_cache(maxsize=32)
     def is_valid_ip_cache(self, ip, device, vrf=None):
@@ -1125,50 +1175,80 @@ class HTTPFileUtilsBase(FileUtilsCommonDeviceBase):
     
         # device might be a connection, get actual device
         device = device.device
-        
-        # Get current time in format 'hh:mm:ss d MMM'
-        current_time = datetime.now().strftime('%H:%M:%S %-d %b %Y').lower()
-        device.execute('clock set {}'.format(current_time))
 
-        # Need the source URL to extract hostname and port
-        source = kwargs.get('source')
-        destination = kwargs.get('destination')
-        for loc in (source, destination):
-            parsed_url = urlparse(loc)
-            if parsed_url.scheme.lower() != 'https':
-                continue
-            hostname = parsed_url.hostname
-            port = parsed_url.port if parsed_url.port else 443
+        # Optionally install a temporary route towards the transfer
+        # endpoint (no-op unless supported by the OS plugin). It is removed
+        # again during cleanup below.
+        temporary_route_kwargs = dict(kwargs)
+        temporary_route_kwargs['device'] = device
+        temporary_route_kwargs['interface'] = interface
+        temporary_route = self._ensure_temporary_transfer_route(
+            **temporary_route_kwargs)
 
-            # Retrieve server certificate
-            cert, cn = self.get_certificate_details(device, hostname, port)
+        # Track what the HTTPS setup below actually configured, so the
+        # cleanup block only removes what exists. These stay None when no
+        # HTTPS endpoint is involved, or when setup raises part-way
+        # through.
+        cn = None
+        hostname = None
+        mgmt = {}
+        trustpoint_configured = False
 
-            mgmt = getattr(device, 'management', {})
-
-            # Configure DNS host entry
-            device.api.configure_ip_host(
-                hostname=cn,
-                ip_address=self.url_mapping.get(cn, hostname),
-                vrf=mgmt.get('vrf')
-            )
-
-            # Configure trustpoint and PKI authenticate
-            device.api.configure_trustpoint(
-                revoke_check="none", 
-                tp_name="pyats_temp_trustpoint",
-                enrollment_option="terminal")
-            device.api.configure_pki_authenticate_certificate(cert, "pyats_temp_trustpoint")
-
+        # Everything from here on must be unwound by the cleanup block, so
+        # it all lives inside the try. A failure while setting up the clock,
+        # certificate, DNS host entry, or trustpoint would otherwise leave
+        # the temporary route (and any partial config) behind on the device.
         try:
+            # Get current time in format 'hh:mm:ss d MMM'
+            current_time = datetime.now().strftime('%H:%M:%S %-d %b %Y').lower()
+            device.execute('clock set {}'.format(current_time))
+
+            # Need the source URL to extract hostname and port
+            source = kwargs.get('source')
+            destination = kwargs.get('destination')
+            for loc in (source, destination):
+                parsed_url = urlparse(loc)
+                if parsed_url.scheme.lower() != 'https':
+                    continue
+                hostname = parsed_url.hostname
+                port = parsed_url.port if parsed_url.port else 443
+
+                # Retrieve server certificate
+                cert, cn = self.get_certificate_details(device, hostname, port)
+
+                mgmt = getattr(device, 'management', {})
+
+                # Configure DNS host entry
+                device.api.configure_ip_host(
+                    hostname=cn,
+                    ip_address=self.url_mapping.get(cn, hostname),
+                    vrf=mgmt.get('vrf')
+                )
+
+                # Configure trustpoint and PKI authenticate
+                device.api.configure_trustpoint(
+                    revoke_check="none",
+                    tp_name="pyats_temp_trustpoint",
+                    enrollment_option="terminal")
+                trustpoint_configured = True
+                device.api.configure_pki_authenticate_certificate(cert, "pyats_temp_trustpoint")
+
             yield
         finally:
-            # Unconfigure trustpoint
-            device.api.unconfigure_trustpoint("pyats_temp_trustpoint")
-            device.api.unconfigure_ip_host(
-                hostname=cn,
-                ip_address=self.url_mapping.get(cn, hostname),
-                vrf=mgmt.get('vrf')
-            )
+            try:
+                # Unconfigure trustpoint
+                if trustpoint_configured:
+                    device.api.unconfigure_trustpoint("pyats_temp_trustpoint")
+                if cn is not None:
+                    device.api.unconfigure_ip_host(
+                        hostname=cn,
+                        ip_address=self.url_mapping.get(cn, hostname),
+                        vrf=mgmt.get('vrf')
+                    )
+            finally:
+                if temporary_route:
+                    self._remove_temporary_transfer_route(
+                        device, temporary_route)
 
     def validate_and_update_url(self, url, device=None, **kwargs):
         """

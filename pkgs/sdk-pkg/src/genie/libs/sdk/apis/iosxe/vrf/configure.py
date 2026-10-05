@@ -1208,6 +1208,198 @@ def unconfigure_vrf_route_leak_static(device, vrf_name, destination_ip, destinat
         )
 
 
+def _build_route_replicate_command(source_vrf, route_protocol, route_map=None,
+                                   bgp_as=None, remove=False):
+    """Build a route-replicate command for VRF or global address-family use."""
+    route_protocol = str(route_protocol).lower()
+    if route_protocol == 'bgp':
+        if bgp_as is None:
+            raise ValueError(
+                "bgp_as is required for BGP route-replicate")
+        command = f'route-replicate from vrf {source_vrf} unicast bgp {bgp_as}'
+    elif route_protocol == 'connected':
+        command = f'route-replicate from vrf {source_vrf} unicast connected'
+    else:
+        raise ValueError(
+            f"Unsupported route-replicate protocol: {route_protocol}")
+
+    if route_map:
+        command += f' route-map {route_map}'
+    if remove:
+        command = f'no {command}'
+    return command
+
+
+def configure_vrf_route_replicate_from_vrf(device, vrf_name,
+                                           address_family, source_vrf,
+                                           route_protocol, route_map=None,
+                                           bgp_as=None):
+    """Configure route replication from a source VRF under a VRF AF.
+
+    Args:
+        device ('obj'): Device to configure.
+        vrf_name ('str'): Target VRF receiving replicated routes.
+        address_family ('str'): Address family, for example ``ipv4``.
+        source_vrf ('str'): VRF from which routes are replicated.
+        route_protocol ('str'): Source protocol, ``bgp`` or ``connected``.
+        route_map ('str', optional): Route-map applied to replicated routes.
+            Defaults to ``None``.
+        bgp_as ('int', optional): BGP AS; required when protocol is ``bgp``.
+            Defaults to ``None``.
+
+    Returns:
+        None
+
+    Raises:
+        ValueError: If the protocol is unsupported or BGP AS is missing.
+        SubCommandFailure: If the configuration fails.
+    """
+    command = _build_route_replicate_command(
+        source_vrf=source_vrf,
+        route_protocol=route_protocol,
+        route_map=route_map,
+        bgp_as=bgp_as)
+    config = [
+        f'vrf definition {vrf_name}',
+        f'address-family {address_family}',
+        command,
+        'exit-address-family'
+    ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure route-replicate under VRF {vrf_name} "
+            f"on device {device.name}.\nError:{e}"
+        )
+
+
+def unconfigure_vrf_route_replicate_from_vrf(device, vrf_name,
+                                             address_family, source_vrf,
+                                             route_protocol, route_map=None,
+                                             bgp_as=None):
+    """Remove route replication from a source VRF under a VRF AF.
+
+    Args:
+        device ('obj'): Device to configure.
+        vrf_name ('str'): Target VRF whose replicated routes are removed.
+        address_family ('str'): Address family, for example ``ipv4``.
+        source_vrf ('str'): VRF from which routes were replicated.
+        route_protocol ('str'): Source protocol, ``bgp`` or ``connected``.
+        route_map ('str', optional): Route-map applied to replicated routes.
+            Defaults to ``None``.
+        bgp_as ('int', optional): BGP AS; required when protocol is ``bgp``.
+            Defaults to ``None``.
+
+    Returns:
+        None
+
+    Raises:
+        ValueError: If the protocol is unsupported or BGP AS is missing.
+        SubCommandFailure: If the configuration removal fails.
+    """
+    command = _build_route_replicate_command(
+        source_vrf=source_vrf,
+        route_protocol=route_protocol,
+        route_map=route_map,
+        bgp_as=bgp_as,
+        remove=True)
+    config = [
+        f'vrf definition {vrf_name}',
+        f'address-family {address_family}',
+        command,
+        'exit-address-family'
+    ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not remove route-replicate under VRF {vrf_name} "
+            f"on device {device.name}.\nError:{e}"
+        )
+
+
+def configure_global_route_replicate_from_vrf(device, address_family,
+                                              source_vrf, route_protocol,
+                                              route_map=None, bgp_as=None):
+    """Configure route replication from a source VRF under global AF.
+
+    Args:
+        device ('obj'): Device to configure.
+        address_family ('str'): Global address family, for example ``ipv4``.
+        source_vrf ('str'): VRF from which routes are replicated.
+        route_protocol ('str'): Source protocol, ``bgp`` or ``connected``.
+        route_map ('str', optional): Route-map applied to replicated routes.
+            Defaults to ``None``.
+        bgp_as ('int', optional): BGP AS; required when protocol is ``bgp``.
+            Defaults to ``None``.
+
+    Returns:
+        None
+
+    Raises:
+        ValueError: If the protocol is unsupported or BGP AS is missing.
+        SubCommandFailure: If the configuration fails.
+    """
+    command = _build_route_replicate_command(
+        source_vrf=source_vrf,
+        route_protocol=route_protocol,
+        route_map=route_map,
+        bgp_as=bgp_as)
+    config = [
+        f'global-address-family {address_family}',
+        command
+    ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure global route-replicate from VRF "
+            f"{source_vrf} on device {device.name}.\nError:{e}"
+        )
+
+
+def unconfigure_global_route_replicate_from_vrf(device, address_family,
+                                                source_vrf, route_protocol,
+                                                route_map=None, bgp_as=None):
+    """Remove route replication from a source VRF under global AF.
+
+    Args:
+        device ('obj'): Device to configure.
+        address_family ('str'): Global address family, for example ``ipv4``.
+        source_vrf ('str'): VRF from which routes were replicated.
+        route_protocol ('str'): Source protocol, ``bgp`` or ``connected``.
+        route_map ('str', optional): Route-map applied to replicated routes.
+            Defaults to ``None``.
+        bgp_as ('int', optional): BGP AS; required when protocol is ``bgp``.
+            Defaults to ``None``.
+
+    Returns:
+        None
+
+    Raises:
+        ValueError: If the protocol is unsupported or BGP AS is missing.
+        SubCommandFailure: If the configuration removal fails.
+    """
+    command = _build_route_replicate_command(
+        source_vrf=source_vrf,
+        route_protocol=route_protocol,
+        route_map=route_map,
+        bgp_as=bgp_as,
+        remove=True)
+    config = [
+        f'global-address-family {address_family}',
+        command
+    ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not remove global route-replicate from VRF "
+            f"{source_vrf} on device {device.name}.\nError:{e}"
+        )
+
+
 def configure_vrf_export_ipv4_unicast_map_allow_evpn(device, vrf_name, route_map):
     """ Configure VRF IPv4 export with allow-evpn keyword for EVPN route leaking
         Args:

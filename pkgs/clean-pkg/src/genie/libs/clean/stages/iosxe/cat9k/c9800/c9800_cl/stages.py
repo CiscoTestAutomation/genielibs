@@ -1,13 +1,14 @@
-'''
-IOSXE specific clean stages
-'''
+'''IOS XE C9800-CL submodel-specific clean stages.'''
 
 # Python
 import logging
 
+# pyATS
+from pyats.utils.secret_strings import to_plaintext
+
 # Genie
 from genie.libs.clean import BaseStage
-from genie.metaparser.util.schemaengine import Optional, Any, Or
+from genie.metaparser.util.schemaengine import Optional
 
 # Unicon
 from unicon.core.errors import SubCommandFailure
@@ -29,7 +30,11 @@ class ApplySelfSignedCert(BaseStage):
 
         encryption_type (int, optional): Encryption type to be configured. Default is 0
 
-        password (str): Password to be configured for the trustpoint.
+        password (str, optional): Password to be configured for the trustpoint.
+            The password from this stage takes precedence. If it is omitted,
+            the stage uses the device's certificate credential password from
+            the testbed. The stage is skipped if neither password is
+            available.
 
         timeout (int, optional): Execute timeout in seconds. Defaults to 300.
 
@@ -49,14 +54,15 @@ class ApplySelfSignedCert(BaseStage):
     SIGNATURE_ALGORITHM = "sha256"
     ENCRYPTION_TYPE = 0
     TIMEOUT = 300
-    MAX_TIME=300
-    CHECK_INTERVAL=30
+    MAX_TIME = 300
+    CHECK_INTERVAL = 30
+    PASSWORD = ""
 
     # ============
     # Stage Schema
     # ============
     schema = {
-        'password': str,
+        Optional('password'): str,
         Optional('key_size'): int,
         Optional('signature_algorithm'): str,
         Optional('encryption_type'): int,
@@ -72,9 +78,22 @@ class ApplySelfSignedCert(BaseStage):
         'verify_configured_trustpoint'
     ]
 
-    def configure_ssc_trustpoint(self, device, steps, password, key_size=KEY_SIZE,
+    def configure_ssc_trustpoint(self, device, steps, password=PASSWORD,
+                                 key_size=KEY_SIZE,
                                  signature_algorithm=SIGNATURE_ALGORITHM,
                                  encryption_type=ENCRYPTION_TYPE, timeout=TIMEOUT):
+
+        if not password:
+            credentials = getattr(device, 'credentials', {}) or {}
+            # Credentials.get() falls back to the default credential. Only
+            # use an explicitly configured certificate credential here.
+            if 'certificate' in credentials:
+                password = credentials['certificate'].get('password')
+
+        if password:
+            password = to_plaintext(password)
+        else:
+            self.skipped("Password not provided in testbed certificate credentials or the clean YAML. Skipping self-signed certificate stage.")
 
         # Configuring the self-signed certificate on the device
         with steps.start("Configuring the self-signed certificate on {}".format(device.name)) as step:

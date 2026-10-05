@@ -548,7 +548,7 @@ def unconfigure_crypto_ikev2_keyring(device,keyring):
 def configure_ikev2_profile_pre_share(device, profile_name, auth_local='pre-share', auth_remote='pre-share',
                                     keyring=None, address=None, mask='', protocol='ipv4',
                                     dpd_interval=None, dpd_retry='2', dpd_type='periodic',
-                                    fvrf=None, lifetime=None, local_interface=None):
+                                    fvrf=None, lifetime=None, local_interface=None, remote_any=False):
 
     """ Configure Ikev2 Profile with pre-share option
         Args:
@@ -567,6 +567,7 @@ def configure_ikev2_profile_pre_share(device, profile_name, auth_local='pre-shar
             fvrf ('str',optional) FVRF name (Default None)
             lifetime ('str',optional) lifetime in secs (Default is None)
             local_interface ('str', optional) interface name  (Default is None)
+            remote_any ('boolean' optional): match any peer identity (Default False)
         Returns:
             None
         Raises:
@@ -583,6 +584,8 @@ def configure_ikev2_profile_pre_share(device, profile_name, auth_local='pre-shar
         else:
             # IPv6 Match Address
             config_list.append("match identity remote address {address}/{mask}".format(address=address,mask=mask))
+    elif remote_any:
+        config_list.append("match identity remote any")
     if auth_local:
         config_list.append("authentication local {auth_local}".format(auth_local=auth_local))
     if auth_remote:

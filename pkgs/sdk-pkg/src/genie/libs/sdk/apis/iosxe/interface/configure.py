@@ -3950,7 +3950,7 @@ def configure_interface_storm_control_level(
             sc_falling_threshold('float' or 'str', optional): storm control falling threshold, default is None
             sc_calc_type('str', optional): storm control suppression level type, default is None
         Returns:
-            None
+            output of the configuration command
         Raises:
             SubCommandFailure
     """
@@ -3965,7 +3965,7 @@ def configure_interface_storm_control_level(
     cmd = f'storm-control {sc_type} level{sc_calc_type} {sc_rising_threshold}{sc_falling_threshold}'
 
     try:
-        device.configure(
+        output = device.configure(
             [
                 f"interface {interface}",
                 cmd,
@@ -3975,6 +3975,7 @@ def configure_interface_storm_control_level(
         raise SubCommandFailure(
             f"Failed to config storm control level on {interface}. Error:\n{e}")
 
+    return output
 
 def unconfigure_interface_storm_control_level(
         device,

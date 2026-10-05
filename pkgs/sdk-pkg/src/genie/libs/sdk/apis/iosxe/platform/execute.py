@@ -15,7 +15,9 @@ from genie.utils.timeout import Timeout
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
 from genie.libs.sdk.apis.execute import (
     _get_directory_file_details,
+    _get_disk_cleanup_operation_timeout,
     _get_entry_size,
+    _get_entry_type,
     _is_directory_entry,
 )
 from genie.abstract import deprecated
@@ -28,6 +30,9 @@ from unicon.plugins.utils import get_device_mode
 
 # Logger
 log = logging.getLogger(__name__)
+
+# Console-speed bits in the IOS-XE config-register (bits 5, 11, 12).
+CONSOLE_SPEED_MASK = 0x1820
 
 
 def _get_child_directory(parent_directory, entry_name):
@@ -86,24 +91,43 @@ def execute_set_boot_variable(device, boot_images, timeout=300):
             log.info("Added '{}' to BOOT variable".format(image))
 
 
-def execute_set_config_register(device, config_register, timeout=300):
+def execute_set_config_register(device, config_register, timeout=300,
+                                preserve_console_speed=False):
     '''Set config register to load image in boot variable
+
+    At rommon, callers can request that ``0x0`` be replaced with
+    each connection's ``current & 0x1820`` so console-speed bits survive.
+    Preservation is explicitly requested by the caller and does not depend
+    on connection transport metadata.
+
         Args:
             device ('obj'): Device object
-            config_reg ('str'): Hexadecimal value to set the config register to
+            config_register ('str'): Hexadecimal value to set the config
+                register to
             timeout ('int'): Max time to set config-register in seconds
+            preserve_console_speed ('bool'): Preserve the console-speed bits
+                when writing ``0x0`` in rommon. Defaults to ``False``.
     '''
     # Collect all connections to process
     conn_list = getattr(device, 'subconnections', None) or [device.default]
 
     # Iterate through each connection to apply the configuration.
     for conn in conn_list:
-        log.info(f"Setting config-register to '{config_register}' on {conn}")
+        target = config_register
+
+        if conn.state_machine.current_state == 'rommon' \
+                and _requested_zero(config_register) \
+                and preserve_console_speed:
+            preserved = _get_preserved_console_speed_register(device, conn)
+            if preserved is not None:
+                target = preserved
+
+        log.info(f"Setting config-register to '{target}' on {conn}")
 
         try:
             # Use confreg command in rommon mode
             if conn.state_machine.current_state == 'rommon':
-                cmd = f'confreg {config_register}'
+                cmd = f'confreg {target}'
                 conn.execute(cmd, timeout=timeout)
                 continue
             # If the device is in standby state, skip it.
@@ -111,11 +135,37 @@ def execute_set_config_register(device, config_register, timeout=300):
             elif conn.role == "standby":
                 continue
             else:
-                conn.configure("config-register {}".format(config_register),
+                conn.configure("config-register {}".format(target),
                             timeout=timeout)
         except Exception as e:
             raise Exception("Failed to set config register for '{d}'\n{e}".\
                             format(d=device.name, e=str(e)))
+
+
+def _requested_zero(config_register):
+    try:
+        return int(config_register, 16) == 0
+    except (TypeError, ValueError):
+        return False
+
+
+def _get_preserved_console_speed_register(device, conn):
+    current = device.api.get_config_register(device=conn)
+    if not current:
+        return None
+
+    try:
+        target = hex(int(current, 16) & CONSOLE_SPEED_MASK)
+    except (TypeError, ValueError) as error:
+        log.warning(
+            f"Could not compute preserved config-register for {device.name}: "
+            f"{error}")
+        return None
+
+    log.info(
+        f"Preserving console-speed bits on {device.name} connection {conn}: "
+        f"current {current} -> writing {target}")
+    return target
 
 
 def execute_rommon_reset(device, timeout=300):
@@ -391,27 +441,34 @@ def delete_unprotected_files(device,
                              destination=None,
                              recursive=False,
                              stop_check=None,
-                             timeout=300):
-    """delete all files not matching regex in the protected list
-        Args:
-            device ('obj'): Device object
-            directory ('str'): working directory to perform the operation
-            protected ('list'): list of file patterns that won't be deleted. If it begins
-                                and ends with (), it will be considered as a regex
-            files_to_delete('list') list of files that should be deleted unless they are protected
-            dir_output ('str'): output of dir command, if not provided execute the cmd on device to get the output
-            allow_failure (bool, optional): Allow the deletion of a file to silently fail. Defaults to False.
-            destination ('str') : Destination directory. default to None. i.e bootflash:/
-            recursive (bool, optional): Traverse unprotected subdirectories and
-                delete their files. Defaults to False.
-            stop_check (callable, optional): Function called after each
-                recursive file deletion. When it returns True, recursive
-                traversal stops early.
-            timeout (int, optional): Timeout for recursive directory listing.
-                Defaults to 300.
-        Returns:
-            True if recursive traversal stopped early, None otherwise.
-            """
+                             timeout=300,
+                             deadline=None):
+    """Delete files that do not match the supplied protection rules.
+
+    Args:
+        device ('obj'): Device object.
+        directory ('str'): Directory in which to delete files.
+        protected ('list'): File names or parenthesized regular expressions
+            that must not be deleted.
+        files_to_delete ('list'): Optional subset of files to delete.
+        dir_output ('str'): Optional captured output of the 'dir' command.
+        allow_failure ('bool'): Ignore individual deletion failures.
+        destination ('str'): Destination directory, such as bootflash:/.
+        recursive ('bool'): Traverse unprotected subdirectories and delete
+            their regular files.
+        stop_check ('callable'): Called after each recursive file deletion;
+            returning True stops traversal.
+        timeout ('int'): Timeout for recursive directory listings and file
+            deletions.
+        deadline ('float'): Optional monotonic cleanup deadline.
+
+    Returns:
+        bool or None: True when traversal stops at a safety limit; otherwise
+            None.
+    """
+
+    if deadline is not None and time.monotonic() >= deadline:
+        return True
 
     protected_set = set()
     fu_device = FileUtils.from_device(device)
@@ -419,17 +476,23 @@ def delete_unprotected_files(device,
         # Large recursive listings such as bootflash:/core/ can exceed the
         # parser-led execution timeout. Execute with the supplied timeout
         # first, then parse the collected output.
-        log.debug(
-            'Listing recursive directory "{}" with timeout {} seconds'.format(
-                directory, timeout))
-        dir_output = device.execute(
-            'dir {}'.format(directory), timeout=timeout)
-    parsed_dir_output = device.parse(
-        'dir {}'.format(directory), output=dir_output)
+        log.debug('Listing recursive directory "%s" with timeout %s seconds', directory, timeout)
+        listing_timeout = timeout
+        if deadline is not None:
+            listing_timeout = _get_disk_cleanup_operation_timeout(deadline, timeout)
+        dir_output = device.execute(f'dir {directory}', timeout=listing_timeout)
+    parsed_dir_output = device.parse(f'dir {directory}', output=dir_output)
     file_details = _get_directory_file_details(parsed_dir_output)
 
     file_details = file_details or {}
     file_set = set(file_details)
+
+    # An unknown permission cannot establish whether an entry is a regular
+    # file or directory. Protect it instead of passing it to deletefile().
+    unknown_type_entries = {file_name for file_name in file_details if _get_entry_type(file_name, file_details) is None}
+    if unknown_type_entries:
+        log.warning('Skipping entries with unknown parsed file type: %s', ', '.join(sorted(unknown_type_entries)))
+        protected_set.update(unknown_type_entries)
 
     if isinstance(protected, str):
         protected = [protected]
@@ -437,93 +500,101 @@ def delete_unprotected_files(device,
         raise TypeError("'{p}' must be a list")
 
     for pattern in protected:
-        # it's a regex!
+        # Preserve the existing parenthesized-regex convention.
         if pattern.startswith('(') and pattern.endswith(')'):
             regexp = re.compile(pattern)
             protected_set.update(set(filter(regexp.match, file_set)))
 
-        # just file names, exact match only
+        # Plain file names use exact matching.
         elif pattern in file_set:
             protected_set.add(pattern)
 
-    # if files_to_delete is given,updated protected files with the diff of file_set - files_to_delete
-    # so that we only delete files that are in files_to_delete and NOT protected
-    # in other words we remove the protected files from file_to_delete
+    # Restrict deletion to the explicitly requested subset when supplied.
     if files_to_delete:
         protected_set.update(file_set - set(files_to_delete))
 
-    not_protected = file_set - protected_set
+    unprotected_files = file_set - protected_set
     error_messages = []
 
-    if not_protected:
-        if recursive:
-            # Visit directories first; IOS-XE dir output is timestamp ordered:
-            #   326443  drwx  4096   Jul 13 2026 14:12:27 +00:00  acm
-            #   326485  -rw-  0      Jul 13 2026 14:03:59 +00:00  dope_hist
-            #   489719  drwx  77824  Jul 13 2026 07:23:23 +00:00  core
-            # Sort directories first, largest to smallest, then files.
-            not_protected = sorted(
-                not_protected,
-                key=lambda file: (
-                    not _is_directory_entry(file, file_details),
-                    -_get_entry_size(file, file_details),
-                    file))
+    if unprotected_files:
+        if files_to_delete:
+            # Preserve the shared orchestrator's deterministic batch order.
+            unprotected_files = [file_name for file_name in files_to_delete if file_name in unprotected_files]
+        else:
+            # Prefer regular files before recursive directory traversal, then
+            # use size and name as deterministic tie breakers.
+            unprotected_files = sorted(
+                unprotected_files,
+                key=lambda file_name: (
+                    _is_directory_entry(file_name, file_details),
+                    -_get_entry_size(file_name, file_details),
+                    file_name,
+                ),
+            )
 
-        log.info("The following files will be deleted:\n{}".format(
-            '\n'.join(not_protected)))
-        dont_delete_list = protected_set.intersection(files_to_delete or [])
-        if dont_delete_list:
+        log.info('The following files will be deleted:\n%s', '\n'.join(unprotected_files))
+        protected_requested_files = protected_set.intersection(files_to_delete or [])
+        if protected_requested_files:
             log.info(
-                "The following files will not be deleted because they are protected:\n{}"
-                .format('\n'.join(dont_delete_list)))
-        for file in not_protected:
-            if _is_directory_entry(file, file_details):
+                'The following files will not be deleted because they are '
+                'protected:\n%s',
+                '\n'.join(sorted(protected_requested_files)),
+            )
+        for file_name in unprotected_files:
+            if deadline is not None and time.monotonic() >= deadline:
+                return True
+            if _is_directory_entry(file_name, file_details):
                 if recursive:
                     # Nested directories recurse the same way, e.g.
                     # `dir bootflash:/core/`:
                     #   489707  drwx  4096  Jul 13 2026 14:07:07 +00:00  modules
                     parent_directory = destination or directory
-                    child_directory = _get_child_directory(
-                        parent_directory, file)
-                    log.info(
-                        'Traversing the unprotected directory "{}"'.format(
-                            child_directory))
+                    child_directory = _get_child_directory(parent_directory, file_name)
+                    log.info('Traversing the unprotected directory "%s"', child_directory)
                     if delete_unprotected_files(
-                        device=device,
-                        directory=child_directory,
-                        protected=protected,
-                        allow_failure=allow_failure,
-                        destination=child_directory,
-                        recursive=True,
-                        stop_check=stop_check,
-                        timeout=timeout):
+                            device=device,
+                            directory=child_directory,
+                            protected=protected,
+                            allow_failure=allow_failure,
+                            destination=child_directory,
+                            recursive=True,
+                            stop_check=stop_check,
+                            timeout=timeout,
+                            deadline=deadline):
                         return True
                 # Recursive cleanup removes directory contents but leaves the
                 # directory itself intact.
                 continue
-            log.info(f'Deleting the unprotected file "{file}"')
+            log.info('Deleting the unprotected file "%s"', file_name)
             try:
+                delete_timeout = _get_disk_cleanup_operation_timeout(deadline, timeout)
                 if destination:
-                    fu_device.deletefile(f"{destination}{file}", force=True, device=device)
+                    fu_device.deletefile(
+                        f'{destination}{file_name}',
+                        timeout_seconds=delete_timeout,
+                        force=True,
+                        device=device,
+                    )
                 else:
-                    fu_device.deletefile(file, force=True, device=device)
-            except Exception as e:
+                    fu_device.deletefile(file_name, timeout_seconds=delete_timeout, force=True, device=device)
+            except Exception as error:
                 if allow_failure:
                     log.info(
-                        f'Failed to delete file "{file}" but ignoring and moving on due to "allow_failure=True".'
+                        'Failed to delete file "%s" but ignoring the failure '
+                        'because allow_failure=True.',
+                        file_name,
                     )
                     continue
 
-                error_messages.append(f'Failed to delete file "{file}" due to :{str(e)}')
+                error_messages.append(f'Failed to delete file "{file_name}" due to: {error}')
                 continue
             if stop_check and stop_check():
                 return True
         if error_messages:
             raise Exception('\n'.join(error_messages))
     else:
-        log.info(
-            "No files will be deleted, the following files are protected:\n{}".
-            format('\n'.join(protected_set)))
+        log.info('No files will be deleted; the following files are protected:\n%s', '\n'.join(sorted(protected_set)))
+
 
 def execute_card_OIR(device, card_number, switch_id = None, timeout=60):
     ''' Execute 'hw-module subslot <slot> oir power-cycle' on the device

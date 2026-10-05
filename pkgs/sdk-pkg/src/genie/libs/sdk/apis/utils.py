@@ -1055,7 +1055,7 @@ def question_mark_retrieve(device, cmd, timeout=20, state="enable"):
 
     prompt = Statement(
         pattern=pattern_mark,
-        action="send(\x03)",
+        action="sendline(\x01\x0b)",
         args=None,
         loop_continue=True,
         continue_timer=False,
@@ -2018,26 +2018,23 @@ def copy_to_device(device,
         # Include the port only when it is not the protocol's default; this
         # keeps the generated source URL compatible with existing transfers.
         source = '{p}://{s}/{f}'.format(p=protocol, s=server, f=remote_path)
+        copy_kwargs = dict(
+            source=source,
+            destination=local_path,
+            device=device,
+            timeout_seconds=timeout,
+            compact=compact,
+            use_kstack=use_kstack,
+            protocol=protocol,
+            **kwargs)
+        if interface is not None:
+            copy_kwargs['interface'] = interface
         try:
             if vrf is not None:
-                return fu.copyfile(source=source,
-                                   destination=local_path,
-                                   device=device,
-                                   vrf=vrf,
-                                   timeout_seconds=timeout,
-                                   compact=compact,
-                                   use_kstack=use_kstack,
-                                   protocol=protocol,
-                                   **kwargs)
+                copy_kwargs['vrf'] = vrf
+                return fu.copyfile(**copy_kwargs)
             else:
-                return fu.copyfile(source=source,
-                                   destination=local_path,
-                                   device=device,
-                                   timeout_seconds=timeout,
-                                   compact=compact,
-                                   use_kstack=use_kstack,
-                                   protocol=protocol,
-                                   **kwargs)
+                return fu.copyfile(**copy_kwargs)
         except Exception as e:
             copy_context = (
                 "Failed to copy remote file '{}' to '{}' on device '{}' "
@@ -2053,13 +2050,10 @@ def copy_to_device(device,
             if compact or use_kstack:
                 log.info("Failed to copy with compact/use-kstack option, "
                          "retrying again without compact/use-kstack")
-                return fu.copyfile(source=source,
-                                   destination=local_path,
-                                   device=device,
-                                   vrf=vrf,
-                                   timeout_seconds=timeout,
-                                   protocol=protocol,
-                                   **kwargs)
+                copy_kwargs.pop('compact', None)
+                copy_kwargs.pop('use_kstack', None)
+                copy_kwargs['vrf'] = vrf
+                return fu.copyfile(**copy_kwargs)
             else:
                 raise
 
@@ -2259,6 +2253,22 @@ def copy_from_device(device,
         log.error('Failed to transfer file', exc_info=True)
         return
 
+
+def get_available_space_after_cleanup(device, directory):
+    """Get available space after a cleanup batch.
+
+    Platforms can override this API when they provide a concise space query.
+    The generic implementation preserves the existing directory-query
+    behavior.
+
+    Args:
+        device ('obj'): Device object.
+        directory ('str'): Directory to check.
+
+    Returns:
+        int or None: Available bytes, or None when space cannot be verified.
+    """
+    return device.api.get_available_space(directory=directory)
 
 
 def get_file_size_from_server(device,

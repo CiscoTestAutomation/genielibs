@@ -7,6 +7,11 @@ import yaml
 
 # Genie
 from genie.libs.sdk.apis.utils import get_config_dict
+from genie.libs.sdk.apis.execute import (
+    _DiskCleanupStrategy,
+    _free_up_disk_space_for_roles,
+    _get_entry_type,
+)
 from genie.libs.parser.nxos.ping import Ping
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
 from genie.libs.sdk.apis.utils import copy_from_device as generic_copy_from_device
@@ -23,6 +28,76 @@ from unicon.eal.dialogs import Dialog, Statement
 from unicon.core.errors import SubCommandFailure
 
 log = logging.getLogger(__name__)
+
+
+def _classify_nxos_disk_cleanup_entry(entry_name, file_details):
+    """Return the NX-OS entry type, falling back to its name suffix."""
+    return _get_entry_type(entry_name, file_details, use_name_fallback=True)
+
+
+def _delete_nxos_disk_cleanup_batch(device, destination, protected_files,
+                                    candidate_batch, directory_output,
+                                    allow_deletion_failure, deadline,
+                                    **_kwargs):
+    """Delete an NX-OS batch of validated regular files."""
+    return device.api.delete_unprotected_files(
+        directory=destination,
+        protected=protected_files,
+        files_to_delete=[candidate.path for candidate in candidate_batch],
+        dir_output=directory_output,
+        allow_failure=allow_deletion_failure,
+        destination=destination,
+        deadline=deadline,
+    )
+
+
+def _get_nxos_disk_cleanup_space(device, destination):
+    """Return available space through the NX-OS platform API."""
+    return device.api.get_available_space_after_cleanup(directory=destination)
+
+
+_NXOS_DISK_CLEANUP_STRATEGY = _DiskCleanupStrategy(
+    classify_entry=_classify_nxos_disk_cleanup_entry,
+    delete_batch=_delete_nxos_disk_cleanup_batch,
+    get_available_space=_get_nxos_disk_cleanup_space,
+)
+
+
+def free_up_disk_space(device, destination, required_size, skip_deletion,
+    protected_files, compact=False, min_free_space_percent=None,
+    dir_output=None, allow_deletion_failure=False, recursive=False):
+    """Delete safe NX-OS regular files until enough space is available.
+
+    Args:
+        device ('obj'): Device object.
+        destination ('str'): Destination directory, such as bootflash:/.
+        required_size ('int'): Required free space in bytes.
+        skip_deletion ('bool'): Only perform the space check when True.
+        protected_files ('list'): File names or patterns that must not be
+            deleted.
+        compact ('bool'): Apply compact-image size estimation.
+        min_free_space_percent ('int'): Minimum acceptable free-space percent.
+        dir_output ('str'): Optional captured output of the 'dir' command.
+        allow_deletion_failure ('bool'): Ignore individual deletion failures.
+        recursive ('bool'): Retained for generic API compatibility. NX-OS
+            directories are not cleanup candidates.
+
+    Returns:
+        bool: True when enough space is verified, otherwise False.
+    """
+    return _free_up_disk_space_for_roles(
+        device=device,
+        destination=destination,
+        required_size=required_size,
+        skip_deletion=skip_deletion,
+        protected_files=protected_files,
+        compact=compact,
+        min_free_space_percent=min_free_space_percent,
+        dir_output=dir_output,
+        allow_deletion_failure=allow_deletion_failure,
+        recursive=recursive,
+        cleanup_strategy=_NXOS_DISK_CLEANUP_STRATEGY,
+    )
 
 
 def scp(device,

@@ -7,7 +7,7 @@
 '''
 
 # metadata
-__version__ = "26.8"
+__version__ = "26.9"
 __author__ = 'Cisco Systems Inc.'
 __contact__ = ['pyats-support@cisco.com', 'pyats-support-ext@cisco.com']
 __copyright__ = 'Copyright (c) 2020, Cisco Systems Inc.'
@@ -15,4 +15,3 @@ __copyright__ = 'Copyright (c) 2020, Cisco Systems Inc.'
 
 from genie import abstract
 abstract.declare_package(feature='sdk')
-

@@ -1,38 +1,82 @@
-
-import re
 import logging
-from genie.utils import Dq
+import re
+import time
+
 from pyats.utils.fileutils import FileUtils
+
+from genie.libs.sdk.apis.execute import (
+    _DiskCleanupStrategy,
+    _get_disk_cleanup_operation_timeout,
+    _run_disk_cleanup_with_strategy,
+)
 
 log = logging.getLogger(__name__)
 
 
+def _classify_apic_disk_cleanup_entry(entry_name, file_details):
+    """Return the APIC filesystem entry type from mode metadata."""
+    entry_details = file_details.get(entry_name)
+    if not isinstance(entry_details, dict):
+        return None
+
+    mode = str(entry_details.get('mode', ''))
+    if mode.startswith('-'):
+        return 'file'
+    if mode.startswith('d'):
+        return 'directory'
+    return None
+
+
+def _delete_apic_disk_cleanup_batch(device, destination, protected_files,
+                                    candidate_batch, directory_output,
+                                    deadline, **_kwargs):
+    """Delete an APIC batch of validated regular files."""
+    return device.api.delete_unprotected_files(
+        directory=destination,
+        protected=protected_files,
+        files_to_delete=[candidate.path for candidate in candidate_batch],
+        dir_output=directory_output,
+        deadline=deadline,
+    )
+
+
+def _get_apic_disk_cleanup_space(device, destination):
+    """Return available space through the APIC platform API."""
+    return device.api.get_available_space(directory=destination)
+
+
+_APIC_DISK_CLEANUP_STRATEGY = _DiskCleanupStrategy(
+    classify_entry=_classify_apic_disk_cleanup_entry,
+    delete_batch=_delete_apic_disk_cleanup_batch,
+    get_available_space=_get_apic_disk_cleanup_space,
+)
+
+
 def _protected_and_unprotected_files(file_set, protected, files_to_delete=None):
     protected_set = set()
+    protected = protected or []
     if isinstance(protected, str):
         protected = [protected]
     elif not isinstance(protected, (list, set)):
         raise TypeError("'{p}' must be a list")
 
     for pattern in protected:
-        # it's a regex!
+        # Preserve APIC's existing behavior: patterns containing an opening
+        # parenthesis are treated as regular expressions.
         if '(' in pattern:
             regexp = re.compile(pattern)
             protected_set.update(set(filter(regexp.match, file_set)))
 
-        # just file names, exact match only
+        # Plain file names use exact matching.
         elif pattern in file_set:
             protected_set.add(pattern)
 
-    # if files_to_delete is given,updated protected files with the diff of file_set - files_to_delete
-    # so that we only delete files that are in files_to_delete and NOT protected
-    # in other words we remove the protected files from file_to_delete
+    # Restrict deletion to the explicitly requested subset when supplied.
     if files_to_delete:
         protected_set.update(file_set - set(files_to_delete))
 
-    not_protected = file_set - protected_set
-
-    return protected_set, not_protected
+    unprotected_files = file_set - protected_set
+    return protected_set, unprotected_files
 
 
 def delete_unprotected_files(device,
@@ -40,52 +84,75 @@ def delete_unprotected_files(device,
                              protected,
                              files_to_delete=None,
                              dir_output=None,
-                             destination=None):
-    """delete all files not matching regex in the protected list
-        Args:
-            device ('obj'): Device object
-            directory ('str'): working directory to perform the operation
-            protected ('list'): list of file patterns that won't be deleted. If it begins
-                                and ends with (), it will be considered as a regex
-            files_to_delete('list') list of files that should be deleted unless they are not protected
-            dir_output ('str'): output of dir command, if not provided execute the cmd on device to get the output
-            destination ('str') : Destination directory. default to None. i.e bootflash:/
-        Returns:
-            None
-            """
+                             destination=None,
+                             deadline=None):
+    """Delete regular files that do not match the protection rules.
 
-    fu_device = FileUtils.from_device(device)
-    file_set = set(
-        Dq(device.parse('ls -l {}'.format(directory),
-                        output=dir_output)).get_values('files'))
+    Args:
+        device ('obj'): Device object.
+        directory ('str'): Directory in which to delete files.
+        protected ('list'): File patterns that must not be deleted.
+        files_to_delete ('list'): Optional subset of files to delete.
+        dir_output ('str'): Optional captured output of the 'ls -l' command.
+        destination ('str'): Destination retained for API compatibility.
+        deadline ('float'): Optional monotonic cleanup deadline.
 
-    protected_set, not_protected = _protected_and_unprotected_files(file_set, protected, files_to_delete)
+    Returns:
+        bool or None: True when the deadline is reached; otherwise None.
+    """
+
+    try:
+        parsed_output = device.parse(f'ls -l {directory}', output=dir_output)
+    except Exception as error:
+        log.error('Unable to identify safe cleanup candidates: %s', error)
+        return None
+
+    if not isinstance(parsed_output, dict):
+        log.error('Unable to identify safe cleanup candidates')
+        return None
+
+    file_details = parsed_output.get('files', {})
+    if not isinstance(file_details, dict):
+        log.error('Unable to identify safe cleanup candidates')
+        return None
+    file_set = set(file_details)
+
+    protected_set, unprotected_files = _protected_and_unprotected_files(file_set, protected, files_to_delete)
     error_messages = []
 
-    if not_protected:
-        log.info("The following files will be deleted:\n{}".format(
-            '\n'.join(not_protected)))
-        dont_delete_list = protected_set.intersection(files_to_delete)
-        if dont_delete_list:
+    # Only entries explicitly identified as regular files are safe to delete.
+    unprotected_files = {
+        file_name for file_name in unprotected_files
+        if (isinstance(file_details.get(file_name), dict) and
+            str(file_details[file_name].get('mode', '')).startswith('-'))
+    }
+
+    if unprotected_files:
+        fu_device = FileUtils.from_device(device)
+        if files_to_delete:
+            unprotected_files = [file_name for file_name in files_to_delete if file_name in unprotected_files]
+        else:
+            unprotected_files = sorted(unprotected_files)
+        log.info('The following files will be deleted:\n%s', '\n'.join(unprotected_files))
+        protected_requested_files = protected_set.intersection(files_to_delete or [])
+        if protected_requested_files:
             log.info(
-                "The following files will not be deleted because they are protected:\n{}"
-                .format('\n'.join(dont_delete_list)))
-        for file in not_protected:
-            # it's a directory, dont delete
-            if file.endswith('/'):
-                continue
-            log.info('Deleting the unprotected file "{}"'.format(file))
+                'The following files will not be deleted because they are '
+                'protected:\n%s',
+                '\n'.join(sorted(protected_requested_files)))
+        for file_name in unprotected_files:
+            if deadline is not None and time.monotonic() >= deadline:
+                return True
+            log.info('Deleting the unprotected file "%s"', file_name)
             try:
-                fu_device.deletefile(file, device=device)
-            except Exception as e:
-                error_messages.append('Failed to delete file "{}" due '
-                                      'to :{}'.format(file, str(e)))
+                delete_timeout = _get_disk_cleanup_operation_timeout(deadline)
+                fu_device.deletefile(file_name, timeout_seconds=delete_timeout, device=device)
+            except Exception as error:
+                error_messages.append(f'Failed to delete file "{file_name}" due to: {error}')
         if error_messages:
             raise Exception('\n'.join(error_messages))
     else:
-        log.info(
-            "No files will be deleted, the following files are protected:\n{}".
-            format('\n'.join(protected_set)))
+        log.info('No files will be deleted, the following files are protected:\n%s', '\n'.join(sorted(protected_set)))
 
 
 def free_up_disk_space(device, destination, required_size, skip_deletion,
@@ -93,96 +160,105 @@ def free_up_disk_space(device, destination, required_size, skip_deletion,
                        min_free_space_percent=None,
                        dir_output=None):
 
-    '''Delete files to create space on device except protected files
+    """Delete unprotected APIC files until enough space is available.
+
     Args:
-        device ('Obj') : Device object
-        destination ('str') : Destination directory, i.e bootflash:/
-        required_size ('int') : Check if enough space to fit given size in bytes.
-                                If this number is negative it will be assumed
-                                the required size is not available.
-        skip_deletion ('bool') : Only performs checks, no deletion
-        protected_files ('list') : List of file patterns that wont be deleted.
-        min_free_space_percent ('int'): Minimum acceptable free disk space %.
-                                        Optional,
-        dir_output ('str'): Output of 'dir' command
-                            if not provided, executes the cmd on device
+        device ('Obj'): Device object.
+        destination ('str'): Destination directory.
+        required_size ('int'): Required free space in bytes.
+        skip_deletion ('bool'): Only perform checks when True.
+        protected_files ('list'): File patterns that must not be deleted.
+        min_free_space_percent ('int'): Minimum acceptable free-space percent.
+        dir_output ('str'): Optional captured output of the 'df' command.
+
     Returns:
-         True if there is enough space after the operation, False otherwise
-    '''
+        bool: True when enough space is verified, otherwise False.
+    """
     if not destination:
         log.warning('No destination provided, cannot verify available space')
-        return True
-    df_info = device.parse('df {}'.format(destination), output=dir_output)
+        return False
+    protected_files = protected_files or []
+    try:
+        parsed_output = device.parse(f'df {destination}', output=dir_output)
+        directory_data = parsed_output.get('directory', {})
+        filesystem_info = next(iter(directory_data.values()), None)
+        available_space = filesystem_info.get('available') if filesystem_info else None
+    except Exception as error:
+        log.error('Unable to determine available space: %s', error)
+        return False
 
-    dir_df_info = df_info['directory'].values()
-    if dir_df_info:
-        dir_df_info = list(dir_df_info)[0]
-        free_space = dir_df_info.get('available')
-
-    if not dir_df_info or not free_space:
+    if available_space is None:
         log.error('Unable to determine available space')
-        return True
+        return False
+    try:
+        available_space = int(available_space)
+    except (TypeError, ValueError):
+        log.error('Unable to determine available space')
+        return False
 
-    # Check if available space is sufficient
     if min_free_space_percent:
+        total_space = filesystem_info.get('total')
+        if total_space is None:
+            log.error('Unable to determine total disk space')
+            return False
+        try:
+            total_space = int(total_space)
+        except (TypeError, ValueError):
+            log.error('Unable to determine total disk space')
+            return False
+        if total_space <= 0:
+            log.error('Unable to determine total disk space')
+            return False
 
-        # Get total space
-        total_space = dir_df_info.get('total')
+        use_percentage = filesystem_info.get('use_percentage')
+        if use_percentage is None:
+            log.error('Unable to determine disk use percentage')
+            return False
+        try:
+            available_percent = 100 - float(use_percentage)
+        except (TypeError, ValueError):
+            log.error('Unable to determine disk use percentage')
+            return False
 
-        # Get current available space in %
-        avail_percent = 100 - dir_df_info.get('use_percentage')
+        comparison = 'less' if available_percent < min_free_space_percent else 'greater'
+        log.info(
+            'There is %s %% of free space on the disk, which is %s than the '
+            'target of %s %%.',
+            round(available_percent, 2), comparison, min_free_space_percent)
 
-        log.info("There is {avail} % of free space on the disk, which is "
-                 "{compare} than the target of {target} %.".
-                 format(avail=round(avail_percent, 2), compare='less' if
-                        avail_percent < min_free_space_percent else 'greater',
-                        target=min_free_space_percent))
+        required_size = round(max(required_size, min_free_space_percent * 0.01 * total_space))
 
-        # get bigger of required_space or min_free_space_percent
-        required_size = round(
-            max(required_size, min_free_space_percent * .01 * total_space))
-
-    if free_space > required_size:
-        log.info('APIC: enough free space available: {}'.format(free_space))
+    if available_space > required_size:
+        log.info('APIC: enough free space available: %s', available_space)
         return True
 
-    log.warning('APIC: not enough free space, required: {}, available: {}'.format(
-        required_size, free_space
-    ))
+    log.warning('APIC: not enough free space, required: %s, available: %s', required_size, available_space)
 
-    ls_output = device.execute('ls -l {}'.format(destination))
-    file_info = device.parse('ls -l {}'.format(destination), output=ls_output)
-    dq = Dq(file_info)
+    if skip_deletion:
+        log.error("'skip_deletion' is set to True and there isn't enough space on the device, files cannot be deleted.")
+        return False
 
-    # turn parsed dir output to a list of files for sorting
-    # Large files are given priority when deleting
-    file_list = []
-    for file in dq.get_values('files'):
-        file_list.append((file, int(dq.contains(file).get_values('size')[0])))
-
-    file_list.sort(key=lambda x: x[1], reverse=True)
-
-    # create lis of filenames
-    files_to_be_deleted = set(x[0] for x in file_list)
-    # filter list and get list of unprotected files
-    _, unprotected_files = _protected_and_unprotected_files(files_to_be_deleted, protected_files)
-
-    # create ordered list of unprotected files
-    to_be_deleted = [x[0] for x in file_list if x[0] in unprotected_files]
-    log.info('Files to be deleted: {}'.format(to_be_deleted))
-
-    for file, size in file_list:
-        device.api.delete_unprotected_files(directory=destination,
-                                            protected=protected_files,
-                                            files_to_delete=[file],
-                                            dir_output=ls_output)
-
-        if device.api.verify_enough_disk_space(required_size, destination):
-            log.info("Verified there is enough space on the device after "
-                     "deleting unprotected files.")
-            return True
-
-    # Exhausted list of files - still not enough space
-    log.error('There is still not enough space on the device after '
-              'deleting unprotected files.')
-    return False
+    try:
+        ls_output = device.execute(f'ls -l {destination}')
+        parsed_listing = device.parse(f'ls -l {destination}', output=ls_output)
+    except Exception as error:
+        log.error('Unable to identify cleanup candidates: %s', error)
+        return False
+    if not isinstance(parsed_listing, dict):
+        log.error('Unable to identify cleanup candidates')
+        return False
+    file_entries = parsed_listing.get('files', {})
+    if not isinstance(file_entries, dict):
+        log.error('Unable to identify cleanup candidates')
+        return False
+    return _run_disk_cleanup_with_strategy(
+        device=device,
+        destination=destination,
+        required_size=required_size,
+        file_details=file_entries,
+        protected_files=protected_files,
+        directory_output=ls_output,
+        allow_deletion_failure=False,
+        recursive=False,
+        cleanup_strategy=_APIC_DISK_CLEANUP_STRATEGY,
+    )

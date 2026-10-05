@@ -134,14 +134,19 @@ def get_available_space(device, directory='', output=None):
     except SchemaEmptyParserError as e:
         log.error(
             "Command 'dir {}' did not return any results: {e}".format(directory, e=e))
+        return None
     except SchemaMissingKeyError as e:
         log.error("Missing key while parsing 'dir {}': {e}".format(directory, e=e))
+        return None
     except Exception as e:
         log.error("Failed to parse the directory listing due to: {}".\
                   format(str(e)))
         return None
 
     free_bytes = Dq(dir_output).get_values(key='total_free_bytes')
+    if not free_bytes:
+        log.error("Failed to get available space for {}".format(directory))
+        return None
     reg = re.search(r'(\d+)\s*(\S+)?', free_bytes[0])
     
     if reg:

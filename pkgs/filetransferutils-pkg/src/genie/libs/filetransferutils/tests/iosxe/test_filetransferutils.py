@@ -3,7 +3,7 @@
 # import python
 import os
 import unittest
-from unittest.mock import patch
+from unittest.mock import call, patch
 from unittest.mock import Mock, ANY
 
 # ATS
@@ -250,6 +250,42 @@ class test_filetransferutils(unittest.TestCase):
         self.device.execute.assert_called_with(
             'copy http://myuser:mypw@1.1.1.1//auto/tftp-ssr/memleak.tcl flash:/memleak.tcl',
             prompt_recovery=True, timeout='300', reply=ANY, error_pattern=ANY)
+
+    def test_file_transfer_config_replaces_and_restores_source_interface(self):
+        device = Mock()
+        device.os = 'iosxe'
+        device.testbed = None
+        device.device = device
+        device.execute.return_value = (
+            'ip http client source-interface Vlan1\n')
+        fu = FileUtils.from_device(device, protocol='http')
+
+        with fu.file_transfer_config(
+                interface='GigabitEthernet1', device=device):
+            pass
+
+        self.assertEqual(device.configure.call_args_list, [
+            call(['ip http client source-interface GigabitEthernet1']),
+            call([
+                'no ip http client source-interface GigabitEthernet1',
+                'ip http client source-interface Vlan1',
+            ]),
+        ])
+
+    def test_file_transfer_config_keeps_matching_source_interface(self):
+        device = Mock()
+        device.os = 'iosxe'
+        device.testbed = None
+        device.device = device
+        device.execute.return_value = (
+            'ip http client source-interface GigabitEthernet1\n')
+        fu = FileUtils.from_device(device, protocol='http')
+
+        with fu.file_transfer_config(
+                interface='GigabitEthernet1', device=device):
+            pass
+
+        device.configure.assert_not_called()
 
     def test_copyfile_with_hostname(self):
 

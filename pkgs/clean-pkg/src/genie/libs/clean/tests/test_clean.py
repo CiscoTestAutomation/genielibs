@@ -22,6 +22,7 @@ from genie.libs.clean.utils import validate_clean
 from pyats.log.utils import banner
 from pyats import results
 from pyats.clean.exceptions import CleanRetryRequest
+from pyats.kleenex.testbed_config import TestbedConfigCollector
 
 
 class TestStageSection(unittest.TestCase):
@@ -89,6 +90,165 @@ class TestBaseStage(unittest.TestCase):
 
         self.stage(test=123)
         func1.assert_called_with(test=123)
+
+
+class TestGeneratedTestbedConfig(unittest.TestCase):
+
+    @mock.patch('genie.libs.clean.clean.get_image_handler', return_value=None)
+    def test_clean_testcase_injects_collector_into_stage_parameters(
+            self, _get_image_handler: mock.Mock) -> None:
+        """Verify a Clean testcase exposes its collector to every stage."""
+        # Define the minimal device and stage shapes needed for iteration.
+        class DeviceStub:
+            """Provide deterministic clean configuration for the stage test."""
+
+            name = 'uut'
+            clean = {'order': ['GeneratePeer']}
+
+        class GeneratePeer(BaseStage):
+            """Represent a schema-valid stage receiving injected parameters."""
+
+            schema = {}
+
+        # Construct a testcase with the exact collector stages should mutate.
+        collector = TestbedConfigCollector()
+        testcase = CleanTestcase(
+            DeviceStub(), 3, testbed_config=collector)
+        testcase.discover = mock.Mock()
+        testcase.stages = {
+            'GeneratePeer': {
+                'func': GeneratePeer,
+                'change_order_if_pass': None,
+                'change_order_if_fail': None,
+                'stage_reuse_limit': None,
+                'args': {},
+            },
+        }
+
+        # Materialize one stage to build its parameter dictionary.
+        stage = next(iter(testcase))
+
+        # Identity is required; a copy would hide output from the worker.
+        self.assertIs(stage.parameters['testbed_config'], collector)
+
+    @mock.patch('genie.libs.clean.clean.get_image_handler', return_value=None)
+    def test_clean_testcase_reserves_collector_parameter(
+            self, _get_image_handler: mock.Mock) -> None:
+        """Verify configured stage arguments cannot replace the collector."""
+        class DeviceStub:
+            """Provide deterministic clean configuration for the stage test."""
+
+            name = 'uut'
+            clean = {'order': ['GeneratePeer']}
+
+        class GeneratePeer(BaseStage):
+            """Represent a stage with a conflicting configured parameter."""
+
+            schema = {}
+
+        collector = TestbedConfigCollector()
+        testcase = CleanTestcase(DeviceStub(), 3, testbed_config=collector)
+        testcase.discover = mock.Mock()
+        testcase.stages = {
+            'GeneratePeer': {
+                'func': GeneratePeer,
+                'change_order_if_pass': None,
+                'change_order_if_fail': None,
+                'stage_reuse_limit': None,
+                'args': {'testbed_config': {'unexpected': True}},
+            },
+        }
+
+        # Internal plumbing must win over user configuration at the boundary.
+        stage = next(iter(testcase))
+        self.assertIs(stage.parameters['testbed_config'], collector)
+
+    @mock.patch('genie.libs.clean.clean.get_image_handler', return_value=None)
+    def test_clean_testcase_preserves_legacy_parameter_without_collector(
+            self, _get_image_handler: mock.Mock) -> None:
+        """Verify pre-collector pyATS values remain available to stages."""
+        class DeviceStub:
+            """Provide deterministic clean configuration for the stage test."""
+
+            name = 'uut'
+            clean = {'order': ['GeneratePeer']}
+
+        class GeneratePeer(BaseStage):
+            """Represent a stage receiving a legacy configured value."""
+
+            schema = {}
+
+        legacy_value = {'mode': 'legacy'}
+        testcase = CleanTestcase(DeviceStub(), 3, testbed_config=None)
+        testcase.discover = mock.Mock()
+        testcase.stages = {
+            'GeneratePeer': {
+                'func': GeneratePeer,
+                'change_order_if_pass': None,
+                'change_order_if_fail': None,
+                'stage_reuse_limit': None,
+                'args': {'testbed_config': legacy_value},
+            },
+        }
+
+        # No internal collector means the configured compatibility value wins.
+        stage = next(iter(testcase))
+        self.assertIs(stage.parameters['testbed_config'], legacy_value)
+
+    @mock.patch('genie.libs.clean.clean.CleanTestcase')
+    @mock.patch('genie.libs.clean.clean.load')
+    def test_device_clean_passes_its_collector_to_clean_testcase(
+            self, load_mock: mock.Mock,
+            testcase_class: mock.Mock) -> None:
+        """Verify DeviceClean forwards its collector by identity."""
+        # Arrange conversion from the worker's pyATS device to a Genie device.
+        original_device = mock.Mock(name='original-device')
+        original_device.name = 'uut'
+        original_device.testbed = mock.Mock()
+        genie_device = mock.Mock()
+        genie_device.name = 'uut'
+        load_mock.return_value.devices = {'uut': genie_device}
+
+        # Make the mocked Clean testcase complete successfully.
+        testcase = testcase_class.return_value
+        testcase.return_value = results.Passed
+        testcase.parameters = {}
+        cleaner = DeviceClean()
+
+        # Execute DeviceClean through its normal public entry point.
+        cleaner.clean(original_device)
+
+        # The constructed testcase must receive the cleaner-owned collector.
+        testcase_class.assert_called_once_with(
+            genie_device, mock.ANY,
+            testbed_config=cleaner.testbed_config)
+
+    @mock.patch('genie.libs.clean.clean.CleanTestcase')
+    @mock.patch('genie.libs.clean.clean.load')
+    def test_device_clean_without_collector_passes_none(
+            self, load_mock: mock.Mock,
+            testcase_class: mock.Mock) -> None:
+        """Verify legacy uninitialized cleaners remain backward compatible."""
+        # Arrange a device conversion identical to the normal DeviceClean path.
+        original_device = mock.Mock()
+        original_device.name = 'uut'
+        original_device.testbed = mock.Mock()
+        genie_device = mock.Mock()
+        genie_device.name = 'uut'
+        load_mock.return_value.devices = {'uut': genie_device}
+
+        # Bypass BaseCleaner initialization to model a legacy/custom caller.
+        testcase = testcase_class.return_value
+        testcase.return_value = results.Passed
+        testcase.parameters = {}
+        cleaner = object.__new__(DeviceClean)
+
+        # Clean must execute without assuming the collector attribute exists.
+        cleaner.clean(original_device)
+
+        # A missing collector is represented explicitly as an inert None value.
+        testcase_class.assert_called_once_with(
+            genie_device, mock.ANY, testbed_config=None)
 
 
 source_json = {

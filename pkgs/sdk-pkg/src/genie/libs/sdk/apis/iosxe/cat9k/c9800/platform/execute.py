@@ -6,8 +6,37 @@ import logging
 # Unicon
 from unicon.core.errors import SubCommandFailure
 
+# Genie
+from genie.libs.sdk.apis.iosxe.platform.execute import (
+    execute_set_config_register as iosxe_execute_set_config_register,
+)
+
 # Logger
 log = logging.getLogger(__name__)
+
+
+def execute_set_config_register(device, config_register, timeout=300,
+                                preserve_console_speed=False):
+    """Set the configuration register on a C9800 controller.
+
+    C9800 controllers support the IOS XE ``config-register`` command, unlike
+    physical Catalyst 9000 switches that use the ``boot manual`` equivalent.
+
+    Args:
+        device (obj): Device object.
+        config_register (str): Hexadecimal value for the configuration
+            register.
+        timeout (int, optional): Maximum time to set the configuration
+            register in seconds. Defaults to 300.
+        preserve_console_speed (bool, optional): Preserve the console-speed
+            bits when writing ``0x0`` in ROMMON. Defaults to ``False``.
+    """
+    return iosxe_execute_set_config_register(
+        device,
+        config_register,
+        timeout=timeout,
+        preserve_console_speed=preserve_console_speed,
+    )
 
 
 def execute_self_signed_certificate_command(device, password, key_size=2048, signature_algorithm="sha256",

@@ -1,22 +1,5 @@
 from unicon.core.errors import SubCommandFailure
 
-def configure_autoboot(device):
-    """ Configure autoboot
-        Args:
-            device ('obj'): device to use
-        Returns:
-            None
-        Raises:
-            SubCommandFailure
-    """
-    cmd = 'config-reg 0x2102'
-    try:
-        device.configure(cmd)
-    except SubCommandFailure as e:
-        raise SubCommandFailure(
-            "Could not configure autoboot on {device}. Error:\n{error}"
-                .format(device=device, error=e)
-        )
 
 def configure_boot_manual(device):
     """ boot manual

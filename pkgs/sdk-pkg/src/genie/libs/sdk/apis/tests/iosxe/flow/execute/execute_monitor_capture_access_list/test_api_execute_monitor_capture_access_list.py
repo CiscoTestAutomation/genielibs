@@ -1,35 +1,25 @@
-import os
-import unittest
-from pyats.topology import loader
+from unittest import TestCase
 from genie.libs.sdk.apis.iosxe.flow.execute import execute_monitor_capture_access_list
+from unittest.mock import Mock
 
 
-class TestExecuteMonitorCaptureAccessList(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          PREG_IFD_CFD_TB3_9500_SA:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: C9500-32QC
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['PREG_IFD_CFD_TB3_9500_SA']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestExecuteMonitorCaptureAccessList(TestCase):
 
     def test_execute_monitor_capture_access_list(self):
-        result = execute_monitor_capture_access_list(self.device, 'test', 'MYACLV6')
+        self.device = Mock()
+        results_map = {
+            'monitor capture C3 interface HundredGigE1/0/1 in access-list acl_1': '',
+        }
+        
+        def results_side_effect(arg, **kwargs):
+            return results_map.get(arg)
+        
+        self.device.execute.side_effect = results_side_effect
+        
+        result = execute_monitor_capture_access_list(self.device, 'C3', 'acl_1', 'HundredGigE1/0/1', 'in', '')
+        self.assertIn(
+            'monitor capture C3 interface HundredGigE1/0/1 in access-list acl_1',
+            self.device.execute.call_args_list[0][0]
+        )
         expected_output = None
         self.assertEqual(result, expected_output)

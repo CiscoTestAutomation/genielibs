@@ -157,6 +157,12 @@ class test_service_acceleration(TestCase):
         vlan1.module_affinity = 1
         serv_acc.device_attr[dev1].service_attr['firewall'].add_servicevlan_key(vlan1)
 
+        vlan2 = ServiceVlan(device=dev1)
+        vlan2.service_vlan_name = 3
+        vlan2.isolate = True
+        serv_acc.device_attr[dev1].service_attr['firewall'].add_servicevlan_key(
+            vlan2)
+
         # add feature to device
         dev1.add_feature(serv_acc)
 
@@ -167,15 +173,16 @@ class test_service_acceleration(TestCase):
             str(cfgs[dev1.name]),
             "\n".join(
                 [
-                'service system hypershield\n'
-                ' source-interface loopback1\n'
-                ' service firewall\n'
-                '  in-service\n'
-                '  vrf vrfazure module-affinity 1\n'
-                '  vrf vrfoci module-affinity dynamic\n'
-                '  vlan id 2 bridged-traffic module-affinity 1\n'
-                '  exit\n'
-                ' exit'
+                    'service system hypershield\n'
+                    ' source-interface loopback1\n'
+                    ' service firewall\n'
+                    '  in-service\n'
+                    '  vrf vrfazure module-affinity 1\n'
+                    '  vrf vrfoci module-affinity dynamic\n'
+                    '  vlan id 2 bridged-traffic module-affinity 1\n'
+                    '  vlan id 3 bridged-traffic isolate\n'
+                    '  exit\n'
+                    ' exit'
                 ]
             ),
         )

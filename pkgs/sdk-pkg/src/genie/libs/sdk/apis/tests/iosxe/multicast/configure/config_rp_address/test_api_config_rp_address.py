@@ -1,34 +1,23 @@
 import unittest
-from pyats.topology import loader
+from unittest import TestCase
+from unittest.mock import Mock
+
 from genie.libs.sdk.apis.iosxe.multicast.configure import config_rp_address
 
 
-class TestConfigRpAddress(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = """
-        devices:
-          P1:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: c9500
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['P1']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigRpAddress(TestCase):
 
     def test_config_rp_address(self):
-        result = config_rp_address(self.device, 'vrf3001', '30.0.1.1')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.configure.return_value = None
+
+        result = config_rp_address(device, "vrf3001", "30.0.1.1")
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once_with(
+            "ip pim vrf vrf3001 rp-address 30.0.1.1"
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()

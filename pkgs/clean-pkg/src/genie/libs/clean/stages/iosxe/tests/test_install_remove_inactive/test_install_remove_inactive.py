@@ -130,6 +130,6 @@ class TestIosXEConnect(unittest.TestCase):
         device.execute.assert_called_once_with(
             "install remove inactive",
             service_dialog=ANY,
-            timeout=180,
+            timeout=300,
             prompt_recovery=False,
         )

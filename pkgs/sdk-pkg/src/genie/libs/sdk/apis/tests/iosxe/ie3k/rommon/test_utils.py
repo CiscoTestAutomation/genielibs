@@ -4,6 +4,11 @@ from time import perf_counter
 from unittest.mock import MagicMock, patch
 from concurrent.futures import Future
 
+from unicon import Connection
+from unicon.plugins.tests.mock.mock_device_iosxe import (
+    MockDeviceTcpWrapperIOSXE,
+)
+
 from genie.libs.clean.exception import FailedToBootException
 from genie.libs.sdk.apis.iosxe.ie3k.rommon.utils import device_rommon_boot
 
@@ -24,6 +29,9 @@ class TestIe3kDeviceRommonBoot(unittest.TestCase):
         conn.spawn.sendline = MagicMock()
         conn.state_machine = MagicMock()
         conn.state_machine.current_state = 'rommon'
+        conn.state_machine.learn_hostname = False
+        conn.learn_hostname = False
+        conn.learned_hostname = None
 
         device.default = conn
         device.subconnections = None
@@ -69,6 +77,193 @@ class TestIe3kDeviceRommonBoot(unittest.TestCase):
         device.api.configure_management_credentials.assert_called_once_with()
         device.api.execute_write_memory.assert_called_once_with()
         conn.state_machine.go_to.assert_called_once()
+        conn.connection_provider.learn_hostname.assert_not_called()
+
+    @patch('genie.libs.sdk.apis.iosxe.ie3k.rommon.utils.time.sleep')
+    def test_rommon_boot_learns_mismatched_hostname(self, _):
+        configured_hostname = 'IE-3300-8U2X-4MU-uut3-st2-ipo'
+        actual_hostname = 'IE-3300-8U2X-4MU-uut3'
+        image = 'flash:ie3x00-universalk9.bin'
+        username = 'admin'
+        password = 'test-password'
+
+        mock_device = MockDeviceTcpWrapperIOSXE(
+            port=0,
+            state='cat3k_rommon',
+            hostname=actual_hostname,
+        )
+        rommon_commands = mock_device.mockdevice.mock_data[
+            'cat3k_rommon']['commands']
+        boot = rommon_commands['boot flash:rp_super_universalk9.edison.bin']
+        boot['response'] = 'Booting IOS-XE\r\n'
+        boot['new_state'] = 'cat3k_return_to_get_started'
+        boot.pop('timing', None)
+        rommon_commands[f'boot {image}'] = boot
+        mock_device.mockdevice.mock_data[
+            'cat3k_return_to_get_started']['commands'][''][
+                'new_state'] = 'cat3k_login'
+        mock_device.mockdevice.mock_data['cat3k_login']['commands'] = {
+            username: {'new_state': 'cat3k_password'}
+        }
+        mock_device.mockdevice.mock_data['cat3k_password']['commands'] = {
+            password: {'new_state': 'cat3k_exec'}
+        }
+        mock_device.start()
+
+        connection = Connection(
+            hostname=configured_hostname,
+            start=['telnet 127.0.0.1 {}'.format(mock_device.ports[0])],
+            os='iosxe',
+            platform='ie3k',
+            credentials={
+                'default': {
+                    'username': username,
+                    'password': password,
+                },
+            },
+            image_to_boot=image,
+            connection_timeout=5,
+            log_buffer=True,
+            log_stdout=False,
+            mit=True,
+            learn_hostname=True,
+        )
+
+        try:
+            connection.connect()
+            self.assertEqual(connection.state_machine.current_state, 'rommon')
+
+            sent = []
+            sendline = connection.spawn.sendline
+
+            def _record_sendline(command=''):
+                sent.append(command)
+                return sendline(command)
+
+            connection.spawn.sendline = _record_sendline
+
+            device = MagicMock()
+            device.name = configured_hostname
+            device.is_ha = False
+            device.clean = {'device_recovery': {'timeout': 5}}
+            device.default = connection
+            device.subconnections = None
+            device.connection_provider = connection.connection_provider
+            device.enable = connection.enable
+            device.api.get_recovery_details.return_value = {
+                'golden_image': [image]
+            }
+
+            with patch.object(
+                connection.connection_provider,
+                'init_connection',
+                wraps=connection.connection_provider.init_connection,
+            ) as init_connection:
+                device_rommon_boot(device, timeout=5)
+
+            self.assertIn(username, sent)
+            self.assertIn(password, sent)
+            self.assertIn('Username:', connection.log_buffer)
+            self.assertIn('Password:', connection.log_buffer)
+            self.assertIn(f'{actual_hostname}>', connection.log_buffer)
+            self.assertEqual(connection.learned_hostname, actual_hostname)
+            self.assertEqual(connection.state_machine.current_state, 'enable')
+            self.assertFalse(connection.state_machine.learn_hostname)
+            init_connection.assert_called_once_with()
+        finally:
+            connection.disconnect()
+            mock_device.stop()
+
+    @patch('genie.libs.sdk.apis.iosxe.ie3k.rommon.utils.wait_futures')
+    @patch('genie.libs.sdk.apis.iosxe.ie3k.rommon.utils.ThreadPoolExecutor')
+    def test_hostname_learning_restored_after_failed_images(
+        self, mock_executor, mock_wait
+    ):
+        images = ['flash:image1.bin', 'flash:image2.bin']
+        device, conn = self._build_device(images)
+        conn.learn_hostname = True
+        conn.state_machine.learn_hostname = True
+        attempted_images = []
+
+        def _go_to_fail(*args, **kwargs):
+            self.assertTrue(conn.state_machine.learn_hostname)
+            attempted_images.append(kwargs['context']['boot_cmd'])
+            raise Exception('boot failed')
+
+        conn.state_machine.go_to.side_effect = _go_to_fail
+        self._setup_sync_executor(mock_executor, mock_wait)
+
+        with self.assertRaises(FailedToBootException):
+            device_rommon_boot(device, timeout=120)
+
+        self.assertEqual(
+            attempted_images,
+            [f'boot {image}' for image in images],
+        )
+        self.assertTrue(conn.state_machine.learn_hostname)
+        conn.connection_provider.learn_hostname.assert_not_called()
+
+    @patch('genie.libs.sdk.apis.iosxe.ie3k.rommon.utils.wait_futures')
+    @patch('genie.libs.sdk.apis.iosxe.ie3k.rommon.utils.ThreadPoolExecutor')
+    def test_hostname_learning_restored_when_learning_fails(
+        self, mock_executor, mock_wait
+    ):
+        device, conn = self._build_device(['flash:image.bin'])
+        conn.learn_hostname = True
+
+        def _go_to_disable(*args, **kwargs):
+            self.assertTrue(conn.state_machine.learn_hostname)
+            conn.state_machine.current_state = 'disable'
+
+        conn.state_machine.go_to.side_effect = _go_to_disable
+        conn.connection_provider.learn_hostname.side_effect = Exception(
+            'hostname learning failed'
+        )
+        self._setup_sync_executor(mock_executor, mock_wait)
+
+        with self.assertRaises(FailedToBootException) as cm:
+            device_rommon_boot(device, timeout=120)
+
+        self.assertIn('hostname learning failed', str(cm.exception))
+        self.assertFalse(conn.state_machine.learn_hostname)
+        self.assertIsNone(conn.context['boot_cmd'])
+
+    @patch('genie.libs.sdk.apis.iosxe.ie3k.rommon.utils.time.sleep')
+    @patch('genie.libs.sdk.apis.iosxe.ie3k.rommon.utils.wait_futures')
+    @patch('genie.libs.sdk.apis.iosxe.ie3k.rommon.utils.ThreadPoolExecutor')
+    def test_ha_hostname_learning_uses_device_provider(
+        self, mock_executor, mock_wait, _
+    ):
+        device, conn = self._build_device(['flash:image.bin'])
+        device.is_ha = True
+        device.subconnections = [conn]
+        conn.learn_hostname = True
+
+        def _go_to_disable(*args, **kwargs):
+            self.assertTrue(conn.state_machine.learn_hostname)
+            conn.state_machine.current_state = 'disable'
+
+        conn.state_machine.go_to.side_effect = _go_to_disable
+        self._setup_sync_executor(mock_executor, mock_wait)
+
+        device_rommon_boot(device, timeout=120)
+
+        device.connection_provider.learn_hostname.assert_called_once_with(conn)
+        conn.connection_provider.learn_hostname.assert_not_called()
+        self.assertFalse(conn.state_machine.learn_hostname)
+
+    @patch('genie.libs.sdk.apis.iosxe.ie3k.rommon.utils.wait_futures')
+    @patch('genie.libs.sdk.apis.iosxe.ie3k.rommon.utils.ThreadPoolExecutor')
+    def test_single_image_failure(self, mock_executor, mock_wait):
+        device, conn = self._build_device(['flash:image1.bin'])
+        conn.state_machine.go_to.side_effect = Exception('image boot failed')
+        self._setup_sync_executor(mock_executor, mock_wait)
+
+        with self.assertRaises(FailedToBootException) as cm:
+            device_rommon_boot(device)
+
+        self.assertIn('All golden images exhausted', str(cm.exception))
+        self.assertIn('Last error: image boot failed', str(cm.exception))
 
     @patch('genie.libs.sdk.apis.iosxe.ie3k.rommon.utils.wait_futures')
     @patch('genie.libs.sdk.apis.iosxe.ie3k.rommon.utils.ThreadPoolExecutor')
@@ -228,13 +423,85 @@ class TestIe3kDeviceRommonBoot(unittest.TestCase):
         self.assertIn('Overall timeout expired before booting image', str(cm.exception))
 
     def test_no_image_exception(self):
+        device, conn = self._build_device([])
+        attempted_commands = []
+
+        def _go_to_fail(*args, **kwargs):
+            attempted_commands.append(kwargs['context']['boot_cmd'])
+            conn.state_machine.current_state = 'rommon'
+            raise Exception('default boot failed')
+
+        conn.state_machine.go_to.side_effect = _go_to_fail
+
+        with self.assertLogs(
+            'genie.libs.sdk.apis.iosxe.ie3k.rommon.utils', level='WARNING'
+        ) as logs, self.assertRaises(FailedToBootException) as cm:
+            device_rommon_boot(device)
+
+        output = '\n'.join(logs.output)
+        self.assertEqual(attempted_commands, ['boot'])
+        self.assertIn(
+            "Default ROMMON 'boot' command failed for connection 'con1'",
+            str(cm.exception)
+        )
+        self.assertIn('Last error: default boot failed', str(cm.exception))
+        self.assertNotIn("image 'None'", output)
+        self.assertNotIn('Trying next image.', output)
+        self.assertNotIn('All golden images exhausted', str(cm.exception))
+        device.api.get_recovery_details.assert_called_once_with(None, None)
+
+    @patch('genie.libs.sdk.apis.iosxe.ie3k.rommon.utils.time.sleep')
+    @patch('genie.libs.sdk.apis.iosxe.ie3k.rommon.utils.wait_futures')
+    @patch('genie.libs.sdk.apis.iosxe.ie3k.rommon.utils.ThreadPoolExecutor')
+    def test_no_image_default_boot_success(
+        self, mock_executor, mock_wait, _
+    ):
+        device, conn = self._build_device([])
+        attempted_commands = []
+
+        def _go_to_disable(*args, **kwargs):
+            attempted_commands.append(kwargs['context']['boot_cmd'])
+            conn.state_machine.current_state = 'disable'
+
+        conn.state_machine.go_to.side_effect = _go_to_disable
+        self._setup_sync_executor(mock_executor, mock_wait)
+
+        device_rommon_boot(device)
+
+        self.assertEqual(attempted_commands, ['boot'])
+        device.enable.assert_called_once_with()
+
+    def test_no_image_without_boot_exception_reports_rommon_state(self):
         device, _ = self._build_device([])
 
         with self.assertRaises(FailedToBootException) as cm:
             device_rommon_boot(device)
 
-        self.assertIn('All golden images exhausted', str(cm.exception))
-        device.api.get_recovery_details.assert_called_once_with(None, None)
+        self.assertIn(
+            'Last error: Connection remained in rommon after boot attempt',
+            str(cm.exception)
+        )
+        self.assertNotIn('Last error: None', str(cm.exception))
+
+    @patch('genie.libs.sdk.apis.iosxe.ie3k.rommon.utils.time.monotonic')
+    @patch('genie.libs.sdk.apis.iosxe.ie3k.rommon.utils.wait_futures')
+    @patch('genie.libs.sdk.apis.iosxe.ie3k.rommon.utils.ThreadPoolExecutor')
+    def test_no_image_timeout_error_reporting(
+        self, mock_executor, mock_wait, mock_monotonic
+    ):
+        device, conn = self._build_device([])
+        mock_monotonic.side_effect = [100.0, 100.0]
+        self._setup_sync_executor(mock_executor, mock_wait)
+
+        with self.assertRaises(FailedToBootException) as cm:
+            device_rommon_boot(device, timeout=0)
+
+        self.assertIn(
+            "Overall timeout expired before default ROMMON 'boot' command",
+            str(cm.exception)
+        )
+        self.assertNotIn("image 'None'", str(cm.exception))
+        conn.state_machine.go_to.assert_not_called()
 
     @patch('genie.libs.sdk.apis.iosxe.ie3k.rommon.utils.time.sleep')
     @patch('genie.libs.sdk.apis.iosxe.ie3k.rommon.utils.wait_futures')

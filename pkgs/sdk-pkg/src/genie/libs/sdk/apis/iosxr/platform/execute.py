@@ -2,14 +2,144 @@
 
 # Python
 import logging
+import time
+
+# pyATS
+from pyats.utils.fileutils import FileUtils
 
 # Genie
+from genie.libs.sdk.apis.execute import (
+    _get_directory_file_details,
+    _get_disk_cleanup_operation_timeout,
+    _get_entry_type,
+    _normalize_disk_cleanup_candidates,
+)
 from genie.utils.timeout import Timeout
 from genie.harness.utils import connect_device
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
 
 # Logger
 log = logging.getLogger(__name__)
+
+
+def delete_unprotected_files(device, directory, protected,
+                             files_to_delete=None, dir_output=None,
+                             allow_failure=False, destination=None,
+                             deadline=None):
+    """Delete verified regular files from an IOS-XR filesystem.
+
+    Args:
+        device ('obj'): Device object.
+        directory ('str'): Directory in which to delete files.
+        protected ('str' or 'list' or 'set'): File patterns that must not be
+            deleted.
+        files_to_delete ('list' or 'tuple' or 'set'): Optional subset of files
+            to delete.
+        dir_output ('str'): Optional captured output of the 'dir' command.
+        allow_failure ('bool'): Ignore individual deletion failures.
+        destination ('str'): Destination directory, such as harddisk:.
+        deadline ('float'): Optional monotonic cleanup deadline.
+
+    Returns:
+        bool or None: True when the cleanup deadline is reached; otherwise
+            None.
+    """
+    if deadline is not None and time.monotonic() >= deadline:
+        return True
+
+    if isinstance(protected, str):
+        protected_files = {protected}
+    elif isinstance(protected, (list, set)):
+        protected_files = set(protected)
+    else:
+        raise TypeError("'protected' must be a string, list, or set")
+
+    try:
+        parsed_dir_output = device.parse(
+            f'dir {directory}', output=dir_output)
+    except Exception as error:
+        log.error(
+            'Unable to parse the IOS-XR directory listing; no files will be '
+            'deleted: %s', error)
+        return None
+
+    file_details = _get_directory_file_details(parsed_dir_output)
+    if file_details is None:
+        log.error(
+            'Unable to identify safe IOS-XR cleanup candidates; no files '
+            'will be deleted')
+        return None
+
+    candidates = _normalize_disk_cleanup_candidates(
+        file_details=file_details,
+        protected_files=protected_files,
+        classify_entry=_get_entry_type,
+    )
+    safe_files = {
+        candidate.path for candidate in candidates
+        if not candidate.is_protected
+    }
+
+    if files_to_delete is None:
+        requested_files = [
+            candidate.path for candidate in candidates
+            if not candidate.is_protected
+        ]
+    elif isinstance(files_to_delete, set):
+        requested_files = sorted(files_to_delete, key=str)
+    elif isinstance(files_to_delete, (list, tuple)):
+        requested_files = files_to_delete
+    else:
+        log.error(
+            "'files_to_delete' must be a list, tuple, or set; no files will "
+            'be deleted')
+        return None
+
+    selected_files = []
+    selected_file_set = set()
+    for file_name in requested_files:
+        if not isinstance(file_name, str):
+            log.warning(
+                'Skipping malformed IOS-XR cleanup file name: %r',
+                file_name)
+            continue
+        if file_name in safe_files and file_name not in selected_file_set:
+            selected_files.append(file_name)
+            selected_file_set.add(file_name)
+
+    if not selected_files:
+        log.info('There are no safe unprotected IOS-XR files to delete')
+        return None
+
+    log.info(
+        'The following files will be deleted:\n%s',
+        '\n'.join(selected_files))
+
+    file_utils = FileUtils.from_device(device)
+    error_messages = []
+    for file_name in selected_files:
+        if deadline is not None and time.monotonic() >= deadline:
+            return True
+
+        target = f'{destination}{file_name}' if destination else file_name
+        log.info('Deleting the unprotected file "%s"', file_name)
+        try:
+            delete_kwargs = {'device': device}
+            if deadline is not None:
+                delete_kwargs['timeout_seconds'] = (
+                    _get_disk_cleanup_operation_timeout(deadline))
+            file_utils.deletefile(target, **delete_kwargs)
+        except Exception as error:
+            if allow_failure:
+                log.info(
+                    'Failed to delete file "%s" but ignoring the failure '
+                    'because allow_failure=True.', file_name)
+                continue
+            error_messages.append(
+                f'Failed to delete file "{file_name}" due to: {error}')
+
+    if error_messages:
+        raise Exception('\n'.join(error_messages))
 
 
 def execute_install_pie(device, image_dir, image, server=None,
@@ -149,4 +279,3 @@ def execute_set_config_register(device, config_register, timeout=60):
     else:
         log.info("Set config-register to '{}' on device".\
                 format(config_register, device.name))
-

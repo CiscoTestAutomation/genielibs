@@ -1,35 +1,29 @@
-import os
 import unittest
-from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.mld_snooping.configure import unconfigure_ipv6_mld_snooping_vlan_querier_version
+from unittest import TestCase
+from unittest.mock import Mock
+
+from genie.libs.sdk.apis.iosxe.mld_snooping.configure import (
+    unconfigure_ipv6_mld_snooping_vlan_querier_version,
+)
 
 
-class TestUnconfigureIpv6MldSnoopingVlanQuerierVersion(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          Cat9300_VTEP1:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: c9300
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['Cat9300_VTEP1']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestUnconfigureIpv6MldSnoopingVlanQuerierVersion(TestCase):
 
     def test_unconfigure_ipv6_mld_snooping_vlan_querier_version(self):
-        result = unconfigure_ipv6_mld_snooping_vlan_querier_version(self.device, 100, 2)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.configure.return_value = None
+
+        result = unconfigure_ipv6_mld_snooping_vlan_querier_version(
+            device,
+            100,
+            2,
+        )
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once_with(
+            "no ipv6 mld snooping vlan 100 querier version 2"
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()

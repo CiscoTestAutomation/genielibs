@@ -1014,3 +1014,101 @@ def configure_spanning_tree_extend_system_id(device):
         raise SubCommandFailure(
             f"Could not configure spanning-tree extend system-id. Error:\n{e}"
         )
+
+def configure_interface_spanning_tree_port_priority(
+    device, interface, port_priority
+):
+    """
+    Configures spanning-tree port-priority on interface
+    Args:
+        device ('obj') : Device object
+        interface ('str') : interface name
+        port_priority ('str') : In between 0-240
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: Failed to configure spanning-tree port-priority
+    """
+    cmd = [
+        f"interface {interface}",
+        f"spanning-tree port-priority {port_priority}"
+    ]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure spanning-tree port-priority on "
+            f"{device}. Error:\n{e}"
+        )
+
+
+def configure_interface_spanning_tree_vlan_cost(device, interface, vlan, cost):
+    """
+    Configures spanning-tree vlan cost on interface
+    Args:
+        device ('obj') : Device object
+        interface ('str') : interface name
+        vlan ('str') : vlan id
+        cost ('str') : cost
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: Failed to configure spanning-tree vlan cost
+    """
+    cmd = [
+        f"interface {interface}",
+        f"spanning-tree vlan {vlan} cost {cost}"
+    ]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure spanning-tree vlan cost on "
+            f"{device}. Error:\n{e}"
+        )
+
+
+def unconfigure_interface_spanning_tree_vlan_cost(device, interface, vlan):
+    """
+    Unconfigures spanning-tree vlan cost on interface
+    Args:
+        device ('obj') : Device object
+        interface ('str') : interface name
+        vlan ('str') : vlan id
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: Failed to unconfigure spanning-tree vlan cost
+    """
+    cmd = [
+        f"interface {interface}",
+        f"no spanning-tree vlan {vlan} cost"
+    ]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure spanning-tree vlan cost on "
+            f"{device}. Error:\n{e}"
+        )
+
+
+def configure_spanning_tree_pathcost_method(device, method):
+    """
+    Configures spanning-tree pathcost method
+    Args:
+        device ('obj') : Device object
+        method ('str') : pathcost method, short or long
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: Failed to configure spanning-tree pathcost method
+    """
+    cmd = [f"spanning-tree pathcost method {method}"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure spanning-tree pathcost method on "
+            f"{device}. Error:\n{e}"
+        )

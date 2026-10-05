@@ -15,6 +15,7 @@ class TestConfigureManagementProtocols(TestCase):
         self.device.api.configure_management_telnet = Mock()
         self.device.api.configure_management_netconf = Mock()
         self.device.api.configure_management_gnmi = Mock()
+        self.device.api.configure_management_ntp = Mock()
 
     def test_configure_management_protocols(self):
         result = configure_management_protocols(self.device, ['ssh', 'telnet', 'netconf', 'gnmi'])
@@ -39,3 +40,9 @@ class TestConfigureManagementProtocols(TestCase):
         
         expected_output = None
         self.assertEqual(result, expected_output)
+
+    def test_configure_management_protocols_ntp(self):
+        result = configure_management_protocols(self.device, ['ntp'])
+
+        self.device.api.configure_management_ntp.assert_called_once()
+        self.assertEqual(result, None)

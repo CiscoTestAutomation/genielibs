@@ -122,6 +122,58 @@ class SetControllermode(unittest.TestCase):
         self.assertEqual('Secret123', sent_value(r"Enter new password:"))
         self.assertEqual('Secret123', sent_value(r"Confirm password:"))
 
+    def test_press_return_continues_through_authentication(self):
+        """The controller-mode Press RETURN prompt must not end execute."""
+        steps = Steps()
+        self.device.connect = Mock()
+        self.device.execute = Mock()
+        self.device.parse = Mock()
+        self.device.api.get_username_password = Mock(
+            return_value=('admin', 'Secret132'))
+
+        from unicon.eal.dialogs import Dialog, Statement
+        self.device.reload = Mock()
+        reload_press_return = Statement(
+            pattern=r".*Press RETURN to get started.*",
+            action="sendline()",
+            loop_continue=False,
+            continue_timer=False)
+        final_prompt = Statement(
+            pattern=r"Router#",
+            action=None,
+            loop_continue=False,
+            continue_timer=False)
+        self.device.reload.dialog = Dialog([reload_press_return, final_prompt])
+
+        self.cls.set_controller_mode(
+            steps=steps, device=self.device, mode='enable',
+            reload_timeout=1800)
+
+        dialog = self.device.execute.call_args.kwargs['service_dialog']
+        press_returns = [
+            stmt for stmt in dialog
+            if stmt.pattern == r".*Press RETURN to get started.*"
+        ]
+        press_return = press_returns[0]
+
+        self.assertEqual(2, len(press_returns))
+        self.assertTrue(press_return.loop_continue)
+        self.assertFalse(press_returns[1].loop_continue)
+        self.assertEqual(1800,
+                         self.device.execute.call_args.kwargs['timeout'])
+
+        spawn = Mock()
+        press_return.action(spawn, **press_return.args)
+        spawn.sendline.assert_called_once_with('')
+
+        # Authentication and the forced password change remain in the same
+        # dialog after Press RETURN.
+        patterns = [stmt.pattern for stmt in dialog]
+        for pattern in (r"Username:", r"Password:",
+                        r"Enter new password:", r"Confirm password:",
+                        r"Router#"):
+            self.assertIn(pattern, patterns)
+
     def test_skipped(self):
         # Make sure we have a unique Steps() object for result verification
         steps = Steps()
@@ -340,4 +392,3 @@ class ConfirmAndSetDefault(unittest.TestCase):
 
         # Check the overall result is as expected
         self.assertEqual(Failed, steps.details[1].result)
-

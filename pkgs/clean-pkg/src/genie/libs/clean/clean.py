@@ -2,6 +2,7 @@
 import logging
 from functools import partial
 from collections import OrderedDict
+from typing import Any, Iterator, Optional as TypingOptional
 
 # pyATS
 from pyats import aetest
@@ -136,23 +137,50 @@ class BaseStage(TestContainer):
 
 
 class CleanTestcase(Testcase):
+    """Execute one device's ordered stages with shared generated-testbed state.
 
-    def __init__(self, device, global_stage_reuse_limit, *args, **kwargs):
+    ``testbed_config`` is injected into every stage's parameter dictionary. A
+    stage may add fragments to it without depending on Kleenex internals; the
+    owning cleaner and worker handle transport after the testcase succeeds.
+    """
+
+    def __init__(
+            self, device: Any, global_stage_reuse_limit: int, *args: Any,
+            testbed_config: TypingOptional[Any] = None,
+            **kwargs: Any) -> None:
+        """Initialize a device Clean testcase and its shared stage context.
+
+        Args:
+            device: Genie device whose configured stages will execute.
+            global_stage_reuse_limit: Default maximum executions per stage.
+            *args: Positional arguments forwarded to the AEtest testcase.
+            testbed_config: Optional collector shared with every clean stage so
+                stages can publish runtime testbed changes.
+            **kwargs: Keyword arguments forwarded to the AEtest testcase.
+        """
+        # Retain device execution state and the worker-owned collector that
+        # stages will access through their parameter dictionaries.
         self.device = device
         self.global_stage_reuse_limit = global_stage_reuse_limit
+        self.testbed_config = testbed_config
         self.stages = {}
         self.device_recovery_processor = None
         self.image_handler = get_image_handler(device)
         self.history = OrderedDict()
         super().__init__(*args, **kwargs)
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[Any]:
         '''Built-in function __iter__
 
         Generator function, yielding each testable item within this container
         in the order of appearance inside the test cases. This is the main
         mechanism that allows looping through CleanTestcase Section's child
         items.
+
+        Yields
+        ------
+            StageSection
+                The next configured clean stage with resolved parameters.
         '''
         self.discover()
         used_uids = {}
@@ -202,6 +230,11 @@ class CleanTestcase(Testcase):
                 args = self.stages[stage]['args']
                 for parameter, value in args.items():
                     cls.parameters[parameter] = value
+
+                # Inject after configured arguments when the collector exists,
+                # preserving legacy values with pre-collector pyATS versions.
+                if self.testbed_config is not None:
+                    cls.parameters['testbed_config'] = self.testbed_config
 
                 if self.device_recovery_processor:
                     processors.affix(
@@ -373,8 +406,28 @@ class CleanTestcase(Testcase):
 
 
 class DeviceClean(BaseCleaner):
+    """Adapt a pyATS device into the Genie stage-based Clean implementation.
 
-    def clean(self, device, reporter=None, *args, **kwargs):
+    The inherited generated-testbed collector is forwarded to CleanTestcase so
+    stage functions can publish topology changes through their normal parameter
+    injection mechanism.
+    """
+
+    def clean(
+            self, device: Any, reporter: TypingOptional[Any] = None,
+            *args: Any, **kwargs: Any) -> None:
+        """Execute configured Genie Clean stages for one pyATS device.
+
+        Args:
+            device: pyATS device selected by the Kleenex worker.
+            reporter: Optional device reporter used for stage-level results.
+            *args: Reserved positional arguments retained for compatibility.
+            **kwargs: Reserved keyword arguments retained for compatibility.
+
+        Raises:
+            CleanRetryRequest: If recovery requests another complete attempt.
+            Exception: If the completed Clean testcase has a failing result.
+        """
 
         # In this section we will convert to Genie Testbed
         testbed = load(device.testbed)
@@ -383,7 +436,12 @@ class DeviceClean(BaseCleaner):
         global_stage_reuse_limit = getattr(
             self, 'global_stage_reuse_limit', GLOBAL_STAGE_REUSE_LIMIT)
 
-        clean_testcase = CleanTestcase(device, global_stage_reuse_limit)
+        # Pass the BaseCleaner collector by identity so every stage contributes
+        # to the worker's eventual generated-testbed message. ``getattr`` keeps
+        # callers that bypass BaseCleaner initialization backward compatible.
+        clean_testcase = CleanTestcase(
+            device, global_stage_reuse_limit,
+            testbed_config=getattr(self, 'testbed_config', None))
         if reporter:
             clean_testcase.reporter = reporter.testcase(clean_testcase)
 

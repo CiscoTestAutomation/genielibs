@@ -5,24 +5,38 @@ log = logging.getLogger(__name__)
 
 
 def get_available_space(device, directory, output=None):
-    """Gets available space on a given directory
-        Args:
-            device ('str'): Device object
-            directory ('str'): directory to check spaces, i.e. media:/path/to/my/dir
-            output ('str'): output of dir command, if not provided execute the cmd on device to get the output
-        Returns:
-            space available in bytes in `int` type or None if failed to retrieve available space
+    """Get the available space for an APIC directory.
+
+    Args:
+        device ('obj'): Device object.
+        directory ('str'): Directory to check, such as /data/log.
+        output ('str'): Optional captured output of the 'df' command.
+
+    Returns:
+        int or None: Available space, or None when it cannot be verified.
     """
     try:
-        dir_output = device.parse('df {}'.format(directory), output=output)
-    except Exception as e:
-        log.error("Failed to parse the directory listing due to: {}".format(str(e)))
+        parsed_output = device.parse(f'df {directory}', output=output)
+    except Exception as error:
+        log.error('Failed to parse the directory listing: %s', error)
         return None
 
-    dir_df_info = dir_output['directory'].values()
-    if dir_df_info:
-        dir_df_info = list(dir_df_info)[0]
-        free_space = dir_df_info.get('available')
-        return int(free_space)
-    else:
-        log.error("Failed to get available space for {}".format(directory))
+    if not isinstance(parsed_output, dict):
+        log.error('Failed to get available space for %s', directory)
+        return None
+
+    directory_data = parsed_output.get('directory', {})
+    if not isinstance(directory_data, dict):
+        log.error('Failed to get available space for %s', directory)
+        return None
+
+    filesystem_info = next(iter(directory_data.values()), None)
+    available_space = filesystem_info.get('available') if isinstance(filesystem_info, dict) else None
+    if available_space is not None:
+        try:
+            return int(available_space)
+        except (TypeError, ValueError):
+            pass
+
+    log.error('Failed to get available space for %s', directory)
+    return None

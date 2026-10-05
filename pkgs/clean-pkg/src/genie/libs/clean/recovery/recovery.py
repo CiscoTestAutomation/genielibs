@@ -12,6 +12,7 @@ from pyats.results import Blocked, Failed, Passed
 from pyats.aetest.steps import Steps
 from pyats.log.utils import banner
 
+from unicon.core.errors import EOF
 from unicon.eal.dialogs import Statement
 
 # Genie
@@ -74,7 +75,7 @@ def _process_recovery_outcome(
 
     # Update the stage result before the processor signal can raise.
     if section_result is not None:
-        section.result = section_result.clone(reason)
+        section.result += section_result.clone(reason)
 
     # Keep processor reporting separate from Clean result rollup.
     processor.result_rollup = False
@@ -90,13 +91,17 @@ def _process_recovery_outcome(
     return outcome
 
 
-def _disconnect_reconnect(device):
+def _disconnect_reconnect(device, connection_timeout=None, mit=None):
 
     ''' Disconnect and reconnect the device
         Args:
             device ('obj'): Device object
+            connection_timeout ('int', optional): Connection timeout in
+                seconds.
+            mit ('bool', optional): Connect without running initialization
+                commands.
         Returns:
-            None
+            bool: True if reconnection succeeds, False otherwise.
     '''
 
     # Disconnect from the device
@@ -110,7 +115,12 @@ def _disconnect_reconnect(device):
     # Let's try to reconnect
     log.info("Trying to reconnect to device '{}'".format(device.name))
     try:
-        device.connect(learn_hostname=True)
+        connect_kwargs = {'learn_hostname': True}
+        if connection_timeout is not None:
+            connect_kwargs['connection_timeout'] = connection_timeout
+        if mit is not None:
+            connect_kwargs['mit'] = mit
+        device.connect(**connect_kwargs)
     except Exception as e:
         # Cant connect!
         # re-destroy in case the connection error in bad state
@@ -146,9 +156,13 @@ def _recovery_steps(device, clear_line=True, powercycler=True,
     if clear_line:
         log.info(banner("Clearing the console port line"))
         try:
-            device.api.execute_clear_console()
+            clear_line_result = device.api.execute_clear_line()
         except Exception as e:
             log.warning(str(e))
+            clear_line_result = False
+
+        # Legacy implementations return None on success.
+        if clear_line_result is False:
             log.warning("Unable to clear console port line")
         else:
             log.info("Successfully cleared console port line on device '{}'".\
@@ -367,11 +381,20 @@ def recovery_processor(
     log.info('Starting Device Recovery checks!')
     # Get device
     device = section.parameters['device']
+    iosxe_ha_boot_recovery = (
+        hasattr(device, 'is_ha') and device.is_ha and
+        device.os == 'iosxe' and device.chassis_type == 'stack' and
+        bool(golden_image or tftp_boot)
+    )
     if steps is None:
         steps = Steps()
 
     recovery_is_required = False
-    recovery_from_rommon = False
+    boot_recovery_required = False
+    rommon_boot_required = False
+    rommon_connections = []
+    reachability_failed = False
+    reachability_exception = None
 
     with steps.start('Check device reachability', continue_=True) as step:
         #check if device is in any known state
@@ -399,28 +422,85 @@ def recovery_processor(
                 'Could not bring device to any valid state! Continue with '
                 f'recovery because of {e}.')
             recovery_is_required = True
-            step.errored(
-                'Could not bring device to any valid state.',
-                from_exception=e)
+            reachability_failed = True
+            reachability_exception = e
+            if not iosxe_ha_boot_recovery:
+                step.errored(
+                    'Could not bring device to any valid state.',
+                    from_exception=e)
 
         # Device is in rommon. try to boot the device before continuing with
         # other recovery steps
         if hasattr(device, 'is_ha') and device.is_ha:
-            if check_all_in_same_state(device, 'enable'):
+            retry_succeeded = False
+            if (reachability_failed and iosxe_ha_boot_recovery and
+                    not check_any_connection_in_rommon(device)):
+                log.info(
+                    'HA reachability detection failed. Reconnecting to '
+                    'recheck console states before device recovery.')
+                retry_succeeded = _disconnect_reconnect(
+                    device,
+                    connection_timeout=connection_timeout,
+                    mit=True)
+
+            if (reachability_exception and not retry_succeeded and
+                    not check_any_connection_in_rommon(device)):
+                step.errored(
+                    'Could not bring device to any valid state.',
+                    from_exception=reachability_exception)
+
+            # Device is reachable and does not need reconnecting if all
+            # subconnections are in enable or disable and at least one is in
+            # enable.
+            connection_states = [
+                connection.state_machine.current_state
+                for connection in device.subconnections
+            ]
+            subconnections_are_reachable = (
+                bool(connection_states) and
+                all(state in ('enable', 'disable')
+                    for state in connection_states) and
+                'enable' in connection_states
+            )
+
+            if (subconnections_are_reachable and
+                    (not reachability_failed or retry_succeeded)):
+                if 'disable' in connection_states:
+                    log.info(
+                        'HA device has at least one enabled '
+                        'subconnection; skipping reconnect.')
+                if retry_succeeded:
+                    device.default.mit = False
+                    device.default.learn_hostname = False
+                    try:
+                        device.connection_provider.init_connection()
+                    except Exception as e:
+                        step.errored(
+                            'Could not initialize the device connection.',
+                            from_exception=e)
+                recovery_is_required = False
                 log.info(
                     'Device is already connected. No need for device recovery.')
                 step.passed('Device is already connected.')
-            elif check_all_in_same_state(device, 'rommon'):
+            elif (connection_states and
+                    check_all_in_same_state(device, 'rommon')):
                 recovery_is_required = True
-                recovery_from_rommon = True
+                boot_recovery_required = True
 
-            # Device is in valid unicon state but its not rommon or enable
-            # will try to disconnect and connect.
+            # Mixed ROMMON states require device recovery.
             elif check_any_connection_in_rommon(device):
                 log.info("One of the subconnection's is in rommon.\n"
                         "device should be recovered.")
                 recovery_is_required = True
+                if iosxe_ha_boot_recovery:
+                    rommon_boot_required = True
+                    rommon_connections = [
+                        connection for connection in device.subconnections
+                        if connection.state_machine.current_state == 'rommon'
+                    ]
             else:
+                # Revalidate other known state combinations by reconnecting.
+                reconnected = False
                 try:
                     reconnected = _disconnect_reconnect(device)
                 except Exception as e:
@@ -438,11 +518,12 @@ def recovery_processor(
         else:
             if device.state_machine.current_state == 'rommon':
                 recovery_is_required = True
-                recovery_from_rommon = True
+                boot_recovery_required = True
 
             # Device is in valid unicon state but its not rommon or enable
             # will try to disconnect and connect.
             elif device.state_machine.current_state != 'enable':
+                reconnected = False
                 try:
                     reconnected = _disconnect_reconnect(device)
                 except Exception as e:
@@ -460,7 +541,12 @@ def recovery_processor(
                 step.passed('Device is already connected.')
 
         if recovery_is_required:
-            step.failed('Device recovery is required.')
+            if reachability_exception:
+                step.errored(
+                    'Could not bring device to any valid state.',
+                    from_exception=reachability_exception)
+            else:
+                step.failed('Device recovery is required.')
 
     recovery_exception = None
     recovery_succeeded = False
@@ -469,15 +555,62 @@ def recovery_processor(
             step.skipped('Device recovery is not required.')
 
         try:
-            if recovery_from_rommon:
+            if rommon_boot_required:
                 log.info(
-                    f'device {device.name} is in rommon, booting the device!')
+                    f'Device {device.name} has an available ROMMON console. '
+                    'Attempting configured ROMMON boot recovery.')
+                try:
+                    from genie.libs.clean.recovery.iosxe.recovery import (
+                        device_recovery,
+                    )
+
+                    recovery_timeout = timeout or 750
+                    boot_image = golden_image
+                    if isinstance(boot_image, dict):
+                        boot_image = [boot_image['system']]
+                    if not boot_image:
+                        recovery_info = device.api.get_recovery_details(
+                            tftp_boot=tftp_boot)
+                        boot_command, image_to_boot = \
+                            device.api.get_tftp_boot_command(recovery_info)
+                        device.api.configure_rommon_tftp_ha(
+                            image_path=image_to_boot)
+                        boot_image = [boot_command]
+
+                    for connection in rommon_connections:
+                        device_recovery(
+                            connection,
+                            recovery_timeout,
+                            boot_image,
+                            grub_activity_pattern)
+
+                    log.info(
+                        'Sleeping for %s before reconnection.',
+                        reconnect_delay)
+                    time.sleep(reconnect_delay)
+                    if not _disconnect_reconnect(
+                            device,
+                            connection_timeout=recovery_timeout):
+                        raise Exception(
+                            f'Could not reconnect to device {device.name} '
+                            'after ROMMON boot recovery.')
+                except Exception:
+                    log.exception(
+                        'ROMMON boot recovery failed. Continuing with device '
+                        'recovery.')
+                else:
+                    log.info('Successfully booted the device from ROMMON.')
+                    recovery_succeeded = True
+
+            elif boot_recovery_required:
+                log.info(
+                    f'Attempting boot recovery for device {device.name}.')
                 try:
                     device.api.device_recovery_boot()
                 except Exception:
                     log.exception(
-                        'Could not boot device from rommon. Power cycling '
-                        'the device')
+                        'Boot recovery failed. Continuing with device '
+                        'recovery.')
                 else:
                     log.info('Successfully booted the device.')
                     recovery_succeeded = True
@@ -533,6 +666,7 @@ Recovery Steps:
             processor=processor,
             processor_result=processor_result,
             reason=reason,
+            section_result=processor_result,
             attempted=True,
             terminate_clean=True,
             block_following_sections=True,
@@ -563,14 +697,36 @@ def block_section(section):
     if block and block.get('active'):
         section.blocked(block['reason'])
 
+
+def _spawn_is_closed(spawn):
+    """Check spawn usability across current and older Unicon versions."""
+    if spawn is None:
+        return True
+
+    is_closed = getattr(type(spawn), 'is_closed', None)
+    if callable(is_closed):
+        return is_closed(spawn)
+
+    # Compatibility for Unicon versions predating the public predicate.
+    missing = object()
+    return getattr(spawn, 'fd', missing) is None
+
+
 def bring_to_any_state(connection, connection_timeout):
-    '''Bring connection to any state
-    '''
-    connection.spawn.sendline()
-    connection.state_machine.go_to('any',
-                                  connection.spawn,
-                                  timeout=connection_timeout,
-                                  context=connection.context)
+    '''Bring connection to any state using an available spawn.'''
+    # Keep one spawn reference for the wakeup and transition. Recovery may run
+    # after connection cleanup has invalidated the PTY while leaving the
+    # connection object and state machine in place.
+    spawn = getattr(connection, 'spawn', None)
+    if _spawn_is_closed(spawn):
+        raise EOF(
+            'Cannot bring connection to any state. '
+            'Connection spawn is closed or not available')
+
+    spawn.sendline()
+    connection.state_machine.go_to(
+        'any', spawn, timeout=connection_timeout, context=connection.context)
+
 
 def check_all_in_same_state(device, state):
     '''Check if all the subconnections are in same state

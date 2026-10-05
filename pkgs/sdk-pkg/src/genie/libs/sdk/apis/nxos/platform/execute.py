@@ -3,9 +3,13 @@
 # Python
 import re
 import logging
+import time
 
 # pyATS
 from pyats.utils.fileutils import FileUtils
+
+# Genie
+from genie.libs.sdk.apis.execute import _get_disk_cleanup_operation_timeout
 
 # Unicon
 from unicon.eal.dialogs import Statement, Dialog
@@ -95,7 +99,8 @@ def execute_write_erase_boot(device, timeout=300):
 
 
 def delete_unprotected_files(device, directory, protected, files_to_delete=None,
-                             dir_output=None, allow_failure=False, destination=None):
+                             dir_output=None, allow_failure=False, destination=None,
+                             deadline=None):
     """ Delete all files not matching regex in the protected list
         Args:
             device ('obj'): Device object
@@ -106,8 +111,10 @@ def delete_unprotected_files(device, directory, protected, files_to_delete=None,
             dir_output ('str'): output of dir command, if not provided execute the cmd on device to get the output
             allow_failure (bool, optional): Allow the deletion of a file to silently fail. Defaults to False.
             destination ('str') : Destination directory. default to None. i.e bootflash:/
+            deadline ('float'): Optional monotonic cleanup deadline.
         Returns:
-            None
+            bool or None: True when the cleanup deadline is reached; otherwise
+                None.
             """
 
     protected_set = set()
@@ -142,6 +149,9 @@ def delete_unprotected_files(device, directory, protected, files_to_delete=None,
     log.debug("protected files : {}".format(protected_set))
     log.debug("non-protected files : {}".format(not_protected))
     if not_protected:
+        if files_to_delete:
+            # Preserve the shared orchestrator's deterministic batch order.
+            not_protected = [file for file in files_to_delete if file in not_protected]
         log.info("The following files will be deleted:\n{}".format(
             '\n'.join(not_protected)))
         dont_delete_list = protected_set.intersection(files_to_delete)
@@ -149,12 +159,17 @@ def delete_unprotected_files(device, directory, protected, files_to_delete=None,
             log.info("The following files will not be deleted because they are protected:\n{}".format(
                 '\n'.join(dont_delete_list)))
         for file in not_protected:
+            if deadline is not None and time.monotonic() >= deadline:
+                return True
             # it's a directory, dont delete
             if file.endswith('/'):
                 continue
             log.info('Deleting the unprotected file "{}"'.format(file))
             try:
-                fu_device.deletefile(directory+file, device=device)
+                delete_kwargs = {'device': device}
+                if deadline is not None:
+                    delete_kwargs['timeout_seconds'] = _get_disk_cleanup_operation_timeout(deadline)
+                fu_device.deletefile(directory+file, **delete_kwargs)
             except Exception as e:
                 if allow_failure:
                     log.info('Failed to delete file "{}" but ignoring and moving '
