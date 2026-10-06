@@ -113,7 +113,8 @@ def configure_management_ip(device,
                             interface=None,
                             vrf=None,
                             no_switchport=False,
-                            dhcp_timeout=30):
+                            dhcp_timeout=30,
+                            fallback_to_management_vrf=True):
     '''
     Configure management ip on the device.
 
@@ -125,7 +126,10 @@ def configure_management_ip(device,
         interface ('str'): management interface (optional)
         vrf ('str'): interface VRF (optional)
         no_switchport ('bool'): default as False
-        dchp_timeout ('int'): DHCP timeout in seconds (default: 30)
+        dhcp_timeout ('int'): DHCP timeout in seconds (default: 30)
+        fallback_to_management_vrf ('bool'): Use the VRF from the device
+            management configuration when ``vrf`` is not provided. Defaults
+            to True.
 
     Returns:
         None
@@ -197,9 +201,11 @@ def configure_management_ip(device,
             address += ipv6
 
     interface = interface or management.get('interface')
-    vrf = vrf or management.get('vrf')
+    if not vrf and fallback_to_management_vrf:
+        vrf = management.get('vrf')
 
-    device.api.configure_management_vrf(vrf)
+    if vrf:
+        device.api.configure_management_vrf(vrf)
 
     if interface:
         interface_config = [f'interface {interface}']
@@ -393,27 +399,13 @@ def configure_management_routes(device,
     if routes_dict is None:
         return
 
-    routes = []
-    # To process ipv4 and ipv6 routes
-    ipv4 = routes_dict.get('ipv4')
-    if ipv4 and not isinstance(ipv4, list):
-        ipv4 = [ipv4]
-        routes += ipv4
-    elif ipv4:
-        routes += ipv4
+    route_cmds = []
+    for address_family, protocol in (('ipv4', 'ip'), ('ipv6', 'ipv6')):
+        routes = routes_dict.get(address_family, [])
+        if not isinstance(routes, list):
+            routes = [routes]
 
-    ipv6 = routes_dict.get('ipv6')
-    if ipv6 and not isinstance(ipv6, list):
-        ipv6 = [ipv6]
-        routes += ipv6
-    elif ipv6:
-        routes += ipv6
-
-    if routes:
-        route_cmds = []
         for route in routes:
-            # By default protocol is ip
-            protocol = 'ip'
             subnet = route.get('subnet')
             next_hop = route.get('next_hop')
             if subnet and next_hop:
@@ -422,8 +414,9 @@ def configure_management_routes(device,
                 else:
                     cmd = f'{protocol} route {subnet} {next_hop}'
                 route_cmds.append(cmd)
-        if route_cmds:
-            device.configure(route_cmds)
+
+    if route_cmds:
+        device.configure(route_cmds)
 
 
 def configure_management_tftp(device,
@@ -452,7 +445,8 @@ def configure_management_tftp(device,
         device.configure(tftp_config)
 
 
-def configure_management_ntp(device, server_name=None, source_interface=None):
+def configure_management_ntp(device, server_name=None, source_interface=None,
+                             vrf=None):
     '''
     Configure device for time synchronization via ntp.
 
@@ -460,6 +454,7 @@ def configure_management_ntp(device, server_name=None, source_interface=None):
         device ('obj'):  device object
         server_name ('str'): name of the server in the testbed, default: 'ntp'
         source_interface ('str'): management interface (optional)
+        vrf ('str'): management VRF (optional)
 
     Returns:
         None
@@ -476,6 +471,11 @@ def configure_management_ntp(device, server_name=None, source_interface=None):
     management = getattr(device, 'management', {})
 
     source_interface = source_interface or management.get('interface')
+    vrf = vrf or management.get('vrf')
+
+    if vrf:
+        ntp_config[0] = f'ntp server vrf {vrf} {ntp_address}'
+
     if source_interface:
         ntp_config.append(f'ntp source {source_interface}')
 
@@ -770,20 +770,40 @@ def configure_management_master_key(device, key_length=8):
     key = ''.join(random.SystemRandom().choice(chars) for _ in range(key_length))
 
     # Check if the key is already present by executing 'key config-key password-encrypt {key}'
-    # if there is an old key we will skip, otherwise we need to configure the new key
+    # if there is an old key we will skip, otherwise we need to configure the new key.
+    # Some platforms (e.g. IE3xxx/IE9xxx) still prompt interactively for
+    # 'New key:'/'Confirm key:' even though the key was passed inline on the
+    # command line, so those prompts must also be handled here. Without this,
+    # the command hangs until the configure timeout expires, causing the
+    # ConfigureManagement clean stage to error out (CSCwv17868).
     old_key_dialog = Dialog([
         Statement(
             pattern=r'Old key:',
             action='send(\x03)',
             loop_continue=False,
             continue_timer=False,
-        )
+        ),
+        Statement(
+            pattern=r'New key:',
+            action=f'sendline({key})',
+            loop_continue=True,
+            continue_timer=False,
+        ),
+        Statement(
+            pattern=r'Confirm key:',
+            action=f'sendline({key})',
+            loop_continue=True,
+            continue_timer=False,
+        ),
     ])
 
+    # Generating the Type 6 master key can take longer than 120s on some
+    # platforms (e.g. IE9xxx), so a longer timeout avoids a false timeout
+    # failure on an otherwise-slow-but-successful key generation (CSCwv17868).
     output = device.configure(
         f'key config-key password-encrypt {key}',
         reply=old_key_dialog,
-        timeout=120,
+        timeout=300,
     )
 
     if 'Old key:' in str(output):

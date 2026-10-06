@@ -19,6 +19,7 @@ class TestRecoveryImage(unittest.TestCase):
                                                  'golden_image.bin'])
         self.device.api.get_file_size_from_server = Mock(return_value=100)
         self.device.api.verify_file_exists = Mock(side_effect=[False, True])
+        self.device.api.free_up_disk_space = Mock(return_value=True)
         self.device.api.copy_to_device = Mock(return_value=True)
         self.device.api.lookup_default_image = Mock()
         self.device.api.get_platform_default_dir = Mock(
@@ -35,6 +36,7 @@ class TestRecoveryImage(unittest.TestCase):
                 'resolve_recovery_image',
                 'resolve_recovery_server',
                 'check_golden_image',
+                'free_up_disk_space',
                 'copy_recovery_image',
                 'verify_golden_image',
                 'update_device_recovery',
@@ -51,7 +53,7 @@ class TestRecoveryImage(unittest.TestCase):
 
     @patch('genie.libs.clean.stages.stages.FileUtils')
     def test_copies_source_to_stable_golden_image(self, file_utils_cls):
-        file_utils_cls.from_device.return_value = self.file_utils
+        file_utils_cls.return_value = self.file_utils
 
         RecoveryImage()(
             steps=Steps(),
@@ -72,31 +74,7 @@ class TestRecoveryImage(unittest.TestCase):
             self.device.clean['device_recovery']['golden_image'],
             ['bootflash:golden_image.bin'])
         self.device.api.lookup_default_image.assert_not_called()
-        file_utils_cls.from_device.assert_called_once_with(
-            self.device, protocol='https')
-
-    @patch('genie.libs.clean.stages.stages.FileUtils')
-    def test_uses_resolved_image_from_clean_data(self, file_utils_cls):
-        file_utils_cls.from_device.return_value = self.file_utils
-        self.device.clean = {
-            'images': ['/images/utah-build.bin']
-        }
-
-        RecoveryImage()(
-            steps=Steps(),
-            device=self.device,
-            golden_image=['bootflash:golden_image.bin'],
-            recovery_server='recovery-server')
-
-        self.device.api.lookup_default_image.assert_not_called()
-        self.device.api.copy_to_device.assert_called_once_with(
-            protocol='https',
-            server='recovery-server',
-            remote_path='/utah-build.bin',
-            local_path='bootflash:golden_image.bin',
-            vrf='',
-            timeout=300,
-            prompt_recovery=False)
+        file_utils_cls.assert_called_once_with(testbed=self.device.testbed)
 
     def test_skips_without_recovery_inputs(self):
         # Normal clean images do not opt a device into recovery-image staging.
@@ -135,7 +113,7 @@ class TestRecoveryImage(unittest.TestCase):
 
     @patch('genie.libs.clean.stages.stages.FileUtils')
     def test_md5_is_authoritative_for_existing_target(self, file_utils_cls):
-        file_utils_cls.from_device.return_value = self.file_utils
+        file_utils_cls.return_value = self.file_utils
         server_device = Mock()
         server_device.api.get_md5_hash_of_file.return_value = 'abc123'
         self.device.api.convert_server_to_linux_device = Mock(
@@ -161,7 +139,7 @@ class TestRecoveryImage(unittest.TestCase):
 
     @patch('genie.libs.clean.stages.stages.FileUtils')
     def test_skips_matching_md5_target(self, file_utils_cls):
-        file_utils_cls.from_device.return_value = self.file_utils
+        file_utils_cls.return_value = self.file_utils
         server_device = Mock()
         server_device.api.get_md5_hash_of_file.return_value = 'abc123'
         self.device.api.convert_server_to_linux_device = Mock(
@@ -182,7 +160,7 @@ class TestRecoveryImage(unittest.TestCase):
 
     @patch('genie.libs.clean.stages.stages.FileUtils')
     def test_uses_existing_device_recovery_target(self, file_utils_cls):
-        file_utils_cls.from_device.return_value = self.file_utils
+        file_utils_cls.return_value = self.file_utils
         self.device.clean = {
             'device_recovery': {
                 'golden_image': ['bootflash:existing-golden.bin']
@@ -206,7 +184,7 @@ class TestRecoveryImage(unittest.TestCase):
 
     @patch('genie.libs.clean.stages.stages.FileUtils')
     def test_does_not_fetch_remote_metadata_before_copy(self, file_utils_cls):
-        file_utils_cls.from_device.return_value = self.file_utils
+        file_utils_cls.return_value = self.file_utils
         RecoveryImage()(
             steps=Steps(),
             device=self.device,
@@ -215,11 +193,12 @@ class TestRecoveryImage(unittest.TestCase):
             recovery_server='recovery-server')
 
         self.device.api.get_file_size_from_server.assert_not_called()
+        self.device.api.free_up_disk_space.assert_not_called()
         self.device.api.copy_to_device.assert_called_once()
 
     @patch('genie.libs.clean.stages.stages.FileUtils')
     def test_preserves_explicit_http_port_443(self, file_utils_cls):
-        file_utils_cls.from_device.return_value = self.file_utils
+        file_utils_cls.return_value = self.file_utils
 
         RecoveryImage()(steps=Steps(), device=self.device,
                         images=['/images/recovery.bin'],
@@ -237,7 +216,7 @@ class TestRecoveryImage(unittest.TestCase):
 
     @patch('genie.libs.clean.stages.stages.FileUtils')
     def test_passes_non_default_https_port(self, file_utils_cls):
-        file_utils_cls.from_device.return_value = self.file_utils
+        file_utils_cls.return_value = self.file_utils
 
         RecoveryImage()(steps=Steps(), device=self.device,
                         images=['/images/recovery.bin'],
@@ -254,7 +233,7 @@ class TestRecoveryImage(unittest.TestCase):
 
     @patch('genie.libs.clean.stages.stages.FileUtils')
     def test_verifies_existing_target_without_remote_source(self, file_utils_cls):
-        file_utils_cls.from_device.return_value = self.file_utils
+        file_utils_cls.return_value = self.file_utils
         self.device.clean = {'device_recovery': {
             'golden_image': ['bootflash:golden_image.bin']}}
         self.device.execute = Mock(return_value='golden_image.bin')
@@ -306,7 +285,7 @@ class TestRecoveryImage(unittest.TestCase):
     @patch('genie.libs.clean.stages.stages.FileUtils')
     def test_skips_target_with_matching_size(
             self, file_utils_cls, isfile, getsize):
-        file_utils_cls.from_device.return_value = self.file_utils
+        file_utils_cls.return_value = self.file_utils
         self.device.execute = Mock(return_value='golden_image.bin')
         self.device.api.verify_file_exists = Mock(
             side_effect=[True, True, True, True])
@@ -325,6 +304,7 @@ class TestRecoveryImage(unittest.TestCase):
             call(file='bootflash:/golden_image.bin', size=100,
                  dir_output='golden_image.bin'),
         ])
+        self.device.api.free_up_disk_space.assert_not_called()
         self.device.api.copy_to_device.assert_not_called()
 
     @patch('genie.libs.clean.stages.stages.os.path.getsize',
@@ -334,7 +314,7 @@ class TestRecoveryImage(unittest.TestCase):
     @patch('genie.libs.clean.stages.stages.FileUtils')
     def test_overwrites_target_with_different_size(
             self, file_utils_cls, isfile, getsize):
-        file_utils_cls.from_device.return_value = self.file_utils
+        file_utils_cls.return_value = self.file_utils
         self.device.execute = Mock(return_value='golden_image.bin')
         self.device.api.verify_file_exists = Mock(
             side_effect=[True, False, True, True])
@@ -350,6 +330,67 @@ class TestRecoveryImage(unittest.TestCase):
             remote_path='/recovery.bin',
             local_path='bootflash:golden_image.bin', vrf='', timeout=300,
             overwrite=True, prompt_recovery=False)
+        self.device.api.free_up_disk_space.assert_called_once()
+        self.assertNotIn(
+            'golden_image.bin',
+            self.device.api.free_up_disk_space.call_args.kwargs[
+                'protected_files'])
+
+    @patch('genie.libs.clean.stages.stages.os.path.getsize',
+           return_value=100)
+    @patch('genie.libs.clean.stages.stages.os.path.isfile',
+           return_value=True)
+    @patch('genie.libs.clean.stages.stages.FileUtils')
+    def test_frees_disk_space_before_size_verified_copy(
+            self, file_utils_cls, isfile, getsize):
+        file_utils_cls.return_value = self.file_utils
+        self.device.api.verify_file_exists = Mock(
+            side_effect=[False, True, True])
+
+        RecoveryImage()(
+            steps=Steps(), device=self.device,
+            images=['/images/recovery.bin'],
+            golden_image=['bootflash:golden_image.bin'],
+            recovery_server='recovery-server', verify_size=True,
+            protected_files=['packages.conf'], skip_deletion=False,
+            min_free_space_percent=10)
+
+        self.device.api.free_up_disk_space.assert_called_once()
+        free_space_kwargs = (
+            self.device.api.free_up_disk_space.call_args.kwargs)
+        self.assertEqual(free_space_kwargs['destination'], 'bootflash:')
+        self.assertEqual(free_space_kwargs['required_size'], 100)
+        self.assertFalse(free_space_kwargs['skip_deletion'])
+        self.assertEqual(free_space_kwargs['min_free_space_percent'], 10)
+        self.assertTrue(free_space_kwargs['allow_deletion_failure'])
+        self.assertIn('packages.conf', free_space_kwargs['protected_files'])
+        self.assertIn(
+            'golden_image.bin', free_space_kwargs['protected_files'])
+        self.device.api.copy_to_device.assert_called_once()
+
+    @patch('genie.libs.clean.stages.stages.os.path.getsize',
+           return_value=100)
+    @patch('genie.libs.clean.stages.stages.os.path.isfile',
+           return_value=True)
+    @patch('genie.libs.clean.stages.stages.FileUtils')
+    def test_fails_before_copy_when_disk_space_cannot_be_freed(
+            self, file_utils_cls, isfile, getsize):
+        file_utils_cls.return_value = self.file_utils
+        self.device.api.free_up_disk_space.return_value = False
+        stage = RecoveryImage()
+        stage.failed = Mock(side_effect=RuntimeError)
+
+        with self.assertRaises(RuntimeError):
+            stage(
+                steps=Steps(), device=self.device,
+                images=['/images/recovery.bin'],
+                golden_image=['bootflash:golden_image.bin'],
+                recovery_server='recovery-server', verify_size=True)
+
+        self.assertIn(
+            'Unable to create enough space for recovery image',
+            stage.failed.call_args.args[0])
+        self.device.api.copy_to_device.assert_not_called()
 
     @patch('genie.libs.clean.stages.stages.os.path.getsize',
            return_value=100)
@@ -358,7 +399,7 @@ class TestRecoveryImage(unittest.TestCase):
     @patch('genie.libs.clean.stages.stages.FileUtils')
     def test_fails_when_copied_target_has_wrong_size(
             self, file_utils_cls, isfile, getsize):
-        file_utils_cls.from_device.return_value = self.file_utils
+        file_utils_cls.return_value = self.file_utils
         self.device.api.verify_file_exists = Mock(
             side_effect=[False, True, False])
         stage = RecoveryImage()
@@ -384,7 +425,7 @@ class TestRecoveryImage(unittest.TestCase):
     @patch('genie.libs.clean.stages.stages.FileUtils')
     def test_gets_size_from_recovery_server_when_source_is_not_local(
             self, file_utils_cls, isfile):
-        file_utils_cls.from_device.return_value = self.file_utils
+        file_utils_cls.return_value = self.file_utils
         self.device.api.verify_file_exists = Mock(
             side_effect=[False, True, True])
 
@@ -398,17 +439,167 @@ class TestRecoveryImage(unittest.TestCase):
             server='10.0.0.1', path='/recovery.bin', protocol='https',
             timeout=300, fu_session=self.file_utils)
 
+    @patch('genie.libs.clean.stages.stages.os.path.isfile',
+           return_value=False)
+    @patch('genie.libs.clean.stages.stages.FileUtils')
+    def test_uses_full_path_for_http_size_and_copy(
+            self, file_utils_cls, isfile):
+        file_utils_cls.return_value = self.file_utils
+        self.file_utils.get_server_block.return_value = {
+            'path': '/',
+            'services': {
+                'http': {
+                    'application': 'short-path-cache',
+                    'port': 80,
+                    'protocol': 'http',
+                    'type': 'file_transfer',
+                },
+            },
+        }
+        self.device.api.verify_file_exists = Mock(
+            side_effect=[False, True, True])
+        self.device.api.convert_server_to_linux_device = Mock()
+        self.device.api.get_short_path = Mock(
+            side_effect=AssertionError('generic stage must not shorten paths'))
+
+        RecoveryImage()(
+            steps=Steps(), device=self.device,
+            images=['/auto/images/recovery.bin'],
+            golden_image=['bootflash:golden_image.bin'],
+            recovery_server='recovery-server', protocol='http',
+            verify_size=True)
+
+        self.device.api.get_file_size_from_server.assert_called_once_with(
+            server='10.0.0.1', path='/auto/images/recovery.bin',
+            protocol='http', timeout=300, fu_session=self.file_utils)
+        self.device.api.convert_server_to_linux_device.assert_not_called()
+        self.device.api.get_short_path.assert_not_called()
+        self.device.api.copy_to_device.assert_called_once_with(
+            protocol='http', server='recovery-server',
+            remote_path='/auto/images/recovery.bin',
+            local_path='bootflash:golden_image.bin', vrf='', timeout=300,
+            prompt_recovery=False)
+
+    @patch('genie.libs.clean.stages.stages.os.path.isfile',
+           return_value=False)
+    @patch('genie.libs.clean.stages.stages.FileUtils')
+    def test_falls_back_to_recovery_server_ssh_for_https_size(
+            self, file_utils_cls, isfile):
+        file_utils_cls.return_value = self.file_utils
+        self.file_utils.get_server_block.return_value = {
+            'path': '/',
+            'services': {
+                'https': {
+                    'application': 'short-path-cache',
+                    'port': 443,
+                    'protocol': 'https',
+                    'type': 'file_transfer',
+                },
+                'ssh': {
+                    'port': 22,
+                    'protocol': 'ssh',
+                    'type': 'management',
+                },
+            },
+        }
+        server_device = Mock()
+        server_device.execute.return_value = '100\n'
+        self.device.api.convert_server_to_linux_device = Mock(
+            return_value=server_device)
+        self.device.api.get_file_size_from_server.side_effect = RuntimeError(
+            'HTTPS HEAD failed')
+        self.device.api.get_short_path = Mock(
+            side_effect=AssertionError('generic stage must not shorten paths'))
+        self.device.api.verify_file_exists = Mock(
+            side_effect=[False, True, True])
+
+        RecoveryImage()(
+            steps=Steps(), device=self.device,
+            images=['/auto/images/recovery.bin'],
+            golden_image=['bootflash:golden_image.bin'],
+            recovery_server='recovery-server', protocol='https',
+            verify_size=True)
+
+        self.device.api.get_file_size_from_server.assert_called_once_with(
+            server='10.0.0.1', path='/auto/images/recovery.bin',
+            protocol='https', timeout=300, fu_session=self.file_utils)
+        server_device.connect.assert_called_once_with()
+        server_device.execute.assert_called_once_with(
+            'stat -c %s -- /auto/images/recovery.bin', timeout=300)
+        server_device.disconnect.assert_called_once_with()
+        self.device.api.get_short_path.assert_not_called()
+        self.device.api.copy_to_device.assert_called_once_with(
+            protocol='https', server='recovery-server',
+            remote_path='/auto/images/recovery.bin',
+            local_path='bootflash:golden_image.bin', vrf='', timeout=300,
+            prompt_recovery=False)
+
+    @patch('genie.libs.clean.stages.stages.os.path.isfile',
+           return_value=False)
+    @patch('genie.libs.clean.stages.stages.FileUtils')
+    def test_disconnects_recovery_server_when_ssh_connect_fails(
+            self, file_utils_cls, isfile):
+        file_utils_cls.return_value = self.file_utils
+        self.file_utils.get_server_block.return_value = {
+            'path': '/',
+            'services': {
+                'https': {
+                    'port': 443,
+                    'protocol': 'https',
+                    'type': 'file_transfer',
+                },
+                'ssh': {
+                    'port': 22,
+                    'protocol': 'ssh',
+                    'type': 'management',
+                },
+            },
+        }
+        server_device = Mock()
+        server_device.connect.side_effect = RuntimeError('SSH connect failed')
+        self.device.api.convert_server_to_linux_device = Mock(
+            return_value=server_device)
+        self.device.api.get_file_size_from_server.side_effect = RuntimeError(
+            'HTTPS HEAD failed')
+        stage = RecoveryImage()
+        stage.failed = Mock(side_effect=RuntimeError)
+
+        with self.assertRaises(RuntimeError):
+            stage(
+                steps=Steps(), device=self.device,
+                images=['/auto/images/recovery.bin'],
+                golden_image=['bootflash:golden_image.bin'],
+                recovery_server='recovery-server', protocol='https',
+                verify_size=True)
+
+        server_device.connect.assert_called_once_with()
+        server_device.execute.assert_not_called()
+        server_device.disconnect.assert_called_once_with()
+        self.assertIn(
+            'recovery-server SSH: SSH connect failed',
+            stage.failed.call_args.args[0])
+
     @patch('genie.libs.clean.stages.stages.FileUtils')
     def test_copies_multiple_recovery_images(self, file_utils_cls):
-        file_utils_cls.from_device.return_value = self.file_utils
+        file_utils_cls.return_value = self.file_utils
         self.device.execute = Mock(return_value='images')
         self.device.api.verify_file_exists = Mock(
             side_effect=[False, False, True, True])
+        self.file_utils.get_server_block.return_value = {
+            'path': '/',
+            'services': {
+                'https': {
+                    'application': 'short-path-cache',
+                    'protocol': 'https',
+                    'type': 'file_transfer',
+                },
+            },
+        }
+        self.device.api.get_short_path = Mock(
+            side_effect=AssertionError('generic stage must not shorten paths'))
 
         RecoveryImage()(steps=Steps(), device=self.device,
                         images=['/images/one.bin', '/images/two.bin'],
-                        copy_images=['/short/123/one.bin',
-                                     '/short/456/two.bin'],
                         recovery_server='recovery-server')
 
         self.assertEqual(self.device.api.copy_to_device.call_count, 2)
@@ -420,12 +611,13 @@ class TestRecoveryImage(unittest.TestCase):
         self.assertEqual(
             [call.kwargs['remote_path'] for call in
              self.device.api.copy_to_device.call_args_list],
-            ['/short/123/one.bin', '/short/456/two.bin'])
+            ['/images/one.bin', '/images/two.bin'])
+        self.device.api.get_short_path.assert_not_called()
 
     @patch('genie.libs.clean.stages.stages.FileUtils')
     def test_uses_platform_default_directory_for_implicit_target(
             self, file_utils_cls):
-        file_utils_cls.from_device.return_value = self.file_utils
+        file_utils_cls.return_value = self.file_utils
         self.device.api.get_platform_default_dir.return_value = 'flash:'
 
         RecoveryImage()(steps=Steps(), device=self.device,
@@ -450,25 +642,10 @@ class TestRecoveryImage(unittest.TestCase):
 
         self.assertIn('must match', stage.failed.call_args.args[0])
 
-    def test_rejects_mismatched_source_and_copy_counts(self):
-        stage = RecoveryImage()
-        stage.failed = Mock(side_effect=RuntimeError)
-
-        with self.assertRaises(RuntimeError):
-            stage(steps=Steps(), device=self.device,
-                  images=['/images/one.bin', '/images/two.bin'],
-                  copy_images=['/short/123/one.bin'],
-                  golden_image=[
-                      'bootflash:golden_image_1.bin',
-                      'bootflash:golden_image_2.bin'])
-
-        self.assertIn('copy_images paths (1) must match',
-                      stage.failed.call_args.args[0])
-
     @patch('genie.libs.clean.stages.stages.FileUtils')
     def test_skips_existing_target_without_md5(
             self, file_utils_cls):
-        file_utils_cls.from_device.return_value = self.file_utils
+        file_utils_cls.return_value = self.file_utils
         self.device.execute = Mock(return_value='golden_image.bin')
         self.device.api.verify_file_exists = Mock(return_value=True)
 
@@ -489,7 +666,7 @@ class TestRecoveryImage(unittest.TestCase):
     @patch('genie.libs.clean.stages.stages.FileUtils')
     def test_copies_missing_target_without_md5(
             self, file_utils_cls):
-        file_utils_cls.from_device.return_value = self.file_utils
+        file_utils_cls.return_value = self.file_utils
 
         RecoveryImage()(steps=Steps(), device=self.device,
                         images=['/images/recovery.bin'],
@@ -501,7 +678,7 @@ class TestRecoveryImage(unittest.TestCase):
     @patch('genie.libs.clean.stages.stages.FileUtils')
     def test_similar_filename_does_not_count_as_existing_target(
             self, file_utils_cls):
-        file_utils_cls.from_device.return_value = self.file_utils
+        file_utils_cls.return_value = self.file_utils
         self.device.execute = Mock(
             side_effect=['golden_image.bin.old', 'golden_image.bin'])
 
@@ -521,7 +698,7 @@ class TestRecoveryImage(unittest.TestCase):
     @patch('genie.libs.clean.stages.stages.FileUtils')
     def test_normalizes_inspection_path_without_changing_copy_target(
             self, file_utils_cls):
-        file_utils_cls.from_device.return_value = self.file_utils
+        file_utils_cls.return_value = self.file_utils
 
         RecoveryImage()(steps=Steps(), device=self.device,
                         images=['/images/recovery.bin'],
@@ -538,8 +715,9 @@ class TestRecoveryImage(unittest.TestCase):
             prompt_recovery=False)
 
     @patch('genie.libs.clean.stages.stages.FileUtils')
-    def test_does_not_use_internal_short_path_api(self, file_utils_cls):
-        file_utils_cls.from_device.return_value = self.file_utils
+    def test_leaves_path_adaptation_to_platform_stage(
+            self, file_utils_cls):
+        file_utils_cls.return_value = self.file_utils
         self.file_utils.get_server_block.return_value = {
             'path': '/images',
             'services': {
@@ -550,7 +728,8 @@ class TestRecoveryImage(unittest.TestCase):
                 },
             },
         }
-        self.device.api.get_short_path = Mock()
+        self.device.api.get_short_path = Mock(
+            side_effect=AssertionError('generic stage must not shorten paths'))
 
         RecoveryImage()(steps=Steps(), device=self.device,
                         images=['/images/recovery.bin'],
@@ -565,16 +744,16 @@ class TestRecoveryImage(unittest.TestCase):
             prompt_recovery=False)
 
     @patch('genie.libs.clean.stages.stages.FileUtils')
-    def test_uses_pre_resolved_copy_path_without_changing_md5_source(
+    def test_uses_full_path_for_md5_and_copy(
             self, file_utils_cls):
-        file_utils_cls.from_device.return_value = self.file_utils
+        file_utils_cls.return_value = self.file_utils
         self.file_utils.get_server_block.return_value = {
             'path': '/',
             'services': {
-                'tftp': {
+                'https': {
                     'application': 'short-path-cache',
-                    'port': 69,
-                    'protocol': 'tftp',
+                    'port': 443,
+                    'protocol': 'https',
                     'type': 'file_transfer',
                 },
             },
@@ -584,22 +763,22 @@ class TestRecoveryImage(unittest.TestCase):
         self.device.api.convert_server_to_linux_device = Mock(
             return_value=server_device)
         self.device.api.get_md5_hash_of_file = Mock(return_value='abc123')
-        self.device.api.get_short_path = Mock()
+        self.device.api.get_short_path = Mock(
+            side_effect=AssertionError('generic stage must not shorten paths'))
 
         RecoveryImage()(
             steps=Steps(), device=self.device,
             images=['/auto/images/recovery.bin'],
-            copy_images=['/short/1234/recovery.bin'],
             golden_image=['bootflash:golden_image.bin'],
-            recovery_server='recovery-server', protocol='tftp',
+            recovery_server='recovery-server', protocol='https',
             verify_md5=True)
 
         self.device.api.get_short_path.assert_not_called()
         server_device.api.get_md5_hash_of_file.assert_called_once_with(
             '/auto/images/recovery.bin', timeout=300)
         self.device.api.copy_to_device.assert_called_once_with(
-            protocol='tftp', server='recovery-server',
-            remote_path='/short/1234/recovery.bin',
+            protocol='https', server='recovery-server',
+            remote_path='/auto/images/recovery.bin',
             local_path='bootflash:golden_image.bin', vrf='', timeout=300,
             prompt_recovery=False)
 
@@ -608,43 +787,45 @@ class TestRecoveryImage(unittest.TestCase):
     @patch('genie.libs.clean.stages.stages.os.path.isfile',
            return_value=True)
     @patch('genie.libs.clean.stages.stages.FileUtils')
-    def test_uses_original_source_size_with_pre_resolved_copy_path(
+    def test_uses_full_source_size_and_copy(
             self, file_utils_cls, isfile, getsize):
-        file_utils_cls.from_device.return_value = self.file_utils
+        file_utils_cls.return_value = self.file_utils
         self.file_utils.get_server_block.return_value = {
             'path': '/',
             'services': {
-                'tftp': {
+                'http': {
                     'application': 'short-path-cache',
-                    'port': 69,
-                    'protocol': 'tftp',
+                    'port': 80,
+                    'protocol': 'http',
                     'type': 'file_transfer',
                 },
             },
         }
         self.device.api.verify_file_exists = Mock(
             side_effect=[False, True, True])
+        self.device.api.get_short_path = Mock(
+            side_effect=AssertionError('generic stage must not shorten paths'))
 
         RecoveryImage()(
             steps=Steps(), device=self.device,
             images=['/auto/images/recovery.bin'],
-            copy_images=['/short/1234/recovery.bin'],
             golden_image=['bootflash:golden_image.bin'],
-            recovery_server='recovery-server', protocol='tftp',
+            recovery_server='recovery-server', protocol='http',
             verify_size=True)
 
         getsize.assert_called_once_with('/auto/images/recovery.bin')
         self.device.api.get_file_size_from_server.assert_not_called()
+        self.device.api.get_short_path.assert_not_called()
         self.device.api.copy_to_device.assert_called_once_with(
-            protocol='tftp', server='recovery-server',
-            remote_path='/short/1234/recovery.bin',
+            protocol='http', server='recovery-server',
+            remote_path='/auto/images/recovery.bin',
             local_path='bootflash:golden_image.bin', vrf='', timeout=300,
             prompt_recovery=False)
 
     @patch('genie.libs.clean.stages.stages.FileUtils')
     def test_uses_local_source_for_md5_without_ssh(
             self, file_utils_cls):
-        file_utils_cls.from_device.return_value = self.file_utils
+        file_utils_cls.return_value = self.file_utils
         digest = hashlib.md5(b'recovery-image').hexdigest()
         self.device.api.get_md5_hash_of_file = Mock(return_value=digest)
         self.device.api.convert_server_to_linux_device = Mock()
@@ -666,7 +847,7 @@ class TestRecoveryImage(unittest.TestCase):
 
     @patch('genie.libs.clean.stages.stages.FileUtils')
     def test_discovers_https_server_and_port(self, file_utils_cls):
-        file_utils_cls.from_device.return_value = self.file_utils
+        file_utils_cls.return_value = self.file_utils
         testbed = Testbed('testbed')
         testbed.servers = {
             'https-server': {
@@ -697,7 +878,7 @@ class TestRecoveryImage(unittest.TestCase):
 
     @patch('genie.libs.clean.stages.stages.FileUtils')
     def test_discovers_ordered_server_with_string_order(self, file_utils_cls):
-        file_utils_cls.from_device.return_value = self.file_utils
+        file_utils_cls.return_value = self.file_utils
         testbed = Testbed('testbed')
         testbed.servers = {
             'unordered-server': {
@@ -733,7 +914,7 @@ class TestRecoveryImage(unittest.TestCase):
 
     @patch('genie.libs.clean.stages.stages.FileUtils')
     def test_uses_port_from_highest_priority_service(self, file_utils_cls):
-        file_utils_cls.from_device.return_value = self.file_utils
+        file_utils_cls.return_value = self.file_utils
         self.file_utils.get_server_block.return_value = {
             'address': '10.0.0.9',
             'path': '/images',
@@ -766,7 +947,7 @@ class TestRecoveryImage(unittest.TestCase):
 
     @patch('genie.libs.clean.stages.stages.FileUtils')
     def test_does_not_discover_non_https_server(self, file_utils_cls):
-        file_utils_cls.from_device.return_value = self.file_utils
+        file_utils_cls.return_value = self.file_utils
         testbed = Testbed('testbed')
         testbed.servers = {
             'ordered-tftp': {
@@ -794,7 +975,7 @@ class TestRecoveryImage(unittest.TestCase):
 
     @patch('genie.libs.clean.stages.stages.FileUtils')
     def test_verifies_md5_without_remote_transfer_fetch(self, file_utils_cls):
-        file_utils_cls.from_device.return_value = self.file_utils
+        file_utils_cls.return_value = self.file_utils
         server_device = Mock()
         server_device.api.get_md5_hash_of_file.return_value = 'abc123'
         self.device.api.convert_server_to_linux_device = Mock(

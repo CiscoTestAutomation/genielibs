@@ -1,35 +1,28 @@
-import os
 import unittest
-from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.mdns.configure import unconfigure_mdns_global_service_buffer
+from unittest import TestCase
+from unittest.mock import Mock
+
+from genie.libs.sdk.apis.iosxe.mdns.configure import (
+    unconfigure_mdns_global_service_buffer,
+)
 
 
-class TestUnconfigureMdnsGlobalServiceBuffer(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          T3-9500-S2:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: c9500
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['T3-9500-S2']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestUnconfigureMdnsGlobalServiceBuffer(TestCase):
 
     def test_unconfigure_mdns_global_service_buffer(self):
-        result = unconfigure_mdns_global_service_buffer(self.device, 'test')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.configure.return_value = None
+
+        result = unconfigure_mdns_global_service_buffer(device, "test")
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once_with(
+            [
+                "service-export mdns-sd controller test",
+                "no global-service-buffer",
+            ]
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()

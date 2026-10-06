@@ -2379,6 +2379,81 @@ class TestBaseLinuxHttpFileUtils(unittest.TestCase):
         )
         self.assertTrue(context.exception.__suppress_context__)
 
+    @patch('genie.libs.filetransferutils.protocols.http.fileutils.requests.head')
+    def test_stat_error_includes_http_response_details(self, mock_head):
+        url = "https://user:p%40ssword@server.example/image.bin"
+        mock_response = Mock()
+        mock_response.status_code = 404
+        mock_response.reason = "Not Found"
+        mock_response.url = url
+        mock_response.headers = {
+            "Content-Type": "text/html",
+            "Content-Length": "123",
+            "Server": "test-httpd",
+        }
+        mock_response.raise_for_status.side_effect = requests.exceptions.HTTPError(
+            "404 Client Error: Not Found", response=mock_response
+        )
+        mock_head.return_value = mock_response
+        fu = FileUtils(testbed=self.testbed_1)
+
+        with self.assertLogs(
+            'genie.libs.filetransferutils.protocols.http.fileutils',
+            logging.ERROR,
+        ) as logs:
+            with self.assertRaises(Exception) as context:
+                fu.stat(url)
+
+        log_output = "\n".join(logs.output)
+        self.assertIn("status=404", log_output)
+        self.assertIn("reason='Not Found'", log_output)
+        self.assertIn("'Content-Length': '123'", log_output)
+        self.assertIn("'Server': 'test-httpd'", log_output)
+        self.assertNotIn("user", log_output)
+        self.assertNotIn("p%40ssword", log_output)
+        self.assertIn("Response: status=404", str(context.exception))
+        self.assertNotIn("user", str(context.exception))
+        self.assertNotIn("p%40ssword", str(context.exception))
+
+    @patch('genie.libs.filetransferutils.protocols.http.fileutils.requests.get')
+    @patch('genie.libs.filetransferutils.protocols.http.fileutils.requests.head')
+    def test_stat_range_get_error_includes_http_response_details(
+            self, mock_head, mock_get):
+        url = "http://user:password@server.example/image.bin"
+        mock_head_response = Mock()
+        mock_head_response.status_code = 200
+        mock_head_response.reason = "OK"
+        mock_head_response.url = url
+        mock_head_response.headers = {"Content-Length": "0"}
+        mock_head_response.raise_for_status.return_value = None
+        mock_head.return_value = mock_head_response
+
+        mock_get_response = Mock()
+        mock_get_response.status_code = 503
+        mock_get_response.reason = "Service Unavailable"
+        mock_get_response.url = url
+        mock_get_response.headers = {"Content-Type": "text/plain"}
+        mock_get_response.raise_for_status.side_effect = requests.exceptions.HTTPError(
+            "503 Server Error: Service Unavailable", response=mock_get_response
+        )
+        mock_get.return_value = mock_get_response
+        fu = FileUtils(testbed=self.testbed_1)
+
+        with self.assertLogs(
+            'genie.libs.filetransferutils.protocols.http.fileutils',
+            logging.WARNING,
+        ) as logs:
+            with self.assertRaisesRegex(Exception, "Range GET error"):
+                fu.stat(url)
+
+        log_output = "\n".join(logs.output)
+        self.assertIn("status=503", log_output)
+        self.assertIn("reason='Service Unavailable'", log_output)
+        self.assertNotIn("user", log_output)
+        self.assertNotIn("password", log_output)
+        mock_get_response.close.assert_called_once()
+
+
 class TestBaseLinuxTftpFileUtils(unittest.TestCase):
     from genie.libs.filetransferutils.fileutils import FileUtils
     # Testbed configuration for TFTP

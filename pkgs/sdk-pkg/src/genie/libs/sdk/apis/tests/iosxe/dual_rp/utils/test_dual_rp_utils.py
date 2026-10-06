@@ -31,11 +31,11 @@ class TestFreeUpDiskSpace(TestCase):
 
         self.assertTrue(result)
         multi_rp_free_up_disk_space.assert_called_once_with(
-            device,
-            ['bootflash:', 'stby-bootflash:'],
-            100,
-            False,
-            protected_files,
+            device=device,
+            destination=['bootflash:', 'stby-bootflash:'],
+            required_size=100,
+            skip_deletion=False,
+            protected_files=protected_files,
             compact=True,
             min_free_space_percent=20,
             dir_output='dir output',

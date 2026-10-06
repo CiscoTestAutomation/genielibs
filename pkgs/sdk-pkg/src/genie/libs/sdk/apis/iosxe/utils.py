@@ -11,7 +11,11 @@ from pyats.async_ import Pcall
 # Genie
 from genie.libs.sdk.apis.utils import get_config_dict
 from genie.libs.sdk.apis.execute import (
-    free_up_disk_space as generic_free_up_disk_space)
+    _DiskCleanupStrategy,
+    _free_up_disk_space_for_roles,
+    _get_disk_cleanup_operation_timeout,
+    _get_entry_type,
+)
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
 from genie.utils.timeout import Timeout
 from genie.libs.parser.iosxe.ping import Ping
@@ -26,35 +30,73 @@ from ats.log.utils import banner
 log = logging.getLogger(__name__)
 
 
+def _classify_iosxe_disk_cleanup_entry(entry_name, file_details):
+    """Return the IOS-XE filesystem entry type from permission metadata."""
+    return _get_entry_type(entry_name, file_details)
+
+
+def _delete_iosxe_disk_cleanup_batch(device, destination, protected_files,
+                                     candidate_batch, directory_output,
+                                     allow_deletion_failure, deadline,
+                                     stop_check):
+    """Delete an IOS-XE candidate batch within the cleanup deadline."""
+    candidate_paths = [candidate.path for candidate in candidate_batch]
+    delete_kwargs = {
+        'directory': destination,
+        'protected': protected_files,
+        'files_to_delete': candidate_paths,
+        'dir_output': directory_output,
+        'allow_failure': allow_deletion_failure,
+        'destination': destination,
+        'deadline': deadline,
+    }
+    if candidate_batch[0].is_directory:
+        delete_kwargs.update({
+            'recursive': True,
+            'stop_check': stop_check,
+            'timeout': _get_disk_cleanup_operation_timeout(deadline),
+        })
+    return device.api.delete_unprotected_files(**delete_kwargs)
+
+
+def _get_iosxe_disk_cleanup_space(device, destination):
+    """Return available IOS-XE space using the bounded filesystem query."""
+    return device.api.get_available_space_after_cleanup(directory=destination)
+
+
+_IOSXE_DISK_CLEANUP_STRATEGY = _DiskCleanupStrategy(
+    classify_entry=_classify_iosxe_disk_cleanup_entry,
+    delete_batch=_delete_iosxe_disk_cleanup_batch,
+    get_available_space=_get_iosxe_disk_cleanup_space,
+    supports_directories=True,
+)
+
+
 def free_up_disk_space(device, destination, required_size, skip_deletion,
     protected_files, compact=False, min_free_space_percent=None,
     dir_output=None, allow_deletion_failure=False):
-    """ Delete unprotected IOS XE files and recursively clean directories.
+    """Delete unprotected IOS-XE files and recursively clean directories.
 
-        Directories are processed before top level files by deleting their
-        unprotected contents rather than deleting the directory itself.
+    Safe regular files are processed before directories. Directory contents
+    are traversed only through the type-aware recursive cleanup; directory
+    entries are never passed to file deletion.
 
-        Args:
-            device ('obj'): Device object
-            destination ('str'): Destination directory, i.e bootflash:/
-            required_size ('int'): Check if enough space to fit given size in
-                bytes. If this number is negative it will be assumed the
-                required size is not available.
-            skip_deletion ('bool'): Only performs checks, no deletion
-            protected_files ('list'): List of file patterns that wont be
-                deleted
-            compact ('bool'): Compact option for n9k, used for size
-                estimation, default False
-            min_free_space_percent ('int'): Minimum acceptable free disk space
-                %. Optional
-            dir_output ('str'): Output of 'dir' command if not provided,
-                executes the cmd on device
-            allow_deletion_failure ('bool', optional): Allow the deletion of a
-                file to silently fail. Defaults to False
-        Returns:
-            True if there is enough space after the operation, False otherwise
+    Args:
+        device ('obj'): Device object.
+        destination ('str'): Destination directory, such as bootflash:/.
+        required_size ('int'): Required free space in bytes. A negative value
+            indicates that the required size is unknown.
+        skip_deletion ('bool'): Only perform checks when True.
+        protected_files ('list'): File patterns that must not be deleted.
+        compact ('bool'): Apply compact-image size estimation.
+        min_free_space_percent ('int'): Minimum acceptable free-space percent.
+        dir_output ('str'): Optional captured output of the 'dir' command.
+        allow_deletion_failure ('bool'): Ignore individual deletion failures.
+
+    Returns:
+        bool: True when enough space is verified, otherwise False.
     """
-    return generic_free_up_disk_space(
+    return _free_up_disk_space_for_roles(
         device=device,
         destination=destination,
         required_size=required_size,
@@ -65,6 +107,7 @@ def free_up_disk_space(device, destination, required_size, skip_deletion,
         dir_output=dir_output,
         allow_deletion_failure=allow_deletion_failure,
         recursive=True,
+        cleanup_strategy=_IOSXE_DISK_CLEANUP_STRATEGY,
     )
 
 
@@ -2294,7 +2337,8 @@ def password_recovery(device, console_activity_pattern='',
 
     # step:3 Execute config register in rommon state
     log.info(f"Setting config register for device {device.name}")
-    device.api.execute_set_config_register(config_register='0x0')
+    device.api.execute_set_config_register(
+        config_register='0x0', preserve_console_speed=True)
 
     # step:4 Execute reset command
     log.info(f"Executing ROMMON reset for device {device.name}")

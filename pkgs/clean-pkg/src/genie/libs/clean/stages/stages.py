@@ -1,5 +1,6 @@
 # Python
 import re
+import shlex
 import time
 import shutil
 import os.path
@@ -1054,6 +1055,10 @@ copy_to_device:
 
         with device.temp_default_alias(connection_alias):
 
+            # Work with a per-stage list so automatically protected targets do
+            # not mutate a caller-owned clean configuration list.
+            protected_files = list(protected_files or [])
+
             # list of destination directories
             destinations = []
 
@@ -1225,6 +1230,16 @@ copy_to_device:
                             step.passed("Proceeding with copying image {} to device {}".\
                                         format(dest_file_path, device.name))
                         else:
+                            # An existing target image is needed by later
+                            # clean stages (for example change_boot_variable).
+                            # Protect it before the free-space cleanup runs,
+                            # even though the copy operation is skipped.
+                            target_file = os.path.basename(dest_file_path)
+                            if target_file not in protected_files:
+                                protected_files.append(target_file)
+                                log.info(
+                                    "'%s' added to protected files because "
+                                    "copy was skipped", target_file)
                             step.passed(
                                 "Image '{}' already exists on device {} {}, "
                                 "skipping copy".format(file, device.name,
@@ -1277,9 +1292,6 @@ copy_to_device:
                             log.warning("Amount of space required cannot be confirmed, "
                                         "copying the files on the device '{}' '{}' may fail".\
                                         format(device.name, dest))
-
-                        if not protected_files:
-                            protected_files = []
 
                         # Try to free up disk space if skip_deletion is not set to True
                         if not skip_deletion:
@@ -1596,25 +1608,26 @@ class RecoveryImage(BaseStage):
     recovery_image:
         images:
         - /images/recovery.bin
-        copy_images:
-        - /short/1234/recovery.bin
         golden_image:
         - bootflash:recovery.bin
         recovery_server: recovery-server
         protocol: https
         verify_size: True
 
-    ``images`` and ``golden_image`` are paired by position. ``copy_images``
-    may provide corresponding server-relative transfer paths while preserving
-    ``images`` as the filesystem paths used for size or MD5 verification. If
-    ``images`` is omitted and a golden-image target is configured, the stage
-    consumes resolved image paths already present in clean data. If neither
+    ``images`` and ``golden_image`` are paired by position. Recovery image
+    paths remain canonical filesystem paths for validation and copy. A
+    device-specific stage implementation may adapt a source immediately
+    before copy without changing this public contract. If neither
     recovery-image input nor a golden-image target is configured, the stage
     skips so shared templates remain safe for devices without recovery-image
     attributes. ``verify_size`` and ``verify_md5`` require a remote image
     source so the stage can calculate the expected metadata before checking
     the device target. Size verification is faster, but unlike MD5 it cannot
-    distinguish different images that have the same byte count.
+    distinguish different images that have the same byte count. When
+    ``verify_size`` identifies a copy that is required, the stage checks the
+    target filesystem and deletes unprotected files if necessary. Set
+    ``skip_deletion`` to disable deletion, and use ``protected_files`` to
+    preserve additional device files.
     """
 
     PROTOCOL = 'https'
@@ -1624,6 +1637,9 @@ class RecoveryImage(BaseStage):
     COPY_ATTEMPTS_SLEEP = 30
     VERIFY_SIZE = False
     VERIFY_MD5 = False
+    PROTECTED_FILES = None
+    SKIP_DELETION = False
+    MIN_FREE_SPACE_PERCENT = None
     VRF = ''
     CONNECTION_ALIAS = 'default'
     UPDATE_DEVICE_RECOVERY = True
@@ -1638,11 +1654,8 @@ class RecoveryImage(BaseStage):
 
     schema = {
         Optional('images',
-                 description='Remote image paths, paired with golden_image.'):
-        list,
-        Optional('copy_images',
-                 description='Optional server-relative transfer paths, paired '
-                             'with images.'): list,
+                 description='Remote recovery-image paths, paired with '
+                             'golden_image.'): list,
         Optional('golden_image',
                  description='Local device path used for ROMMON recovery'):
         Or(str, list),
@@ -1673,6 +1686,18 @@ class RecoveryImage(BaseStage):
         Optional('verify_md5',
                  description='Verify the remote and device image digests.',
                  default=VERIFY_MD5): bool,
+        Optional('protected_files',
+                 description='File patterns that should not be deleted while '
+                             'making room for recovery images.',
+                 default=PROTECTED_FILES): list,
+        Optional('skip_deletion',
+                 description='Do not delete unprotected files when recovery '
+                             'image targets need more space.',
+                 default=SKIP_DELETION): bool,
+        Optional('min_free_space_percent',
+                 description='Minimum percentage of disk space to make '
+                             'available before recovery images are copied.',
+                 default=MIN_FREE_SPACE_PERCENT): int,
         Optional('prompt_recovery', default=False): bool,
         Optional('update_device_recovery', default=UPDATE_DEVICE_RECOVERY): bool,
     }
@@ -1681,6 +1706,7 @@ class RecoveryImage(BaseStage):
         'resolve_recovery_image',
         'resolve_recovery_server',
         'check_golden_image',
+        'free_up_disk_space',
         'copy_recovery_image',
         'verify_golden_image',
         'update_device_recovery',
@@ -1746,22 +1772,9 @@ class RecoveryImage(BaseStage):
             hostname = '[{}]'.format(hostname)
         return '{}:{}'.format(hostname, port)
 
-    @staticmethod
-    def _clean_images(device):
-        """Return resolved image paths already stored in clean data."""
-        clean = getattr(device, 'clean', {}) or {}
-        if hasattr(clean, 'get'):
-            return clean.get('images', []) or []
-        return getattr(clean, 'images', []) or []
-
-    def _resolve_recovery_images(self, device, images):
-        """Use paths from clean data; image discovery is outside this stage."""
-        images = self._as_list(images)
-        if images:
-            return images
-
-        return [image for image in self._as_list(self._clean_images(device))
-                if isinstance(image, str) and image]
+    def _resolve_recovery_images(self, images):
+        """Use only sources supplied to the recovery_image stage."""
+        return self._as_list(images)
 
     def _fail_transfer(self, server, hostname, source, target, device, error):
         self.failed(
@@ -1776,7 +1789,6 @@ class RecoveryImage(BaseStage):
                                steps,
                                device,
                                images=None,
-                               copy_images=None,
                                golden_image=None,
                                recovery_server=None,
                                recovery_server_port=None,
@@ -1788,21 +1800,14 @@ class RecoveryImage(BaseStage):
                            if hasattr(clean, 'get') else {}) or {}
         configured_golden_images = self._as_list(
             device_recovery.get('golden_image'))
-        if (images is None and copy_images is None and golden_image is None and
+        if (images is None and golden_image is None and
                 not configured_golden_images and recovery_server is None and
                 recovery_server_port is None and not destination):
             self.skipped(
                 "No recovery-image source or golden-image target was "
                 "configured for device '{}'.".format(device.name))
 
-        images = self._resolve_recovery_images(device, images)
-        copy_images = self._as_list(copy_images)
-
-        if copy_images and len(copy_images) != len(images):
-            self.failed(
-                "The number of copy_images paths ({}) must match the number "
-                "of recovery images ({}) for device '{}'.".format(
-                    len(copy_images), len(images), device.name))
+        images = self._resolve_recovery_images(images)
 
         destination = destination or {}
         default_directory = destination.get('directory')
@@ -1864,8 +1869,7 @@ class RecoveryImage(BaseStage):
 
         self._recovery_context = {
             'filesystem_sources': images,
-            'copy_sources': copy_images or images,
-            'copy_sources_explicit': bool(copy_images),
+            'copy_sources': images,
             'target': golden_images[0],
             'golden_images': golden_images,
             'target_sets': target_sets,
@@ -1911,7 +1915,7 @@ class RecoveryImage(BaseStage):
 
         source = context['filesystem_sources'][0]
         target = context['target']
-        file_utils = FileUtils.from_device(device, protocol=protocol)
+        file_utils = FileUtils(testbed=device.testbed)
         try:
             server_block = file_utils.get_server_block(recovery_server)
             hostname = file_utils.get_hostname(recovery_server)
@@ -1919,7 +1923,7 @@ class RecoveryImage(BaseStage):
             self._fail_transfer(recovery_server, '', source, target, device,
                                 error)
         copy_sources = context['copy_sources']
-        if server_block and not context['copy_sources_explicit']:
+        if server_block:
             copy_sources = remove_string_from_image(
                 images=copy_sources, string=server_block.get('path', ''))
             source = copy_sources[0]
@@ -1950,6 +1954,29 @@ class RecoveryImage(BaseStage):
             port = selected_service.get('port')
         if port is None:
             port = self._default_port(protocol)
+
+        # Size discovery is independent of the device copy transport. Prefer
+        # the selected HTTP(S) production transport; legacy transports may use
+        # another metadata-capable service advertised by the same server.
+        metadata_protocols = {'ftp', 'http', 'https', 'sftp'}
+        metadata_protocol = protocol if protocol in metadata_protocols else None
+        metadata_port = port if metadata_protocol else None
+        if metadata_protocol is None:
+            metadata_candidates = []
+            for service_index, service in enumerate(
+                    (server_block or {}).get('services', {}).values()):
+                service_protocol = service.get('protocol', '').lower()
+                if (service.get('type') != 'file_transfer' or
+                        service_protocol not in metadata_protocols):
+                    continue
+                metadata_candidates.append((
+                    self._service_rank(service), service_index,
+                    service_protocol, service.get('port')))
+            if metadata_candidates:
+                _, _, metadata_protocol, metadata_port = min(
+                    metadata_candidates, key=lambda item: item[:2])
+                if metadata_port is None:
+                    metadata_port = self._default_port(metadata_protocol)
         context.update({
             'recovery_server': recovery_server,
             'hostname': hostname,
@@ -1957,6 +1984,8 @@ class RecoveryImage(BaseStage):
             'server_path': (server_block or {}).get('path', ''),
             'port': port,
             'file_utils': file_utils,
+            'metadata_protocol': metadata_protocol,
+            'metadata_port': metadata_port,
         })
 
     def check_golden_image(self,
@@ -1987,20 +2016,71 @@ class RecoveryImage(BaseStage):
             remote_size_sources = remove_string_from_image(
                 images=filesystem_sources,
                 string=context.get('server_path', ''))
+            size_server_device = None
+            size_server_device_attempted = False
+            size_server_device_connected = False
             try:
-                endpoint = self._url_hostname(
-                    hostname, context['port'], context['protocol'])
                 for filesystem_source, remote_source in zip(
                         filesystem_sources, remote_size_sources):
                     if os.path.isfile(filesystem_source):
                         image_size = os.path.getsize(filesystem_source)
                     else:
-                        image_size = device.api.get_file_size_from_server(
-                            server=endpoint,
-                            path=remote_source,
-                            protocol=context['protocol'],
-                            timeout=timeout,
-                            fu_session=context['file_utils'])
+                        image_size = None
+                        size_errors = []
+                        metadata_protocol = context.get('metadata_protocol')
+                        if metadata_protocol:
+                            metadata_endpoint = self._url_hostname(
+                                hostname, context.get('metadata_port'),
+                                metadata_protocol)
+                            try:
+                                image_size = (
+                                    device.api.get_file_size_from_server(
+                                        server=metadata_endpoint,
+                                        path=remote_source,
+                                        protocol=metadata_protocol,
+                                        timeout=timeout,
+                                        fu_session=context['file_utils']))
+                            except Exception as error:
+                                size_errors.append(
+                                    "{} metadata: {}".format(
+                                        metadata_protocol.upper(), error))
+
+                        # If URL metadata is unavailable, run stat on the
+                        # recovery server from the clean runner. Device copy
+                        # remains independent and still uses the selected
+                        # production transport.
+                        if image_size is None:
+                            if not size_server_device_attempted:
+                                size_server_device_attempted = True
+                                try:
+                                    size_server_device = (
+                                        device.api.
+                                        convert_server_to_linux_device(
+                                            recovery_server))
+                                    if size_server_device is not None:
+                                        size_server_device.connect()
+                                        size_server_device_connected = True
+                                except Exception as error:
+                                    size_errors.append(
+                                        "recovery-server SSH: {}".format(
+                                            error))
+                            if size_server_device_connected:
+                                try:
+                                    image_size = size_server_device.execute(
+                                        "stat -c %s -- {}".format(
+                                            shlex.quote(filesystem_source)),
+                                        timeout=timeout)
+                                except Exception as error:
+                                    size_errors.append(
+                                        "recovery-server SSH stat: {}".format(
+                                            error))
+
+                        if image_size is None:
+                            raise RuntimeError(
+                                "unable to determine the size of '{}' ({})"
+                                .format(filesystem_source,
+                                        '; '.join(size_errors) or
+                                        'no metadata transport is available'))
                     try:
                         image_size = int(image_size)
                     except (TypeError, ValueError):
@@ -2015,6 +2095,14 @@ class RecoveryImage(BaseStage):
             except Exception as error:
                 self._fail_transfer(recovery_server, hostname, source, target,
                                     device, error)
+            finally:
+                if size_server_device is not None:
+                    try:
+                        size_server_device.disconnect()
+                    except Exception as error:
+                        log.warning(
+                            "Unable to disconnect recovery server '%s': %s",
+                            recovery_server, error)
         if source and verify_md5:
             server_device = None
             try:
@@ -2123,7 +2211,12 @@ class RecoveryImage(BaseStage):
                                     .format(local_target, device.name))
                             context['copy_targets'].append({
                                 'source': context['copy_sources'][index],
+                                'canonical_source': filesystem_sources[index],
                                 'target': local_target,
+                                'directory': directory,
+                                'required_size': (
+                                    remote_sizes[index]
+                                    if verify_size else None),
                                 # A mismatched verified target is the only
                                 # case where the transport must overwrite.
                                 'overwrite': bool(
@@ -2131,6 +2224,84 @@ class RecoveryImage(BaseStage):
                                     (verify_size or verify_md5)),
                             })
                             step.passed("Recovery image copy is required")
+
+    def free_up_disk_space(
+            self,
+            steps,
+            device,
+            connection_alias=CONNECTION_ALIAS,
+            protected_files=PROTECTED_FILES,
+            skip_deletion=SKIP_DELETION,
+            min_free_space_percent=MIN_FREE_SPACE_PERCENT):
+        """Ensure each recovery-image destination has room for its copy."""
+        context = self._recovery_context
+        if not context['copy_targets']:
+            with steps.start(
+                    "Verify recovery image destination free space") as step:
+                step.skipped("No recovery image copies are required")
+            return
+
+        protected_files = list(protected_files or [])
+        if hasattr(self, 'history'):
+            for clean_variable in ('golden_config', 'golden_image'):
+                protected_files.extend(
+                    find_clean_variable(self, clean_variable) or [])
+        recovery_targets = [
+            target_filename
+            for _, target_filename in context['target_sets']]
+
+        with device.temp_default_alias(connection_alias):
+            for copy_target in context['copy_targets']:
+                local_target = copy_target['target']
+                required_size = copy_target['required_size']
+                _, target_filename = self._target_parts(
+                    local_target, copy_target['directory'])
+                target_protected_files = list(protected_files)
+                target_protected_files.extend(
+                    recovery_target
+                    for recovery_target in recovery_targets
+                    if (not copy_target['overwrite'] or
+                        recovery_target != target_filename))
+                # Keep ordering deterministic while removing duplicates.
+                target_protected_files = list(dict.fromkeys(
+                    target_protected_files))
+                with steps.start(
+                        "Verify sufficient free space for recovery image '{}' "
+                        "on device {}".format(
+                            local_target, device.name)) as step:
+                    if required_size is None:
+                        step.skipped(
+                            "Recovery image size is unknown; enable "
+                            "verify_size to permit automatic disk cleanup")
+                        continue
+                    try:
+                        free_space = device.api.free_up_disk_space(
+                            destination=copy_target['directory'],
+                            required_size=required_size,
+                            skip_deletion=skip_deletion,
+                            protected_files=target_protected_files,
+                            min_free_space_percent=min_free_space_percent,
+                            allow_deletion_failure=True)
+                    except Exception as error:
+                        self.failed(
+                            "Unable to create enough space for recovery image "
+                            "'{}' on device '{}': {}".format(
+                                local_target, device.name, error))
+                    if not free_space:
+                        self.failed(
+                            "Unable to create enough space for recovery image "
+                            "'{}' on device '{}'".format(
+                                local_target, device.name))
+                    step.passed(
+                        "Recovery image destination has sufficient space")
+
+    def _prepare_copy_source(self, device, copy_target):
+        """Return the source passed to the device copy API.
+
+        Platform packages may override this hook when their copy transport
+        requires a device-specific source representation.
+        """
+        return copy_target['source']
 
     def copy_recovery_image(self,
                             steps,
@@ -2152,8 +2323,8 @@ class RecoveryImage(BaseStage):
         with device.temp_default_alias(connection_alias):
             for copy_target in context['copy_targets']:
                 local_target = copy_target['target']
-                source = copy_target['source']
                 for attempt in range(1, copy_attempts + 1):
+                    source = self._prepare_copy_source(device, copy_target)
                     endpoint = self._url_hostname(
                         context['hostname'], context['port'],
                         context['protocol'])
@@ -4157,6 +4328,12 @@ configure_management:
             ip6_gateway = config_kwargs.get("gateway",
                                             {}).get("ipv6") or management.get(
                                                 "gateway", {}).get("ipv6")
+            ip4_address = config_kwargs.get("address",
+                                            {}).get("ipv4") or management.get(
+                                                "address", {}).get("ipv4")
+            ip6_address = config_kwargs.get("address",
+                                            {}).get("ipv6") or management.get(
+                                                "address", {}).get("ipv6")
             interface = config_kwargs.get("interface") or management.get(
                 "interface")
 
@@ -4164,6 +4341,10 @@ configure_management:
 
             if not ip4_gateway and not ip6_gateway:
                 step.failed("No gateway configured for management interface")
+                return
+
+            if not ip4_address and not ip6_address:
+                step.failed("no IPv4/IPv6 management address available")
                 return
 
         for gateway in [ip4_gateway, ip6_gateway]:

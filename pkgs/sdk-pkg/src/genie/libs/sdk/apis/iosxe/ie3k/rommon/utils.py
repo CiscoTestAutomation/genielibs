@@ -131,6 +131,11 @@ def device_rommon_boot(device, golden_image=None, tftp_boot=None, error_pattern=
             remaining_timeout = deadline - time.monotonic()
             if remaining_timeout <= 0:
                 conn.context['boot_cmd'] = boot_cmd_orig
+                if not image:
+                    raise Exception(
+                        f"Overall timeout expired before default ROMMON "
+                        f"'boot' command on connection '{conn.alias}'."
+                    )
                 raise Exception(
                     f"Overall timeout expired before booting image '{image}' on "
                     f"connection '{conn.alias}'. Last error: {last_exc}"
@@ -147,6 +152,11 @@ def device_rommon_boot(device, golden_image=None, tftp_boot=None, error_pattern=
             dialog = Dialog([switch_conflict_stmt, switch_prompt_stmt])
 
             # Bring rommon to disable state
+            # Hostname learning is deferred when mit=True connects in rommon.
+            learn_hostname = conn.learn_hostname and not conn.learned_hostname
+            if learn_hostname:
+                learn_hostname_orig = conn.state_machine.learn_hostname
+                conn.state_machine.learn_hostname = True
             try:
                 conn.state_machine.go_to('disable',
                                          conn.spawn,
@@ -155,18 +165,53 @@ def device_rommon_boot(device, golden_image=None, tftp_boot=None, error_pattern=
                                          dialog=dialog)
             except Exception as e:
                 last_exc = e
-                log.warning(f"Boot attempt with image '{image}' on connection '{conn.alias}' "
-                            f"failed: {e}. Trying next image.")
+                if image:
+                    log.warning(
+                        f"Boot attempt with image '{image}' on "
+                        f"connection '{conn.alias}' failed: {e}. "
+                        "Trying next image."
+                    )
+                else:
+                    log.warning(
+                        f"Boot attempt with default ROMMON 'boot' command "
+                        f"on connection '{conn.alias}' failed: {e}."
+                    )
+            finally:
+                if learn_hostname:
+                    conn.state_machine.learn_hostname = learn_hostname_orig
 
             # Successfully left rommon - stop trying further images
             if conn.state_machine.current_state != 'rommon':
                 conn.context['boot_cmd'] = boot_cmd_orig
+                if learn_hostname:
+                    if device.is_ha:
+                        device.connection_provider.learn_hostname(conn)
+                    else:
+                        conn.connection_provider.learn_hostname()
                 return
             else:
-                log.warning(f"Connection '{conn.alias}' remained in rommon after booting "
-                            f"with image '{image}'. Trying next image.")
+                if image:
+                    log.warning(
+                        f"Connection '{conn.alias}' remained in rommon "
+                        f"after booting with image '{image}'. "
+                        "Trying next image."
+                    )
+                else:
+                    log.warning(
+                        f"Connection '{conn.alias}' remained in rommon "
+                        "after booting with default ROMMON 'boot' command."
+                    )
 
         conn.context['boot_cmd'] = boot_cmd_orig
+        if images == [None]:
+            last_error = last_exc or (
+                'Connection remained in rommon after boot attempt'
+            )
+            raise Exception(
+                f"Default ROMMON 'boot' command failed for connection "
+                f"'{conn.alias}'. Last error: "
+                f"{last_error}"
+            )
         raise Exception(
             f"All golden images exhausted for connection '{conn.alias}'. "
             f"Last error: {last_exc}"

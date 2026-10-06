@@ -14,6 +14,28 @@ from genie.libs.sdk.apis.iosxe.management.configure import configure_ip_ssh_vers
 # Logger
 log = logging.getLogger(__name__)
 
+
+def configure_autoboot(device):
+    """Configure autoboot.
+
+    Args:
+        device (`obj`): Device object.
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure: If autoboot cannot be configured.
+    """
+    try:
+        device.api.execute_set_config_register(config_register='0x2102')
+    except Exception as e:
+        raise SubCommandFailure(
+            "Could not configure autoboot on {device}. Error:\n{error}"
+            .format(device=device, error=e)
+        )
+
+
 def configure_no_boot_manual(device):
     """ no boot manual
         Args:
@@ -746,7 +768,7 @@ def copy_startup_config_to_scp(device, host, file, username, password, timeout=1
             continue_timer=False
         ),
         Statement(
-            pattern=r'.*Destination username.*',     
+            pattern=r'.*Destination username.*',
             action='sendline()',
             loop_continue=True,
             continue_timer=False
@@ -861,7 +883,7 @@ def copy_running_config_to_scp(device, host, file, username, password, timeout=1
         ),
 
     ])
-    
+
     cmd = f"copy running-config scp://{username}@{host}//{file}"
     try:
         device.execute(cmd, reply=dialog, timeout=timeout,
@@ -3327,38 +3349,6 @@ def configure_key_config_key_password_encrypt(device, password):
     except SubCommandFailure as e:
         raise SubCommandFailure(
             "Could not configure key config-key password encrypt on {device}. Error:\n{error}"
-                .format(device=device, error=e))
-def unconfigure_key_config_key_password_encrypt(device, password):
-    """ Unconfigures key config-key password encrypt on device
-        Args:
-            device (`obj`): Device object
-            password('str'): password, The config-key
-                Minimum 8 characters not beginning with
-                IOS special character(! # ;)
-        Returns:
-            None
-        Raises:
-            SubCommandFailure
-    """
-    log.info("Configuring no key config-key password encrypt on device")
-    cmd = [f'no key config-key password encrypt {password}']
-
-    dialog = Dialog([
-        Statement(pattern=r"Continue with master key deletion \? \[yes\/no\]\:\s*$",
-                  action='sendline(yes)',
-                  loop_continue=True,
-                  continue_timer=False),
-        Statement(pattern=r"Do you want to proceed with setting a new master key\? \[yes\/no\]\:\s*$",
-                  action='sendline(no)',
-                  loop_continue=True,
-                  continue_timer=False)
-        ])
-    try:
-        device.configure(cmd,reply=dialog)
-
-    except SubCommandFailure as e:
-        raise SubCommandFailure(
-            "Could not configure no key config-key password encrypt on {device}. Error:\n{error}"
                 .format(device=device, error=e))
 def configure_enable_secret_password(device, enable_secret, level=None):
     ''' Apply enable secret password for switch
@@ -7057,7 +7047,7 @@ def test_platform_hardware_powersupply_oir(device, slot_number, action):
             action (str): Action to perform ('insert' or 'remove')
         Returns:
             str: Output of the command
-        """    
+        """
         log.debug(f"Performing PSU OIR {action} on slot {slot_number}...")
 
         dialog = Dialog([Statement(pattern=r'(?s).\bsuccess\b.', action='sendline(\r)',loop_continue=False, continue_timer=False)])
@@ -7216,7 +7206,7 @@ def configure_service_unsupported_transceiver(device):
         raise SubCommandFailure(
             f"Could not configure 'service unsupported-transceiver' on device {device}. Error:\n{e}"
         )
-    
+
 def unconfigure_service_unsupported_transceiver(device):
     """ Unconfigure 'service unsupported-transceiver' on the device
         Args:

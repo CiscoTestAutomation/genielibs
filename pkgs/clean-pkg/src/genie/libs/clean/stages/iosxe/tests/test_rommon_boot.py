@@ -148,6 +148,31 @@ class TestRommonBoot(unittest.TestCase):
         step_context = steps.start.return_value.__enter__.return_value
         step_context.failed.assert_called_with("Failed to reconnect")
 
+    def test_enable_device_autoboot_pass(self):
+        steps = mock.MagicMock()
+        self.device.api.configure_autoboot = mock.Mock()
+
+        self.cls.enable_device_autoboot(steps=steps, device=self.device)
+
+        steps.start.assert_called_once_with("Enable autoboot after reconnect")
+        self.device.api.configure_autoboot.assert_called_once_with()
+        step_context = steps.start.return_value.__enter__.return_value
+        for result in RESULT_METHODS:
+            getattr(step_context, result).assert_not_called()
+
+    def test_enable_device_autoboot_fail(self):
+        steps = mock.MagicMock()
+        api_exception = Exception("Unable to configure autoboot")
+        self.device.api.configure_autoboot = mock.Mock(
+            side_effect=api_exception)
+
+        self.cls.enable_device_autoboot(steps=steps, device=self.device)
+
+        step_context = steps.start.return_value.__enter__.return_value
+        step_context.failed.assert_called_once_with(
+            "Failed to configure autoboot on the device",
+            from_exception=api_exception)
+
     @mock.patch('genie.libs.clean.recovery.iosxe.recovery.device_recovery')
     def test_rommon_boot(self, device_recovery):
         steps = mock.MagicMock()

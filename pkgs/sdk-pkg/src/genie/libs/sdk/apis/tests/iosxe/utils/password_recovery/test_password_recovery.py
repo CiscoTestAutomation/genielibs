@@ -11,6 +11,7 @@ class TestPasswordRecovery(unittest.TestCase):
         self.device.name = 'TestDevice'
         self.device.api.execute_power_cycle_device = MagicMock()
         self.device.api.send_break_boot = MagicMock()
+        self.device.api.execute_set_config_register = MagicMock()
         self.device.execute = MagicMock()
         self.device.enable = MagicMock()
         self.device.api.configure_management_credentials = MagicMock()
@@ -28,6 +29,8 @@ class TestPasswordRecovery(unittest.TestCase):
         # Verify that all steps were called
         self.device.api.execute_power_cycle_device.assert_called_once()
         self.device.api.send_break_boot.assert_called_once()
+        self.device.api.execute_set_config_register.assert_called_once_with(
+            config_register='0x0', preserve_console_speed=True)
         self.device.enable.assert_called_once()
         self.device.api.configure_management_credentials.assert_called_once()
         self.device.api.execute_write_memory.assert_called_once()

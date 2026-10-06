@@ -1139,6 +1139,46 @@ def configure_bgp_address_advertisement(
             "router bgp {bgp_as}".format(bgp_as)
         )
 
+
+def unconfigure_bgp_address_advertisement(
+    device, bgp_as, address_family, ip_address, mask, vrf=None
+):
+    """Remove a BGP network advertisement from an address-family.
+
+        Args:
+            device ('obj'): device to use
+            bgp_as ('int'): BGP router to configure
+            address_family ('str'): address family to configure
+            ip_address ('str'): IP address or network
+            mask ('str'): IPv4 mask or IPv6 prefix length
+            vrf ('str', optional): VRF whose address-family is targeted
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed executing unconfigure commands
+    """
+    config = [f"router bgp {bgp_as}"]
+    if vrf:
+        config.append(f"address-family {address_family} vrf {vrf}")
+    else:
+        config.append(f"address-family {address_family}")
+
+    if address_family == 'ipv4':
+        config.append(f"no network {ip_address} mask {mask}")
+    elif address_family == 'ipv6':
+        config.append(f"no network {ip_address}/{mask}")
+    else:
+        config.append(f"no network {ip_address}")
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure address advertisement on router bgp "
+            f"{bgp_as}. Error:\n{e}"
+        )
+
+
 def configure_redistribute_connected(device, bgp_as, address_family, vrf=None,route_map=None):
     """ configure redistribute connected in bgp
 
@@ -1975,6 +2015,34 @@ def configure_bgp_advertise_l2vpn_evpn(device, bgp_as, address_family, vrf):
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Failed to configure bgp advertise l2vpn evpn on device {device}. Error:\n{e}"
+        )
+
+
+def unconfigure_bgp_advertise_l2vpn_evpn(device, bgp_as, address_family, vrf):
+    """Remove BGP advertise l2vpn evpn from a VRF address-family.
+
+        Args:
+            device ('obj'): Device object
+            bgp_as ('int'): BGP autonomous system number
+            address_family ('str'): Address family, for example ``ipv4``
+            vrf ('str'): VRF whose address-family is targeted
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to unconfigure BGP advertise l2vpn evpn
+    """
+    configs = [
+        f"router bgp {bgp_as}",
+        f"address-family {address_family} vrf {vrf}",
+        "no advertise l2vpn evpn"
+    ]
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfigure bgp advertise l2vpn evpn on device "
+            f"{device}. Error:\n{e}"
         )
 
 

@@ -594,7 +594,7 @@ class InstallRemoveInactive(BaseStage):
             image to not removed by stage.
 
         timeout (int, optional): Maximum time to wait for remove process to
-            finish. Defaults to 180.
+            finish. Defaults to 300.
 
         force_remove (bool, optional): Whether or not to remove the inactive
             package irrespective of availability of passed image. Defaults to True.
@@ -602,14 +602,14 @@ class InstallRemoveInactive(BaseStage):
     Example
     -------
     install_remove_inactive:
-        timeout: 180
+        timeout: 300
 
     """
 
     # =================
     # Argument Defaults
     # =================
-    TIMEOUT = 180
+    TIMEOUT = 300
     FORCE_REMOVE = True
 
     # ============
@@ -778,7 +778,7 @@ class InstallImage(BaseStage):
     RELOAD_WAIT = 150
     INSTALL_RETRY_ATTEMPTS = 2
     # 'install add' prechecks the payload size only and budgets nothing for the
-    # temporary working space bundle expansion needs. On IE-3300,
+    # temporary working space bundle expansion needs. DXCS-57580: on IE-3300,
     # 1.03x the image size cleared the precheck but died extracting rpboot,
     # while 1.25x completed.
     INSTALL_SPACE_FACTOR = 1.25
@@ -933,6 +933,7 @@ class InstallImage(BaseStage):
                 try:
                     device.api.execute_set_boot_variable(
                         boot_images=[self.new_boot_var], timeout=60)
+                    self.image_to_boot = self.new_boot_var
                 except Exception as e:
                     step.failed("Failed to configure the boot variable",
                                 from_exception=e)
@@ -4673,6 +4674,15 @@ class SetControllerMode(BaseStage):
                     loop_continue=True,
                     continue_timer=False,
                 ),
+                # The reload dialog's generic Press RETURN statement is
+                # terminal.  Keep the controller-mode dialog alive so it can
+                # handle the login and password-change prompts that follow.
+                Statement(
+                    pattern=r".*Press RETURN to get started.*",
+                    action="sendline()",
+                    loop_continue=True,
+                    continue_timer=False,
+                ),
             ])
 
             # Include the platform's reload dialog so that devices
@@ -5124,3 +5134,206 @@ class VerifyNetconfProcesses(BaseStage):
 
             except Exception as e:
                 step.failed("Failed to verify NETCONF configuration synchronization", from_exception=e)
+
+
+class EraseCertificates(BaseStage):
+    """Erase stale IOS XE certificate files from persistent storage.
+
+    The stage preserves certificate files referenced by running-config or
+    startup-config by default. Topology-specific storage handling is delegated
+    to the certificate APIs selected through Genie abstraction.
+
+    Stage Schema
+    ------------
+    erase_certificates:
+
+        certificate_patterns (list, optional): Certificate filename patterns
+            to inventory and erase. Defaults to ``IOS-Self-Sig#*.cer``.
+
+        keep_current_certificate (bool, optional): Preserve certificate files
+            referenced by running-config or startup-config. Defaults to True.
+            Setting this to False can cause IOS XE to regenerate a self-signed
+            certificate when NETCONF or HTTPS next needs one.
+
+    Example
+    -------
+    ::
+
+        erase_certificates:
+          certificate_patterns:
+            - IOS-Self-Sig#*.cer
+          keep_current_certificate: true
+    """
+
+    CERTIFICATE_PATTERNS = ("IOS-Self-Sig#*.cer",)
+    KEEP_CURRENT_CERTIFICATE = True
+
+    schema = {
+        Optional("certificate_patterns", default=list(CERTIFICATE_PATTERNS)):
+            ListOf(str),
+        Optional("keep_current_certificate",
+                 default=KEEP_CURRENT_CERTIFICATE): bool,
+    }
+
+    exec_order = [
+        "collect_certificate_state",
+        "erase_certificate_files",
+        "verify_certificate_cleanup",
+    ]
+
+    @staticmethod
+    def _certificate_filename(path):
+        return path.rsplit(":", 1)[-1].rsplit("/", 1)[-1]
+
+    @staticmethod
+    def _used_bytes(usage):
+        if not isinstance(usage, dict):
+            return 0
+        if "used" in usage:
+            return usage["used"]
+        return sum(EraseCertificates._used_bytes(value)
+                   for value in usage.values())
+
+    def collect_certificate_state(
+        self,
+        steps,
+        device,
+        certificate_patterns=CERTIFICATE_PATTERNS,
+        keep_current_certificate=KEEP_CURRENT_CERTIFICATE,
+    ):
+        """Inventory storage and calculate the explicit deletion set."""
+        patterns = tuple(certificate_patterns)
+        with steps.start(
+                "Collect certificate storage state on {}".format(device.name)) as step:
+            try:
+                self.certificate_locations = (
+                    device.api.get_certificate_storage_locations())
+                self.certificate_references = (
+                    device.api.get_certificate_references(patterns=patterns))
+
+                references_verified = (
+                    not keep_current_certificate or
+                    device.api.verify_certificate_references(
+                        references=self.certificate_references))
+
+                self.storage_usage_before = (
+                    device.api.get_certificate_storage_usage(
+                        locations=self.certificate_locations))
+                self.certificate_files_before = (
+                    device.api.get_certificate_files(
+                        locations=self.certificate_locations,
+                        patterns=patterns))
+            except Exception as error:
+                step.failed("Failed to collect certificate storage state",
+                            from_exception=error)
+
+            if not references_verified:
+                step.failed(
+                    "A referenced certificate file is already missing; "
+                    "refusing to erase certificates")
+
+            referenced_names = {
+                self._certificate_filename(path)
+                for paths in self.certificate_references.values()
+                for path in paths
+            }
+            self.certificate_files_to_delete = {}
+            for endpoint, paths in self.certificate_files_before.items():
+                candidates = [
+                    path for path in paths
+                    if (not keep_current_certificate or
+                        self._certificate_filename(path) not in referenced_names)
+                ]
+                if candidates:
+                    self.certificate_files_to_delete[endpoint] = candidates
+
+            if not keep_current_certificate:
+                log.warning(
+                    "keep_current_certificate is False: referenced certificates "
+                    "may be erased and IOS XE may regenerate a self-signed "
+                    "certificate when NETCONF or HTTPS next needs one")
+
+            log.info("Certificate storage usage before cleanup: %s",
+                     self.storage_usage_before)
+            log.info("Referenced certificate files: %s",
+                     self.certificate_references)
+            log.info("Certificate files selected for deletion: %s",
+                     self.certificate_files_to_delete)
+            step.passed("Certificate storage state collected successfully")
+
+    def erase_certificate_files(self, steps, device):
+        """Delete only the files calculated by the inventory step."""
+        with steps.start(
+                "Erase stale certificate files on {}".format(device.name)) as step:
+            if not self.certificate_files_to_delete:
+                self.deleted_certificate_files = {}
+                step.passed("No stale certificate files were found")
+                return
+
+            try:
+                self.deleted_certificate_files = (
+                    device.api.delete_certificate_files(
+                        files=self.certificate_files_to_delete))
+            except Exception as error:
+                step.failed("Failed to erase stale certificate files",
+                            from_exception=error)
+
+            log.info("Deleted certificate files: %s",
+                     self.deleted_certificate_files)
+            step.passed("Stale certificate files erased successfully")
+
+    def verify_certificate_cleanup(
+        self,
+        steps,
+        device,
+        certificate_patterns=CERTIFICATE_PATTERNS,
+        keep_current_certificate=KEEP_CURRENT_CERTIFICATE,
+    ):
+        """Verify deletion, preserved references, and after-cleanup usage."""
+        patterns = tuple(certificate_patterns)
+        with steps.start(
+                "Verify certificate cleanup on {}".format(device.name)) as step:
+            try:
+                references_verified = (
+                    not keep_current_certificate or
+                    device.api.verify_certificate_references(
+                        references=self.certificate_references))
+
+                certificate_files_after = device.api.get_certificate_files(
+                    locations=self.certificate_locations,
+                    patterns=patterns)
+                storage_usage_after = device.api.get_certificate_storage_usage(
+                    locations=self.certificate_locations)
+            except Exception as error:
+                step.failed("Failed to verify certificate cleanup",
+                            from_exception=error)
+
+            if not references_verified:
+                step.failed(
+                    "A referenced certificate file is missing after cleanup")
+
+            remaining_deletions = {}
+            for endpoint, paths in self.certificate_files_to_delete.items():
+                remaining = set(certificate_files_after.get(endpoint, []))
+                not_deleted = [path for path in paths if path in remaining]
+                if not_deleted:
+                    remaining_deletions[endpoint] = not_deleted
+            if remaining_deletions:
+                step.failed(
+                    "Certificate files remain after deletion: {}".format(
+                        remaining_deletions))
+
+            reclaimed = {
+                endpoint: self._used_bytes(before) - self._used_bytes(
+                    storage_usage_after.get(endpoint, {}))
+                for endpoint, before in self.storage_usage_before.items()
+            }
+            self.certificate_files_after = certificate_files_after
+            self.storage_usage_after = storage_usage_after
+            self.reclaimed_certificate_storage = reclaimed
+            log.info("Certificate storage usage after cleanup: %s",
+                     storage_usage_after)
+            log.info("Certificate storage bytes reclaimed: %s", reclaimed)
+            step.passed(
+                "Certificate cleanup verified; deleted files: {}; reclaimed "
+                "bytes: {}".format(self.deleted_certificate_files, reclaimed))

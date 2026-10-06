@@ -97,6 +97,38 @@ class VerifyCopyToDevice(unittest.TestCase):
             call('dir bootflash:')
         ])
 
+    def test_existing_image_is_protected_when_copy_is_skipped(self):
+        """An existing target image must survive free-space cleanup."""
+        self.device.api.get_file_size_from_server = Mock(return_value=1234)
+        self.device.api.verify_file_exists = Mock(return_value=True)
+        self.device.api.free_up_disk_space = Mock(return_value=True)
+        self.device.execute = Mock(return_value='test.bin')
+
+        testbed = Testbed('mytb', servers={
+            'server1': {
+                'address': '127.0.0.1',
+                'protocol': 'scp'
+            }
+        })
+        self.device.testbed = testbed
+
+        steps = Steps()
+        self.cls.copy_to_device(
+            steps=steps,
+            device=self.device,
+            origin=dict(files=['/path/test.bin'], hostname='server1'),
+            destination=dict(directory='bootflash:'),
+            protocol='scp',
+            min_free_space_percent=35,
+        )
+
+        self.device.api.free_up_disk_space.assert_called_once()
+        protected_files = self.device.api.free_up_disk_space.call_args.kwargs[
+            'protected_files']
+        self.assertIn('test.bin', protected_files)
+        self.assertNotIn('copy ', ' '.join(
+            call_args.args[0] for call_args in self.device.execute.call_args_list))
+
 
     def test_copy_to_device_long_filename(self):
         filler = 'a' * 125

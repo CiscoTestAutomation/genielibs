@@ -11,6 +11,7 @@ from unicon.core.errors import (
 
 log = logging.getLogger(__name__)
 
+
 def configure_vlan_dot1q_tag_native(device):
     """ configure vlan dot1q tag native
         Args:
@@ -28,6 +29,7 @@ def configure_vlan_dot1q_tag_native(device):
         raise SubCommandFailure(
             f'Could not configure vlan dot1q tag native on {device}.Error:\n{e}')
 
+
 def unconfigure_vlan_dot1q_tag_native(device):
     """ unconfigure vlan dot1q tag native
         Args:
@@ -43,8 +45,47 @@ def unconfigure_vlan_dot1q_tag_native(device):
         device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(
-            f'Could not unconfigure vlan dot1q tag native on {device}.Error:\n{e}')            
-            
+            f'Could not unconfigure vlan dot1q tag native on {device}.Error:\n{e}')
+
+
+def configure_interface_switchport_dot1q_tunnel(device, interface):
+    """ configure switchport mode dot1q-tunnel on interface
+        Args:
+            device ('obj')    : device to use
+            interface ('str') : interface name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(f'configure switchport mode dot1q-tunnel on {interface}')
+    cmd = f"interface {interface}\n switchport mode dot1q-tunnel"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure switchport mode dot1q-tunnel on "
+            f"{interface} of device {device.name}. Error:\n{e}")
+
+
+def unconfigure_interface_switchport_dot1q_tunnel(device, interface):
+    """ unconfigure switchport mode dot1q-tunnel on interface
+        Args:
+            device ('obj')    : device to use
+            interface ('str') : interface name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(f'unconfigure switchport mode dot1q-tunnel on {interface}')
+    cmd = f"interface {interface}\n no switchport mode dot1q-tunnel"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure switchport mode dot1q-tunnel on "
+            f"{interface} of device {device.name}. Error:\n{e}")
 
 
 def configure_subinterface_dot1q_encapsulation(

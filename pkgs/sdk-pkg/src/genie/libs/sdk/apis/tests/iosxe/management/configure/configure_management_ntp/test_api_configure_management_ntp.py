@@ -40,6 +40,27 @@ class TestConfigureManagementNtp(TestCase):
             ],
         )
 
+    def test_configure_management_ntp_with_vrf(self):
+        device = Mock()
+        device.state_machine.current_state = "enable"
+
+        device.testbed.servers = {
+            "ntp": {
+                "address": "223.255.254.252",
+            },
+        }
+        device.management = {
+            "interface": "GigabitEthernet1",
+            "vrf": "Mgmt-vrf",
+        }
+
+        configure_management_ntp(device)
+
+        device.configure.assert_called_once_with([
+            "ntp server vrf Mgmt-vrf 223.255.254.252",
+            "ntp source GigabitEthernet1",
+        ])
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -39,6 +39,28 @@ class TestConfigureManagementIp(TestCase):
             ],
         )
 
+    def test_disable_management_vrf_fallback(self):
+        device = Mock()
+        device.state_machine.current_state = "enable"
+        device.management = {
+            "interface": "GigabitEthernet0",
+            "vrf": "Mgmt-vrf",
+        }
+
+        configure_management_ip(
+            device,
+            interface="Vlan121",
+            address={"ipv4": "192.0.2.10/24"},
+            fallback_to_management_vrf=False,
+        )
+
+        device.api.configure_management_vrf.assert_not_called()
+        device.configure.assert_called_once_with([
+            "interface Vlan121",
+            "ip address 192.0.2.10 255.255.255.0",
+            "no shutdown",
+        ])
+
 
 if __name__ == "__main__":
     unittest.main()

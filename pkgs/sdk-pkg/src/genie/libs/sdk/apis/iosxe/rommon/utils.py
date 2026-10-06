@@ -2,16 +2,21 @@
 
 import time
 import logging
+import re
+import inspect
+from threading import Event
 
 from pyats.log.utils import banner
 from pyats.utils.secret_strings import to_plaintext
 
 # Unicon
+from unicon import Connection
 from unicon.core.errors import SubCommandFailure
 from unicon.eal.dialogs import Statement, Dialog
 from concurrent.futures import ThreadPoolExecutor, wait as wait_futures, ALL_COMPLETED
 from unicon.plugins.iosxe.statements import grub_prompt_handler, please_reset_handler, rommon_prompt_handler
 from unicon.plugins.generic.patterns import GenericPatterns
+from unicon.plugins.generic.statements import generic_statements
 
 # Genie
 from genie.libs.clean.exception import FailedToBootException
@@ -278,12 +283,14 @@ def send_break_boot(device, console_activity_pattern= None,
     console_activity_pattern = console_activity_pattern or r'\.\.\.\.'
     console_breakboot_char = console_breakboot_char or '\x03'
 
-    def telnet_breakboot(spawn, break_count):
+    def telnet_breakboot(spawn, break_count, cancel_event=None):
         """ Breaks the booting process on a device using telnet `send break`
 
             Args:
                 spawn (obj): Spawn connection object
                 break_count (int): Number of break commands to send
+                cancel_event (Event, optional): Stops further device input
+                    when set
 
             Returns:
                 None
@@ -292,20 +299,32 @@ def send_break_boot(device, console_activity_pattern= None,
         log.info(f"Found the console_activity_pattern! Breaking the boot process using telnet break.")
 
         for _ in range(break_count):
+            if cancel_event is not None and cancel_event.is_set():
+                return
             log.info(f"Using telnet break")
             spawn.send('\x1d')
             spawn.expect(r'telnet>\s*$')
+            if cancel_event is not None and cancel_event.is_set():
+                return
             spawn.sendline('send break')
             spawn.expect('.+')
+            if cancel_event is not None and cancel_event.is_set():
+                return
             time.sleep(2)
+            if cancel_event is not None and cancel_event.is_set():
+                return
 
-    def console_breakboot(spawn, break_count, break_char):
+    def console_breakboot(spawn, break_count, break_char, rommon_patterns,
+                          cancel_event=None):
         """ Breaks the booting process on a device
 
             Args:
                 spawn (obj): Spawn connection object
                 break_count (int): Number of break commands to send
                 break_char (str): Char to send
+                rommon_patterns (list): ROMMON state prompt patterns
+                cancel_event (Event, optional): Stops further device input
+                    when set
 
             Returns:
                 None
@@ -314,17 +333,32 @@ def send_break_boot(device, console_activity_pattern= None,
         log.info("Found the console_activity_pattern! Breaking the boot process.")
 
         for _ in range(break_count):
+            if cancel_event is not None and cancel_event.is_set():
+                return
             log.info(f"Sending {repr(break_char)}")
             spawn.send(break_char)
             time.sleep(1)
+            if cancel_event is not None and cancel_event.is_set():
+                return
+            # Dialog cannot evaluate state patterns while this synchronous
+            # action runs. Check the last line, matching prompt-detection
+            # semantics, before sending another break.
+            spawn.read_update_buffer()
+            lines = spawn.buffer.splitlines()
+            if lines and any(
+                    re.search(pattern, lines[-1])
+                    for pattern in rommon_patterns):
+                return
 
-    def grub_breakboot(spawn, context, break_char):
+    def grub_breakboot(spawn, context, break_char, cancel_event=None):
         """ Breaks the booting process on a device
 
             Args:
                 spawn (obj): Spawn connection object
                 context (dict): Context dictionary
                 break_char (str): Char to send
+                cancel_event (Event, optional): Stops further device input
+                    when set
 
             Returns:
                 None
@@ -333,6 +367,8 @@ def send_break_boot(device, console_activity_pattern= None,
         log.info(f"Found the grub_activity_pattern! Breaking the boot process "
                  f"by sending {repr(break_char)}")
 
+        if cancel_event is not None and cancel_event.is_set():
+            return
         spawn.send(break_char)
         # Set boot_cmd to ENTER for C8KV grub> mode
         # ENTER boots the highlighted entry
@@ -344,74 +380,90 @@ def send_break_boot(device, console_activity_pattern= None,
             (not getattr(device, "is_ha", False) and not getattr(device, "spawn", None)):
         device.instantiate(connection_timeout=timeout)
 
-    if not device.connected:
-        # setup the device connection
-        device.setup_connection()
+    def get_connections(parent=None):
+        """Return the connection objects currently owned by the device."""
+        if parent is None:
+            parent = device.default
+        if device.is_ha:
+            # Prefer the current parent connection. OS/token discovery may
+            # replace device.default while connect() is in progress, and the
+            # old connection's subconnection/spawn references are stale.
+            parent_subconnections = getattr(parent, 'subconnections', None)
+            if isinstance(parent_subconnections, (list, tuple)) and \
+                    parent_subconnections:
+                return list(parent_subconnections)
+            device_subconnections = getattr(
+                device, 'subconnections', None)
+            if isinstance(device_subconnections, (list, tuple)) and \
+                    device_subconnections:
+                return list(device_subconnections)
+        return [parent]
 
-    # To process the break boot dialogs
-    credentials = device.credentials
+    conn_list = get_connections()
 
-    if device.is_ha and hasattr(device, 'subconnections'):
-        conn_list = device.subconnections
-    else:
-        conn_list = [device.default]
+    def get_break_boot_dialog(connections, cancel_event=None):
+        """Build the statements that are specific to interrupting boot."""
+        break_boot_dialog = Dialog()
 
-    def get_connection_dialog(device, conn):
+        # Either use break character or telnet escape break
+        # break character is ctrl-c by default
+        if console_activity_pattern and console_breakboot_char and \
+                not console_breakboot_telnet_break:
+            rommon_patterns = []
+            for connection in connections:
+                pattern = connection.state_machine.get_state('rommon').pattern
+                if pattern not in rommon_patterns:
+                    rommon_patterns.append(pattern)
+            action_args = {
+                'break_count': break_count,
+                'break_char': console_breakboot_char,
+                'rommon_patterns': rommon_patterns,
+            }
+            if cancel_event is not None:
+                action_args['cancel_event'] = cancel_event
+            break_boot_dialog.append(
+                Statement(pattern=console_activity_pattern,
+                          action=console_breakboot,
+                          args=action_args,
+                          loop_continue=True,
+                          continue_timer=False))
+
+        # telnet escape is used only if user specified
+        if console_activity_pattern and console_breakboot_telnet_break:
+            action_args = {'break_count': break_count}
+            if cancel_event is not None:
+                action_args['cancel_event'] = cancel_event
+            break_boot_dialog.append(
+                Statement(pattern=console_activity_pattern,
+                          action=telnet_breakboot,
+                          args=action_args,
+                          loop_continue=True,
+                          continue_timer=False))
+
+        # grub_activity_pattern is used only if user specified
+        if grub_activity_pattern and grub_breakboot_char:
+            action_args = {'break_char': grub_breakboot_char}
+            if cancel_event is not None:
+                action_args['cancel_event'] = cancel_event
+            break_boot_dialog.append(
+                Statement(pattern=grub_activity_pattern,
+                          action=grub_breakboot,
+                          args=action_args,
+                          loop_continue=True,
+                          continue_timer=False))
+
+        return break_boot_dialog
+
+    def get_connected_break_boot_dialog(conn, cancel_event):
+        """Build the replacement dialog for an existing connection."""
         def update_state(spawn, state):
             """Log matched state prompt and update current_state."""
             spawn.log.info(
                 f'Device reached {state.name} state in break boot stage')
             conn.state_machine.update_cur_state(state.name)
 
-        # connection dialog to handle the booting process
-        connection_dialog = device.connection_provider.get_connection_dialog()
-
-        log.debug(f'Get connection dialog {connection_dialog}')
-
-        # Remove unwanted patterns from the dialog
-        # These patterns can interfere with break boot detection
-        filtered_statements = []
-        for stmt in connection_dialog:
-            # Check if this is a pattern we want to filter out
-            pattern_str = str(getattr(stmt, 'pattern', ''))
-            if 'Escape character is' in pattern_str:
-                log.debug(f"Removing 'Escape character' pattern from connection dialog")
-            elif 'Connected.' in pattern_str:
-                log.debug(f"Removing 'Connected.' pattern from connection dialog")
-            else:
-                filtered_statements.append(stmt)
-
-        # Replace dialog contents with filtered list
-        connection_dialog = Dialog(filtered_statements)
-
-        # Either use break character or telnet escape break
-        # break character is ctrl-c by default
-        if console_activity_pattern and console_breakboot_char and not console_breakboot_telnet_break:
-            connection_dialog.append(
-                Statement(pattern=console_activity_pattern,
-                          action=console_breakboot,
-                          args={'break_count': break_count,
-                                'break_char': console_breakboot_char},
-                          loop_continue=True,
-                          continue_timer=False))
-
-        # telnet escape is used only if user specified
-        if console_activity_pattern and console_breakboot_telnet_break:
-            connection_dialog.append(
-                Statement(pattern=console_activity_pattern,
-                          action=telnet_breakboot,
-                          args={'break_count': break_count},
-                          loop_continue=True,
-                          continue_timer=False))
-
-        # grub_activity_pattern is used only if user specified
-        if grub_activity_pattern and grub_breakboot_char:
-            connection_dialog.append(
-                Statement(pattern=grub_activity_pattern,
-                          action=grub_breakboot,
-                          args={'break_char': grub_breakboot_char},
-                          loop_continue=True,
-                          continue_timer=False))
+        connection_dialog = get_break_boot_dialog(
+            [conn], cancel_event=cancel_event)
 
         # Add all state patterns as break-boot dialog exit points and update
         # current_state here, like state_machine.go_to() does for transitions.
@@ -427,39 +479,142 @@ def send_break_boot(device, console_activity_pattern= None,
 
         return connection_dialog
 
-    def task(device, con):
-
-        dialog = get_connection_dialog(device, con)
-
-        # check for login creds and update the cred list
-        login_creds = con.context.get('login_creds')
-        if login_creds:
-            con.context['cred_list'] = login_creds
-
-        dialog.process(
-            con.spawn,
-            timeout=timeout,
-            context=con.context,
-            prompt_recovery=True
-        )
-
+    def verify_rommon_state(con):
         if con.state_machine.current_state != 'rommon':
             # Check the device state after breaking the boot process if not in
             # rommon. Avoid the extra probe when the dialog already matched
             # rommon, as some sessions close immediately after the prompt.
             con.sendline()
-            con.state_machine.go_to('any', spawn=con.spawn, context=con.context)
+            con.state_machine.go_to(
+                'any', spawn=con.spawn, context=con.context,
+                timeout=timeout)
 
-        if not con.state_machine.current_state == 'rommon':
+        if con.state_machine.current_state != 'rommon':
             log.warning(f"The device {device.name} is not in rommon")
 
-    futures = []
-    executor = ThreadPoolExecutor(max_workers=len(conn_list))
+    def task(con, cancel_event):
 
-    for con in conn_list:
-        futures.append(executor.submit(
-            task,
-            device,
-            con
-        ))
-    wait_futures(futures, timeout=timeout, return_when=ALL_COMPLETED)
+        dialog = get_connected_break_boot_dialog(con, cancel_event)
+
+        # Use configured login credentials during break-boot handling.
+        login_creds = con.context.get('login_creds')
+        had_cred_list = 'cred_list' in con.context
+        previous_cred_list = con.context.get('cred_list')
+        if login_creds:
+            con.context['cred_list'] = login_creds
+
+        try:
+            dialog.process(
+                con.spawn,
+                timeout=timeout,
+                context=con.context,
+                prompt_recovery=True
+            )
+
+            if cancel_event.is_set():
+                return
+            verify_rommon_state(con)
+        finally:
+            if had_cred_list:
+                con.context['cred_list'] = previous_cred_list
+            else:
+                con.context.pop('cred_list', None)
+
+    if not device.connected:
+        connect_parameters = inspect.signature(Connection.connect).parameters
+        required_parameters = {'connection_dialog', 'skip_initialization'}
+        if not required_parameters.issubset(connect_parameters):
+            raise SubCommandFailure(
+                'send_break_boot requires a Unicon version whose '
+                'Connection.connect() supports connection_dialog and '
+                'skip_initialization')
+
+        # Let Unicon own the initial connection and any connection-refused
+        # recovery. The replacement dialog prevents normal connection
+        # statements from sending input while this API is trying to interrupt
+        # boot, and skip_initialization stops after authoritative state
+        # detection without token learning or normal provider initialization.
+        parent = device.default
+        original_connection_timeouts = [
+            (connection, connection.connection_timeout)
+            for connection in conn_list
+        ]
+        try:
+            for connection, _ in original_connection_timeouts:
+                connection.connection_timeout = timeout
+            # Keep the connection-refused handler so Unicon can run its normal
+            # clear-line/retry path. No other standard connection statements
+            # are included because they may send input and miss the boot-break
+            # window. Multi-RP and stack providers use the same replacement
+            # dialog for every subconnection.
+            connection_dialog = Dialog([
+                generic_statements.connection_refused_stmt
+            ])
+            for statement in get_break_boot_dialog(conn_list):
+                connection_dialog.append(statement)
+            parent.connect(
+                connection_dialog=connection_dialog,
+                skip_initialization=True)
+        finally:
+            for connection, original_timeout in original_connection_timeouts:
+                connection.connection_timeout = original_timeout
+
+        # Refresh the references defensively if a provider replaced the
+        # connection object while establishing the session. Do not copy
+        # temporary attributes from the previous object to the replacement.
+        conn_list = get_connections(getattr(device, 'default', parent))
+        for con in conn_list:
+            verify_rommon_state(con)
+        return
+
+    futures = {}
+    executor = ThreadPoolExecutor(max_workers=len(conn_list))
+    try:
+        for con in conn_list:
+            cancel_event = Event()
+            future = executor.submit(
+                task,
+                con,
+                cancel_event,
+            )
+            futures[future] = (con, cancel_event)
+        done, not_done = wait_futures(
+            list(futures), timeout=timeout, return_when=ALL_COMPLETED)
+
+        # Propagate exceptions from workers that completed within the timeout.
+        worker_error = None
+        for future in futures:
+            if future in done:
+                try:
+                    future.result()
+                except Exception as error:
+                    if worker_error is None:
+                        worker_error = error
+
+        if worker_error is not None or not_done:
+            for future in not_done:
+                con, cancel_event = futures[future]
+                cancel_event.set()
+                if not future.cancel():
+                    try:
+                        con.spawn.close()
+                    except Exception as error:
+                        log.warning(
+                            'Failed to close %s while cancelling break boot: '
+                            '%s', getattr(con, 'alias', 'connection'), error)
+
+            # Running workers must release their spawn before the caller can
+            # reuse or clean up the connection.
+            executor.shutdown(wait=True, cancel_futures=True)
+            executor = None
+
+        if worker_error is not None:
+            raise worker_error
+
+        if not_done:
+            raise SubCommandFailure(
+                f'Break boot timed out after {timeout} seconds for device '
+                f'{device.name}; {len(not_done)} connection(s) did not finish')
+    finally:
+        if executor is not None:
+            executor.shutdown(wait=True, cancel_futures=True)

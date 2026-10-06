@@ -24,9 +24,23 @@ class ServiceVlan(ABC):
         #   service firewall
         #     vlan id 2 bridged-traffic module-affinity 1
         #     vlan id 3 bridged-traffic module-affinity dynamic
+        #     vlan id 3 bridged-traffic isolate
         if attributes.value('service_vlan_name'):
-            configurations.append_line(
-                attributes.format('vlan id {service_vlan_name} bridged-traffic module-affinity {module_affinity}'))
+            if attributes.value('isolate'):
+                configurations.append_line(
+                    attributes.format(
+                        'vlan id {service_vlan_name} '
+                        'bridged-traffic isolate'
+                    )
+                )
+            else:
+                configurations.append_line(
+                    attributes.format(
+                        'vlan id {service_vlan_name} '
+                        'bridged-traffic module-affinity '
+                        '{module_affinity}'
+                    )
+                )
 
         return str(configurations)
 

@@ -105,6 +105,8 @@ class SetBootVariable(unittest.TestCase):
         )
         self.device.api.create_empty_file.assert_called_once_with(
             'bootflash:/', 'packages.conf', overwrite=False)
+        self.assertEqual(self.cls.new_boot_var, 'bootflash:/packages.conf')
+        self.assertEqual(self.cls.image_to_boot, 'bootflash:/packages.conf')
         # Check that the result is expected
         self.assertEqual(Passed, steps.details[0].result)
 

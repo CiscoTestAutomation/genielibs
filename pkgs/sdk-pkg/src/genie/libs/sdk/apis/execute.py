@@ -8,12 +8,13 @@ import logging
 import json
 import functools
 import signal
+from dataclasses import dataclass
+from typing import Callable
 
 # pyATS
 from pyats.async_ import pcall
 
 # Genie
-from genie.utils import Dq
 from genie.utils.timeout import Timeout
 from genie.libs.sdk.apis.utils import get_power_cycler_configs
 from genie.libs.sdk.powercycler.base import PowerCycler
@@ -25,6 +26,57 @@ from unicon.eal.dialogs import Statement, Dialog
 log = logging.getLogger(__name__)
 
 POWER_CYCLER_STATE_CHANGE_TIMEOUT = 600
+
+# Disk cleanup is intentionally bounded. These limits are internal so the
+# public free_up_disk_space() API remains backward compatible.
+DISK_CLEANUP_BATCH_SIZE = 10
+DISK_CLEANUP_MAX_CANDIDATES = 1000
+DISK_CLEANUP_TIMEOUT = 300
+
+# These files and directories are needed to boot, restore configuration, or
+# operate in package mode. Callers can add platform/job-specific entries
+# through protected_files, but must not be able to weaken these defaults.
+DISK_CLEANUP_PROTECTED_FILES = frozenset({
+    '.installer',
+    '.prst_sync',
+    '.rollback_timer',
+    'SHARED-IOX',
+    'config.text',
+    'lost+found',
+    'nvram_config',
+    'nvram_config_bkup',
+    'packages.conf',
+    'private-config.text',
+    'startup-config',
+    'vlan.dat',
+})
+
+
+def _get_disk_cleanup_operation_timeout(deadline, timeout=DISK_CLEANUP_TIMEOUT):
+    """Limit an operation timeout to the remaining cleanup deadline."""
+    if deadline is None:
+        return timeout
+    return max(1, min(timeout, int(deadline - time.monotonic()) + 1))
+
+
+@dataclass(frozen=True)
+class _DiskCleanupCandidate:
+    """A type-aware disk cleanup candidate."""
+
+    path: str
+    size: int
+    is_directory: bool
+    is_protected: bool
+
+
+@dataclass(frozen=True)
+class _DiskCleanupStrategy:
+    """Platform-specific callbacks for the shared disk cleanup flow."""
+
+    classify_entry: Callable[..., object]
+    delete_batch: Callable[..., object]
+    get_available_space: Callable[..., object]
+    supports_directories: bool = False
 
 
 def execute_clear_line(device, alias: str = 'cli', disconnect_termserver: bool = True):
@@ -305,147 +357,418 @@ def change_power_cycler_state(device, powercycler, state, outlets):
 
 
 def _get_directory_file_details(parsed_dir_output):
-    """Return the direct dir file details mapping when it is available."""
-    directory_data = parsed_dir_output.get('dir', {})
-    if not isinstance(directory_data, dict):
+    """Return file details from supported directory parser shapes."""
+    if not isinstance(parsed_dir_output, dict):
         return None
 
-    directory_path = directory_data.get('dir')
-    file_details = directory_data.get(directory_path, {}).get('files')
+    directory_data = parsed_dir_output.get('dir', {})
+    if isinstance(directory_data, dict):
+        # IOS/IOS-XE shape:
+        # {'dir': {'dir': 'bootflash:/', 'bootflash:/': {'files': {...}}}}
+        directory_path = directory_data.get('dir')
+        directory_details = directory_data.get(directory_path, {})
+        if isinstance(directory_details, dict):
+            file_details = directory_details.get('files')
+            if isinstance(file_details, dict):
+                return file_details
 
+        # IOS-XR shape:
+        # {'dir': {'dir_name': 'harddisk:', 'files': {...}}}
+        file_details = directory_data.get('files')
+        if isinstance(file_details, dict):
+            return file_details
+
+    # Some parsers, including NX-OS, expose a top-level files mapping.
+    file_details = parsed_dir_output.get('files')
     return file_details if isinstance(file_details, dict) else None
 
 
-def _get_directory_entries_with_dq(parsed_dir_output):
-    """Return legacy Dq-based file entries for non IOS/IOSXE parser shapes."""
-    dq = Dq(parsed_dir_output)
-    file_list = []
+def _get_entry_type(entry_name, file_details=None, use_name_fallback=False):
+    """Return ``file``, ``directory``, or None for an unknown entry type.
 
-    for file in dq.get_values('files'):
-        size = 0
-        size_values = dq.contains(file).get_values('size')
-        if size_values:
-            size = int(size_values[0])
-        file_list.append((file, size))
+    When ``use_name_fallback`` is True, entries without permission metadata
+    use the trailing-slash directory convention.
+    """
+    if not isinstance(entry_name, str) or not isinstance(file_details, dict):
+        return None
 
-    return file_list, []
+    entry_details = file_details.get(entry_name)
+    if not isinstance(entry_details, dict):
+        return None
+
+    permissions = str(entry_details.get('permissions') or entry_details.get('permission') or '')
+    if permissions.startswith('-'):
+        return 'file'
+    if permissions.startswith('d'):
+        return 'directory'
+    if permissions or not use_name_fallback:
+        return None
+
+    # NX-OS dir output does not include permissions and identifies
+    # directories with a trailing slash.
+    return 'directory' if entry_name.endswith('/') else 'file'
 
 
 def _is_directory_entry(entry_name, file_details=None):
     """Return whether a parsed dir entry represents a directory."""
-    entry_details = (file_details or {}).get(entry_name, {})
-    return (str(entry_name).endswith('/') or
-            (entry_details.get('permissions', '') or '').startswith('d'))
+    return _get_entry_type(entry_name, file_details) == 'directory'
 
 
 def _get_entry_size(entry_name, file_details=None):
     """Return a parsed dir entry size as an int."""
-    entry_details = (file_details or {}).get(entry_name, {})
-    return int(entry_details.get('size', 0) or 0)
+    if not isinstance(file_details, dict):
+        return 0
+    entry_details = file_details.get(entry_name)
+    if not isinstance(entry_details, dict):
+        return 0
+    try:
+        return int(entry_details.get('size', 0) or 0)
+    except (TypeError, ValueError):
+        return 0
 
 
-def _get_directory_entries(parsed_dir_output):
-    """Return direct file and directory lists from parsed dir output."""
-    file_details = _get_directory_file_details(parsed_dir_output)
-    if file_details is None:
-        return _get_directory_entries_with_dq(parsed_dir_output)
-
-    file_list = []
-    directory_list = []
-    for entry_name in file_details:
-        entry_size = _get_entry_size(entry_name, file_details)
-        # Directory entries have "d" permissions in IOS-XE dir output, e.g.
-        #   326402  drwx  4096  Jul 13 2026 14:12:29 +00:00  .installer
-        if _is_directory_entry(entry_name, file_details):
-            directory_list.append(entry_name)
-        else:
-            file_list.append((entry_name, entry_size))
-    return file_list, directory_list
+def _matches_protected_file(path, protected_files):
+    """Return whether *path* matches an existing protection rule."""
+    basename = os.path.basename(str(path).rstrip('/'))
+    for pattern in protected_files:
+        # Existing protection patterns containing an opening parenthesis are
+        # treated as regular expressions.
+        if '(' in pattern:
+            regexp = re.compile(pattern)
+            if regexp.match(path) or regexp.match(basename):
+                return True
+        elif pattern in (path, basename):
+            return True
+    return False
 
 
-def _get_sorted_directory_entries(parsed_dir_output, directory_list=None):
-    """Return directory entries in recursive cleanup order."""
-    if directory_list is None:
-        _, directory_list = _get_directory_entries(parsed_dir_output)
-    directory_details = _get_directory_file_details(parsed_dir_output) or {}
-    # IOS-XE dir output is timestamp ordered and interleaves entries:
-    #   326443  drwx  4096   Jul 13 2026 14:12:27 +00:00  acm
-    #   326485  -rw-  0      Jul 13 2026 14:03:59 +00:00  dope_hist
-    #   489719  drwx  77824  Jul 13 2026 07:23:23 +00:00  core
-    # Use parsed entry size as the cleanup order, independent of dir order.
-    return sorted(
-        directory_list,
-        key=lambda directory: (
-            -_get_entry_size(directory, directory_details),
-            directory))
+def _build_disk_cleanup_candidates(candidate_entries, protected_files=None):
+    """Build deterministic, type-aware cleanup candidates.
 
-
-def _free_up_disk_space(device, destination, required_size, skip_deletion,
-    protected_files, compact=False, min_free_space_percent=None,
-    dir_output=None, allow_deletion_failure=False, recursive=False):
-
-    '''Delete files to create space on device except protected files
     Args:
-        device ('Obj') : Device object
-        destination ('str') : Destination directory, i.e bootflash:/
-        required_size ('int') : Check if enough space to fit given size in bytes.
-                                If this number is negative it will be assumed
-                                the required size is not available.
-        skip_deletion ('bool') : Only performs checks, no deletion
-        protected_files ('list') : List of file patterns that wont be deleted
-        compact ('bool'): Compact option for n9k, used for size estimation,
-                          default False
-        min_free_space_percent ('int'): Minimum acceptable free disk space %.
-                                        Optional,
-        dir_output ('str'): Output of 'dir' command
-                            if not provided, executes the cmd on device
-        allow_deletion_failure (bool, optional): Allow the deletion of a file to silently fail. Defaults to False
-        recursive (bool, optional): When True, recursively clean directory
-                                    contents before top level files. When False,
-                                    directory entries are skipped. Defaults to
-                                    False.
+        candidate_entries: Iterable of ``(path, size, is_directory)`` values.
+        protected_files: Existing exact-name or regular-expression rules.
+
+    Regular files are preferred to directories, and larger entries are
+    preferred within each type.  Name ordering provides a stable tie breaker.
+    """
+    if isinstance(protected_files, str):
+        protected_patterns = {protected_files}
+    else:
+        protected_patterns = set(protected_files or [])
+    protected_patterns.update(DISK_CLEANUP_PROTECTED_FILES)
+    candidates = []
+
+    for entry in candidate_entries:
+        if not isinstance(entry, (list, tuple)) or len(entry) != 3:
+            log.warning('Skipping malformed disk cleanup candidate: %r', entry)
+            continue
+
+        path, size, is_directory = entry
+        if (not isinstance(path, str) or not path or
+                not isinstance(is_directory, bool)):
+            log.warning('Skipping malformed disk cleanup candidate: %r', entry)
+            continue
+        if isinstance(size, bool):
+            log.warning('Skipping malformed disk cleanup candidate: %r', entry)
+            continue
+        try:
+            candidate_size = int(size)
+        except (TypeError, ValueError):
+            log.warning('Skipping malformed disk cleanup candidate: %r', entry)
+            continue
+        if candidate_size < 0:
+            log.warning('Skipping malformed disk cleanup candidate: %r', entry)
+            continue
+
+        candidates.append(_DiskCleanupCandidate(
+            path=path,
+            size=candidate_size,
+            is_directory=bool(is_directory),
+            is_protected=_matches_protected_file(path, protected_patterns),
+        ))
+
+    return sorted(
+        candidates,
+        key=lambda candidate: (
+            candidate.is_protected,
+            candidate.is_directory,
+            -candidate.size,
+            candidate.path,
+        ),
+    )
+
+
+def _normalize_disk_cleanup_candidates(file_details, protected_files,
+                                       classify_entry,
+                                       include_directories=False):
+    """Validate parsed entries and build deterministic cleanup candidates."""
+    if not isinstance(file_details, dict):
+        log.error('Unable to identify safe cleanup candidates')
+        return []
+
+    candidate_entries = []
+    for path, entry_details in file_details.items():
+        if not isinstance(entry_details, dict):
+            log.warning('Skipping cleanup candidate %r because its parsed details are malformed', path)
+            continue
+
+        try:
+            entry_type = classify_entry(path, file_details)
+        except Exception as error:
+            log.warning('Skipping cleanup candidate %r because its parsed file type is invalid: %s', path, error)
+            continue
+
+        if entry_type == 'directory':
+            if not include_directories:
+                continue
+            is_directory = True
+        elif entry_type == 'file':
+            is_directory = False
+        else:
+            log.warning('Skipping cleanup candidate %r because its parsed file type is unknown', path)
+            continue
+
+        raw_entry_size = entry_details.get('size')
+        if isinstance(raw_entry_size, bool):
+            log.warning('Skipping cleanup candidate %r because its parsed size is unknown', path)
+            continue
+        try:
+            entry_size = int(raw_entry_size)
+        except (TypeError, ValueError):
+            log.warning('Skipping cleanup candidate %r because its parsed size is unknown', path)
+            continue
+        if entry_size < 0:
+            log.warning('Skipping cleanup candidate %r because its parsed size is invalid', path)
+            continue
+        candidate_entries.append((path, entry_size, is_directory))
+
+    return _build_disk_cleanup_candidates(candidate_entries, protected_files=protected_files)
+
+
+def _run_disk_cleanup(candidates, required_size, delete_batch,
+                      get_available_space,
+                      batch_size=DISK_CLEANUP_BATCH_SIZE,
+                      max_candidates=DISK_CLEANUP_MAX_CANDIDATES,
+                      cleanup_timeout=DISK_CLEANUP_TIMEOUT):
+    """Delete bounded candidate batches and verify space between batches.
+
+    ``delete_batch`` receives a list of candidates and the monotonic cleanup
+    deadline.  ``get_available_space`` must use a concise platform query when
+    one is available.  Unknown post-delete space stops cleanup immediately so
+    another destructive batch is never chosen from unverified state.
+    """
+    if batch_size < 1 or max_candidates < 1 or cleanup_timeout <= 0:
+        log.error('Disk cleanup limits must be positive')
+        return False
+
+    deletable_candidates = [candidate for candidate in candidates if not candidate.is_protected]
+    if len(deletable_candidates) > max_candidates:
+        log.warning('Limiting disk cleanup from %s to %s candidates', len(deletable_candidates), max_candidates)
+        deletable_candidates = deletable_candidates[:max_candidates]
+
+    if not deletable_candidates:
+        log.error('There are no safe unprotected files to delete')
+        return False
+
+    deadline = time.monotonic() + cleanup_timeout
+    candidate_index = 0
+    while candidate_index < len(deletable_candidates):
+        if time.monotonic() >= deadline:
+            log.error('Disk cleanup deadline expired before enough space could be verified')
+            return False
+
+        # Recursive directory size is not a reliable estimate, so process one
+        # directory per verification. Regular files are deleted in batches.
+        current_candidate = deletable_candidates[candidate_index]
+        if current_candidate.is_directory:
+            candidate_batch = [current_candidate]
+        else:
+            batch_end = candidate_index
+            while batch_end < len(deletable_candidates):
+                if batch_end - candidate_index >= batch_size:
+                    break
+                if deletable_candidates[batch_end].is_directory:
+                    break
+                batch_end += 1
+            candidate_batch = deletable_candidates[candidate_index:batch_end]
+
+        safety_limit_reached = delete_batch(candidate_batch, deadline)
+        candidate_index += len(candidate_batch)
+
+        if time.monotonic() >= deadline:
+            log.error('Disk cleanup deadline expired during deletion')
+            return False
+
+        try:
+            available_space = get_available_space()
+        except Exception as error:
+            log.error('Available-space verification failed after deletion: %s', error)
+            return False
+        if available_space is None:
+            log.error('Available space is unknown after deletion; stopping cleanup without selecting another batch')
+            return False
+
+        log.info('Space required: %s bytes,\nSpace available : %s bytes',
+                 required_size if required_size > -1 else 'Unknown',
+                 available_space)
+        if available_space > int(required_size):
+            log.info('Verified there is enough space on the device after deleting unprotected files.')
+            return True
+        if safety_limit_reached is True:
+            log.error('Disk cleanup stopped at a safety limit before enough space was available')
+            return False
+
+    log.error('There is still not enough space on the device after deleting unprotected files.')
+    return False
+
+
+def _classify_generic_disk_cleanup_entry(entry_name, file_details):
+    """Return the filesystem entry type from permission metadata."""
+    return _get_entry_type(entry_name, file_details)
+
+
+def _delete_generic_disk_cleanup_batch(device, destination, protected_files,
+                                       candidate_batch, directory_output,
+                                       allow_deletion_failure, deadline,
+                                       **_kwargs):
+    """Delete a batch of regular files through the platform API."""
+    return device.api.delete_unprotected_files(
+        directory=destination,
+        protected=protected_files,
+        files_to_delete=[candidate.path for candidate in candidate_batch],
+        dir_output=directory_output,
+        allow_failure=allow_deletion_failure,
+        destination=destination,
+        deadline=deadline,
+    )
+
+
+def _get_generic_disk_cleanup_space(device, destination):
+    """Return available space through the platform cleanup-space API."""
+    return device.api.get_available_space_after_cleanup(directory=destination)
+
+
+_GENERIC_DISK_CLEANUP_STRATEGY = _DiskCleanupStrategy(
+    classify_entry=_classify_generic_disk_cleanup_entry,
+    delete_batch=_delete_generic_disk_cleanup_batch,
+    get_available_space=_get_generic_disk_cleanup_space,
+)
+
+
+def _run_disk_cleanup_with_strategy(device, destination, required_size,
+                                    file_details, protected_files,
+                                    directory_output,
+                                    allow_deletion_failure,
+                                    recursive, cleanup_strategy):
+    """Build candidates and run the shared bounded cleanup loop."""
+    candidates = _normalize_disk_cleanup_candidates(
+        file_details=file_details,
+        protected_files=protected_files,
+        classify_entry=cleanup_strategy.classify_entry,
+        include_directories=(recursive and cleanup_strategy.supports_directories),
+    )
+    log.debug('cleanup candidates: %s', candidates)
+
+    recursive_deletions = 0
+
+    def delete_batch(candidate_batch, deadline):
+        def stop_recursive_cleanup():
+            nonlocal recursive_deletions
+            recursive_deletions += 1
+            candidate_limit_reached = recursive_deletions >= DISK_CLEANUP_MAX_CANDIDATES
+            deadline_reached = time.monotonic() >= deadline
+            return candidate_limit_reached or deadline_reached
+
+        return cleanup_strategy.delete_batch(
+            device=device,
+            destination=destination,
+            protected_files=protected_files,
+            candidate_batch=candidate_batch,
+            directory_output=directory_output,
+            allow_deletion_failure=allow_deletion_failure,
+            deadline=deadline,
+            stop_check=stop_recursive_cleanup,
+        )
+
+    return _run_disk_cleanup(
+        candidates=candidates,
+        required_size=required_size,
+        delete_batch=delete_batch,
+        get_available_space=lambda: cleanup_strategy.get_available_space(
+            device, destination),
+    )
+
+
+def _free_up_disk_space_with_strategy(device, destination, required_size, skip_deletion,
+    protected_files, compact=False, min_free_space_percent=None,
+    dir_output=None, allow_deletion_failure=False, recursive=False,
+    cleanup_strategy=_GENERIC_DISK_CLEANUP_STRATEGY):
+    """Delete safe candidates until the required free space is available.
+
+    Args:
+        device ('obj'): Device object.
+        destination ('str'): Destination directory, such as bootflash:/.
+        required_size ('int'): Required free space in bytes.
+        skip_deletion ('bool'): Only perform the space check when True.
+        protected_files ('list'): File names or patterns that must not be
+            deleted.
+        compact ('bool'): Apply compact-image size estimation.
+        min_free_space_percent ('int'): Minimum acceptable free-space percent.
+        dir_output ('str'): Optional captured output of the 'dir' command.
+        allow_deletion_failure ('bool'): Ignore individual deletion failures.
+        recursive ('bool'): Request recursive cleanup after regular files when
+            the platform strategy supports directories.
+        cleanup_strategy (_DiskCleanupStrategy): Platform callbacks for entry
+            classification, deletion, and post-delete verification.
+
     Returns:
-         True if there is enough space after the operation, False otherwise
-    '''
-    # For n9k compact copy:
-    # observationally, depending on release, the compacted image is 36-48% the
-    # size of the original image. For now we'll use 60% as a conservative estimate.
+        bool: True when enough space is verified, otherwise False.
+    """
+    # A compacted Nexus 9000 image is typically 36-48% of the original size.
+    # Use 60% as a conservative estimate.
     if compact:
-        required_size *=.6
+        required_size *= 0.6
 
-    # Parse directory output to check
-    dir_out = dir_output or device.execute('dir {}'.format(destination))
+    # Capture the directory output once.  Candidate selection and the initial
+    # space calculation must use the same snapshot.
+    directory_output = dir_output if dir_output is not None else device.execute(f'dir {destination}')
 
-    # Get available free space on device
-    available_space = device.api.get_available_space(
-        directory=destination, output=dir_out)
+    try:
+        available_space = device.api.get_available_space(directory=destination, output=directory_output)
+    except Exception as error:
+        log.error('Unable to verify available space from the directory listing: %s; no files will be deleted', error)
+        return False
 
-    log.debug('available_space: {avs}'.format(avs=available_space))
+    log.debug('Available space: %s', available_space)
+    if available_space is None:
+        log.error('Unable to verify available space from the directory listing; no files will be deleted')
+        return False
 
-    # Check if available space is sufficient
     if min_free_space_percent:
+        try:
+            total_space = device.api.get_total_space(directory=destination, output=directory_output)
+        except Exception as error:
+            log.error('Unable to verify total disk space: %s; no files will be deleted', error)
+            return False
 
-        # Get total space
-        total_space = device.api.get_total_space(
-            directory=destination, output=dir_out)
+        if total_space is None or total_space <= 0:
+            log.error('Unable to verify total disk space; no files will be deleted')
+            return False
 
-        # Get current available space in %
-        avail_percent = available_space / total_space * 100
+        available_percent = available_space / total_space * 100
+        comparison = 'less' if available_percent < min_free_space_percent else 'greater'
+        log.info(
+            'There is %s %% of free space on the disk, which is %s than the '
+            'target of %s %%.',
+            round(available_percent, 2), comparison, min_free_space_percent)
 
-        log.info("There is {avail} % of free space on the disk, which is "
-                 "{compare} than the target of {target} %.".\
-                 format(avail=round(avail_percent, 2), compare='less' if \
-                        avail_percent < min_free_space_percent else 'greater',
-                        target=min_free_space_percent))
+        # Use the larger of the required size and minimum free-space target.
+        required_size = round(max(required_size, min_free_space_percent * 0.01 * total_space))
 
-        # get bigger of required_space or min_free_space_percent
-        required_size = round(
-            max(required_size, min_free_space_percent * .01 * total_space))
-
-    # If there's not enough space, delete non-protected files
-    if device.api.verify_enough_disk_space(required_size=required_size,
-                                           directory=destination,
-                                           dir_output=dir_out):
+    # Reuse the initial parsed free-space value instead of reparsing or
+    # executing another full directory listing.
+    if available_space > int(required_size):
         if required_size < 0:
             log.info("Required disk space is unknown, will not delete files")
         else:
@@ -466,112 +789,143 @@ def _free_up_disk_space(device, destination, required_size, skip_deletion,
         if running_image:
             if isinstance(running_image, list):
                 for image in running_image:
-                    running_images.append(os.path.basename(image))
+                    running_images.append(os.path.basename(str(image).rsplit(':', 1)[-1]))
             else:
-                running_images.append(os.path.basename(running_image))
+                running_images.append(os.path.basename(str(running_image).rsplit(':', 1)[-1]))
         else:
-            log.warning("Running image could not be determined. It may be deleted.")
+            log.warning('Running image could not be determined. Caller and '
+                        'default protection rules will still be enforced.')
 
-        # convert to set for O(1) lookup
-        protected_files = set(protected_files)
-        parsed_dir_out = device.parse('dir {}'.format(destination), output=dir_out)
-
-        file_list, directory_list = _get_directory_entries(parsed_dir_out)
-        if recursive:
-            directory_list = _get_sorted_directory_entries(
-                parsed_dir_out, directory_list)
+        # Running images are never last-resort deletion candidates.  Add them
+        # to the same protection set used for candidate selection and by the
+        # platform deletion implementation as a second safety check.
+        if isinstance(protected_files, str):
+            protected_files = {protected_files}
         else:
-            # Do not pass directory entries to the platform deletion API when
-            # recursive cleanup is disabled.
-            directory_list = []
+            protected_files = set(protected_files or [])
+        protected_files.update(DISK_CLEANUP_PROTECTED_FILES)
+        protected_files.update(running_images)
+        try:
+            parsed_directory_output = device.parse(f'dir {destination}', output=directory_output)
+        except Exception as error:
+            log.error(
+                'Unable to identify safe cleanup candidates: %s', error)
+            return False
+        file_details = _get_directory_file_details(parsed_directory_output)
+        if file_details is None:
+            log.error('Unable to identify safe cleanup candidates')
+            return False
 
-        # turn parsed dir output to a list of files for sorting
-        # Large files are given priority when deleting
-        running_image_list = []
-        not_protected_file_list = []
-        for file, size in file_list:
-            # separate running image from other files
-            if any(file in image for image in running_images):
-                running_image_list.append((file, size))
-            else:
-                not_protected_file_list.append((file, size))
+        return _run_disk_cleanup_with_strategy(
+            device=device,
+            destination=destination,
+            required_size=required_size,
+            file_details=file_details,
+            protected_files=protected_files,
+            directory_output=directory_output,
+            allow_deletion_failure=allow_deletion_failure,
+            recursive=recursive,
+            cleanup_strategy=cleanup_strategy,
+        )
 
-        not_protected_file_list.sort(key=lambda x: x[1], reverse=True)
 
-        # add running images to the end so they are deleted as a last resort
-        file_list = not_protected_file_list + running_image_list
-        log.debug('file_list: {fl}'.format(fl=file_list))
+def _free_up_disk_space(device, destination, required_size, skip_deletion,
+    protected_files, compact=False, min_free_space_percent=None,
+    dir_output=None, allow_deletion_failure=False, recursive=False):
+    """Delete safe candidates until the required free space is available.
 
-        # Recurse into directories before deleting top-level files. The
-        # platform API removes contents but leaves directory entries intact.
-        if recursive:
-            log.debug(
-                'directory_list: {directories}'.format(
-                    directories=directory_list))
-            for directory_name in directory_list:
-                device.api.delete_unprotected_files(
-                    directory=destination,
-                    protected=protected_files,
-                    files_to_delete=[directory_name],
-                    dir_output=dir_out,
-                    allow_failure=allow_deletion_failure,
-                    destination=destination,
-                    recursive=True,
-                    stop_check=lambda: device.api.verify_enough_disk_space(
-                        required_size, destination))
+    Args:
+        device ('obj'): Device object.
+        destination ('str'): Destination directory, such as bootflash:/.
+        required_size ('int'): Required free space in bytes.
+        skip_deletion ('bool'): Only perform the space check when True.
+        protected_files ('list'): File names or patterns that must not be
+            deleted.
+        compact ('bool'): Apply compact-image size estimation.
+        min_free_space_percent ('int'): Minimum acceptable free-space percent.
+        dir_output ('str'): Optional captured output of the 'dir' command.
+        allow_deletion_failure ('bool'): Ignore individual deletion failures.
+        recursive ('bool'): Request recursive cleanup after regular files when
+            the platform strategy supports directories.
 
-                if device.api.verify_enough_disk_space(
-                        required_size, destination):
-                    log.info(
-                        "Verified there is enough space on the device after "
-                        "deleting unprotected files.")
-                    return True
+    Returns:
+        bool: True when enough space is verified, otherwise False.
+    """
+    return _free_up_disk_space_with_strategy(
+        device=device,
+        destination=destination,
+        required_size=required_size,
+        skip_deletion=skip_deletion,
+        protected_files=protected_files,
+        compact=compact,
+        min_free_space_percent=min_free_space_percent,
+        dir_output=dir_output,
+        allow_deletion_failure=allow_deletion_failure,
+        recursive=recursive,
+        cleanup_strategy=_GENERIC_DISK_CLEANUP_STRATEGY,
+    )
 
-        # If directory cleanup was skipped or insufficient, delete top-level
-        # files next. Running images remain last as a fallback.
-        for file, _ in file_list:
-            device.api.delete_unprotected_files(
-                directory=destination,
-                protected=protected_files,
-                files_to_delete=[file],
-                dir_output=dir_out,
-                allow_failure=allow_deletion_failure,
-                destination=destination)
 
-            if device.api.verify_enough_disk_space(required_size, destination):
-                log.info("Verified there is enough space on the device after "
-                         "deleting unprotected files.")
-                return True
+def _free_up_disk_space_for_roles(device, destination, required_size,
+    skip_deletion, protected_files, compact=False,
+    min_free_space_percent=None, dir_output=None,
+    allow_deletion_failure=False, recursive=False,
+    cleanup_strategy=_GENERIC_DISK_CLEANUP_STRATEGY):
+    """Run the selected cleanup strategy on each device role."""
+    free_up_result = _free_up_disk_space_with_strategy(
+        device=device,
+        destination=destination,
+        required_size=required_size,
+        skip_deletion=skip_deletion,
+        protected_files=protected_files,
+        compact=compact,
+        min_free_space_percent=min_free_space_percent,
+        dir_output=dir_output,
+        allow_deletion_failure=allow_deletion_failure,
+        recursive=recursive,
+        cleanup_strategy=cleanup_strategy,
+    )
 
-        # Exhausted list of files - still not enough space
-        log.error('There is still not enough space on the device after '
-                  'deleting unprotected files.')
-        return False
+    if not hasattr(device, 'swap_roles'):
+        return free_up_result
+
+    device.swap_roles()
+    try:
+        free_up_result_other = _free_up_disk_space_with_strategy(
+            device=device,
+            destination=destination,
+            required_size=required_size,
+            skip_deletion=skip_deletion,
+            protected_files=protected_files,
+            compact=compact,
+            min_free_space_percent=min_free_space_percent,
+            dir_output=dir_output,
+            allow_deletion_failure=allow_deletion_failure,
+            recursive=recursive,
+            cleanup_strategy=cleanup_strategy,
+        )
+    finally:
+        device.swap_roles()
+    return free_up_result or free_up_result_other
+
 
 @functools.wraps(_free_up_disk_space)
 def free_up_disk_space(device, destination, required_size, skip_deletion,
     protected_files, compact=False, min_free_space_percent=None,
     dir_output=None, allow_deletion_failure=False, recursive=False):
-
-    free_up_result = _free_up_disk_space(
-        device, destination, required_size, skip_deletion,
-        protected_files, compact, min_free_space_percent,
-        dir_output, allow_deletion_failure, recursive
+    return _free_up_disk_space_for_roles(
+        device=device,
+        destination=destination,
+        required_size=required_size,
+        skip_deletion=skip_deletion,
+        protected_files=protected_files,
+        compact=compact,
+        min_free_space_percent=min_free_space_percent,
+        dir_output=dir_output,
+        allow_deletion_failure=allow_deletion_failure,
+        recursive=recursive,
+        cleanup_strategy=_GENERIC_DISK_CLEANUP_STRATEGY,
     )
-
-    if hasattr(device, 'swap_roles'):
-        device.swap_roles()
-        try:
-            free_up_result_other = _free_up_disk_space(
-                device, destination, required_size, skip_deletion,
-                protected_files, compact, min_free_space_percent,
-                dir_output, allow_deletion_failure, recursive
-            )
-        finally:
-            device.swap_roles()
-        return free_up_result or free_up_result_other
-    
-    return free_up_result
 
 
 def execute_reload(device,

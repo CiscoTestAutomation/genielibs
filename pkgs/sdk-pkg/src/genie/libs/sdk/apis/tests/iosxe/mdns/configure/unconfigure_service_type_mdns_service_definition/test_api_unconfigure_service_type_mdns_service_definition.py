@@ -1,34 +1,32 @@
 import unittest
-from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.mdns.configure import unconfigure_service_type_mdns_service_definition
+from unittest import TestCase
+from unittest.mock import Mock
+
+from genie.libs.sdk.apis.iosxe.mdns.configure import (
+    unconfigure_service_type_mdns_service_definition,
+)
 
 
-class TestUnconfigureServiceTypeMdnsServiceDefinition(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = """
-        devices:
-          C9500H_Sathya:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: c9500
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['C9500H_Sathya']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestUnconfigureServiceTypeMdnsServiceDefinition(TestCase):
 
     def test_unconfigure_service_type_mdns_service_definition(self):
-        result = unconfigure_service_type_mdns_service_definition(self.device, 'custom3', ['_ftp._tcp.local'])
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.configure.return_value = None
+
+        result = unconfigure_service_type_mdns_service_definition(
+            device,
+            "custom3",
+            ["_ftp._tcp.local"],
+        )
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once_with(
+            [
+                "mdns-sd service-definition custom3",
+                "no service-type _ftp._tcp.local",
+            ]
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()

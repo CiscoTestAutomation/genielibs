@@ -29,7 +29,8 @@ class TestExecuteSetConfigRegister(TestCase):
         device.default.role = 'active'
         device.default.execute = Mock()
 
-        execute_set_config_register(device, '0x2102', 300)
+        execute_set_config_register(
+            device, '0x2102', 300, preserve_console_speed=True)
 
         device.default.execute.assert_called_once_with(
             'MANUAL_BOOT=YES', timeout=300

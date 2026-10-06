@@ -166,21 +166,42 @@ def execute_monitor_capture_limit_duration(device, capture_name, duration):
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not execute monitor capture {capture_name} limit duration {duration}. \nError: {e}")
 
-def execute_monitor_capture_access_list(device, capture_name, access_list_name):
+def execute_monitor_capture_access_list(device, capture_name, access_list_name, interface='', direction='', file_path=''):
     """
-        Execute monitor capture {capture_name} access-list {access_list_name}
-        Example: monitor capture test access-list MYACLV6
+        Execute:
+        - monitor capture <capture_name> access-list <access_list_name>
+        - monitor capture <capture_name> interface <interface> <direction> access-list <access_list_name>
+        - monitor capture <capture_name> file location <file_path> interface <interface> <direction> access-list <access_list_name>
+        Example:
+        - monitor capture test access-list MYACLV6
+        - monitor capture test interface GigabitEthernet1/0/1 in access-list MYACLV6
+        - monitor capture C4 file location flash:test.pcap interface GigabitEthernet1/0/1 in access-list MYACLV6
         Args:
             device ('obj'): Device Object
             capture_name ('str'): Name of Capture
             access_list_name ('str'): Access list name
+            interface (str, optional): Interface name
+            direction (str, optional): Direction (in, out, both)
+            file_path (str, optional): File Path
     """
-    cmd = f"monitor capture {capture_name} access-list {access_list_name}"
+    cmd = [
+        f'monitor capture {capture_name} access-list {access_list_name}',
+        f'monitor capture {capture_name} interface {interface} {direction} access-list {access_list_name}',
+        f'monitor capture {capture_name} file location {file_path} interface {interface} {direction} access-list {access_list_name}',
+        ]
+
+    command = ''
+    if interface and direction and file_path:
+        command = cmd[2]
+    elif interface and direction:
+        command = cmd[1]
+    else:
+        command = cmd[0]
 
     try:
-        device.execute(cmd)
+        device.execute(command)
     except SubCommandFailure as e:
-        raise SubCommandFailure(f"Could not execute monitor capture {capture_name} access-list {access_list_name}. \nError: {e}")
+        raise SubCommandFailure(f'Could not perform {command}. \nError: {e}')
 
 def execute_monitor_capture_vlan_in_match_any(device, capture_name, vlan_id):
     """

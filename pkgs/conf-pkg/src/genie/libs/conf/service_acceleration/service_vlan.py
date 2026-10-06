@@ -43,6 +43,13 @@ class ServiceVlan(ConfigurableBase):
         type=(None, managedattribute.test_in({'dynamic',1, 2, 3, 4}))
     )
 
+    # isolate
+    isolate = managedattribute(
+        name="isolate",
+        default=False,
+        type=(None, managedattribute.test_istype(bool))
+    )
+
 
     # ==========================================================================
 
@@ -53,9 +60,11 @@ class ServiceVlan(ConfigurableBase):
 
         return (self.service_vlan_name,
                 self.module_affinity,
+                self.isolate,
                 self.device) == \
             (other.service_vlan_name,
              other.module_affinity,
+             other.isolate,
              other.device)
 
     # Overload __lt__
@@ -66,15 +75,18 @@ class ServiceVlan(ConfigurableBase):
 
         return (self.service_vlan_name,
                 self.module_affinity,
+                self.isolate,
                 self.device) < \
             (other.service_vlan_name,
              other.module_affinity,
+             other.isolate,
              other.device)
 
     # Overload __hash__
     def __hash__(self):
         return hash((self.service_vlan_name,
                      self.module_affinity,
+                     self.isolate,
                      self.device))
 
     # Overload __repr__

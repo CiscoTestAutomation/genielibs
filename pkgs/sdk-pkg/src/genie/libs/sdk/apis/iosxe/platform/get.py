@@ -24,6 +24,9 @@ from unicon.eal.dialogs import Statement, Dialog
 # Logger
 log = logging.getLogger(__name__)
 
+DISK_SPACE_QUERY_TIMEOUT = 30
+
+
 def get_platform_standby_rp(device, max_time=1200, interval=120):
     """ Get standby router slot on device
         Args:
@@ -213,31 +216,83 @@ def get_running_image(device):
 
 
 def get_available_space(device, directory='', output=None):
-    """Gets available space on a given directory
-        Args:
-            device ('str'): Device object
-            directory ('str'): Directory to check space
-                               If not provided, checks current working directory
-                               i.e. media:/path/to/my/dir
-            output ('str'): Output of 'dir' command
-                            if not provided, executes the cmd on device
-        Returns:
-            space available in bytes in `int` type or 
-            None if failed to retrieve available space
+    """Get the available space for an IOS-XE filesystem.
+
+    Args:
+        device ('obj'): Device object.
+        directory ('str'): Filesystem or directory to check.
+        output ('str'): Optional captured output of the 'dir' command.
+
+    Returns:
+        int or None: Available bytes, or None when space cannot be verified.
     """
 
     try:
-        dir_output = device.parse('dir {}'.format(directory), output=output)
-    except Exception as e:
-        log.error("Failed to parse the directory listing due to: {}".\
-                  format(str(e)))
+        parsed_directory = device.parse(f'dir {directory}', output=output)
+    except Exception as error:
+        log.error('Failed to parse the directory listing: %s', error)
         return None
 
-    bytes_free = Dq(dir_output).get_values(key='bytes_free')
+    bytes_free = Dq(parsed_directory).get_values(key='bytes_free')
     if bytes_free:
-        return int(bytes_free[0])
-    else:
-        log.error("Failed to get available space for {}".format(directory))
+        try:
+            return int(bytes_free[0])
+        except (TypeError, ValueError):
+            pass
+    log.error('Failed to get available space for %s', directory)
+    return None
+
+
+def get_available_space_after_cleanup(device, directory):
+    """Get available space with a bounded IOS-XE filesystem query.
+
+    This API is used after a cleanup batch so that verification does not run
+    another full directory listing.
+
+    Args:
+        device ('obj'): Device object.
+        directory ('str'): Filesystem or directory to check.
+
+    Returns:
+        int or None: Available bytes, or None when space cannot be verified.
+    """
+
+    try:
+        command_output = device.execute('show file systems', timeout=DISK_SPACE_QUERY_TIMEOUT)
+        parsed_filesystems = device.parse('show file systems', output=command_output)
+    except Exception as error:
+        log.error("Failed to parse 'show file systems': %s", error)
+        return None
+
+    filesystem_prefix = str(directory).split('/', 1)[0]
+    if filesystem_prefix and not filesystem_prefix.endswith(':'):
+        filesystem_prefix += ':'
+
+    if not isinstance(parsed_filesystems, dict):
+        log.error("Failed to get available space for %s from 'show file systems'", directory)
+        return None
+
+    filesystem_entries = parsed_filesystems.get('file_systems', {})
+    if not isinstance(filesystem_entries, dict):
+        log.error("Failed to get available space for %s from 'show file systems'", directory)
+        return None
+
+    for filesystem_data in filesystem_entries.values():
+        if not isinstance(filesystem_data, dict):
+            continue
+        prefixes = str(filesystem_data.get('prefixes', '')).split()
+        if filesystem_prefix not in prefixes:
+            continue
+        free_size = filesystem_data.get('free_size')
+        if free_size is None:
+            continue
+        try:
+            return int(free_size)
+        except (TypeError, ValueError):
+            break
+
+    log.error("Failed to get available space for %s from 'show file systems'", directory)
+    return None
 
 
 def get_total_space(device, directory='', output=None):

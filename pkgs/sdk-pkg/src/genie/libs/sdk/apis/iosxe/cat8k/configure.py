@@ -5,22 +5,6 @@ from unicon.core.errors import SubCommandFailure
 from unicon.eal.dialogs import Dialog, Statement
 
 
-def configure_autoboot(device):
-    """ Configure autoboot
-        Args:
-            device ('obj'): device to use
-        Returns:
-            None
-        Raises:
-            SubCommandFailure
-    """
-    cmd = 'config-reg 0x2102'
-    try:
-        device.configure(cmd)
-    except SubCommandFailure as e:
-        raise SubCommandFailure(f'Could not configure Autoboot on asr1k device. Error:\n{e}')
-
-    
 def configure_breakout_cli(device, port_type, sub_slot='0/2', breakout_type='10g', timeout=60 ):
     """ Configure breakout 
         Args:
@@ -130,4 +114,4 @@ def configure_no_boot_manual(device):
     """
     # Configuring no boot manual is not supported in c8kv
     # devices hence using config register
-    return configure_autoboot(device=device)
+    return device.api.configure_autoboot()

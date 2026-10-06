@@ -803,7 +803,9 @@ def configure_ospfv3_address_family(device, pid, address_family, modifier='',
 
 def configure_ospf_routing(device, ospf_process_id, router_id=None,
                            router_config=True, nsf=None, nsf_options=None, nsr=None, nsr_options=None,
-                           vrf_name=None, vrf_id=None, log_adjacency=False):
+                           vrf_name=None, vrf_id=None, log_adjacency=False, segment_routing_val=None,
+                           fast_reroute_val=None, microloop_val=None, flex_algo_val=None,
+                           flex_algo_option=None, bfd=False):
     """ Configures ospf and ip routing on device
 
         Args:
@@ -819,6 +821,12 @@ def configure_ospf_routing(device, ospf_process_id, router_id=None,
             vrf_name ('str', optional): vrf name, default value is None
             vrf_id ('str', optional): vrf id, default value is None
             log_adjacency ('bool', optional): log-adjacency-changes, default value is False
+            segment_routing_val ('str', optional): value for segment-routing, default value is None
+            fast_reroute_val ('str', optional): value for fast-reroute, default value is None
+            microloop_val ('str', optional): value for microloop, default value is None
+            flex_algo_val ('str', optional): value for flex-algo, default value is None
+            flex_algo_option ('str', optional): flex-algo config, default value is None
+            bfd ('bool', optional): True to configure bfd, default value is False
 
         Returns:
             N/A
@@ -867,6 +875,23 @@ def configure_ospf_routing(device, ospf_process_id, router_id=None,
 
     if log_adjacency:
         config.append('log-adjacency-changes')
+
+    if segment_routing_val:
+        config.append(f'segment-routing {segment_routing_val}')
+
+    if fast_reroute_val:
+        config.append(f'fast-reroute {fast_reroute_val}')
+
+    if microloop_val:
+        config.append(f'microloop {microloop_val}')
+
+    if flex_algo_val:
+        config.append(f'flex-algo {flex_algo_val}')
+        if flex_algo_option:
+            config.append(flex_algo_option)
+
+    if bfd:
+        config.append('bfd all-interfaces')
 
     try:
         device.configure(config)

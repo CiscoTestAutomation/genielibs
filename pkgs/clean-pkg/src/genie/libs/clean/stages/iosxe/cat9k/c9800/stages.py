@@ -1,87 +1,397 @@
 """IOSXE C9800 specific clean stages"""
 
 # Python
+import ipaddress
 import logging
 
 # Genie
-from genie.libs import clean
 from genie.utils.timeout import Timeout
 from genie.libs.clean import BaseStage
-from unicon.core.errors import SubCommandFailure, TimeoutError
+from genie.metaparser.util.schemaengine import ListOf, Optional, Or
+from unicon.core.errors import SubCommandFailure
 
 # Logger
 log = logging.getLogger(__name__)
 
-# MetaParser
-from genie.metaparser.util.schemaengine import Optional
+def _get_wireless_management(device):
+    """Return the wireless management testbed block, when present."""
+    management = getattr(device, "management", {}) or {}
+    return management.get("wireless", {}) or {}
 
-# Errors
-from genie.metaparser.util.exceptions import SchemaMissingKeyError, SchemaUnsupportedKeyError
+
+def _resolve_wireless_management(device, values):
+    """Resolve explicit stage values before wireless testbed defaults."""
+    wireless = _get_wireless_management(device)
+    return {
+        key: wireless.get(key) if values.get(key) is None else values[key]
+        for key in values
+    }
 
 
-class VerifyApMode(BaseStage):
-    """ This stage verifies the mode of a given access point.
+def _vlan_in_list(vlan, vlan_list):
+    """Return whether a VLAN is included in an IOS VLAN list or range."""
+    if not vlan_list:
+        return False
+
+    for item in str(vlan_list).replace(" ", "").split(","):
+        if item.lower() == "all":
+            return True
+        if item.isdigit() and int(item) == vlan:
+            return True
+        if "-" in item:
+            start, end = item.split("-", 1)
+            if start.isdigit() and end.isdigit():
+                if int(start) <= vlan <= int(end):
+                    return True
+    return False
+
+
+def _get_ip_interfaces(address, address_family):
+    """Return the statically configured IP interfaces for an address family."""
+    if not address:
+        return []
+
+    configured = address.get(address_family)
+    if not isinstance(configured, list):
+        configured = [configured] if configured else []
+
+    dynamic_values = {f"{address_family}/dhcp"}
+    if address_family == "ipv6":
+        dynamic_values.add("ipv6/autoconfig")
+
+    return [
+        ipaddress.ip_interface(value)
+        for value in configured
+        if value not in dynamic_values
+    ]
+
+
+class ConfigureWirelessManagement(BaseStage):
+    """Configure and verify the C9800 wireless management interface.
+
+    Missing configuration arguments are read by the stage and API from
+    ``device.management.wireless``. WMI data is not read from
+    ``device.interfaces``.
 
     Stage Schema
     ------------
-    verify_accesspoint_mode:
+    configure_wireless_management:
 
-        access_points(list):mode of a given access_point
-        ap_mode(str,optional):mode of accesspoint (i.e: local or flexmode)
+        interface (str, optional): WMI Layer 3 interface.
+        physical_interface (str, optional): Physical WMI uplink.
+        switchport (str, optional): ``access``, ``trunk``, or ``no``.
+        vlan (int, optional): WMI VLAN ID.
+        auto_negotiate (bool, optional): Configure uplink autonegotiation.
+        address (dict, optional): WMI IPv4 and/or IPv6 addresses.
+        gateway (dict, optional): WMI IPv4 and/or IPv6 gateway.
+        routes (dict, optional): WMI IPv4 and/or IPv6 static routes.
+        ap_profile (str, optional): AP profile for ``mgmtuser``.
+        credential_name (str, optional): Device credential entry for the AP
+            profile. Defaults to ``ap_profile`` in the API.
+        max_time (int, optional): Maximum verification time. Defaults to 60.
+        check_interval (int, optional): Verification interval. Defaults to
+            10.
 
-    Examples:
-        verify_accesspoint_mode:
-            access_point:
-                - "AP188B.4500.44C8"
-            ap_mode:"local"
+    Example
+    -------
+    configure_wireless_management:
+        interface: Vlan121
+        physical_interface: GigabitEthernet1
+        switchport: trunk
+        vlan: 121
+        auto_negotiate: true
+        address:
+            ipv4: 192.0.2.10/24
+        routes:
+            ipv4:
+                - subnet: 198.51.100.0 255.255.255.0
+                  next_hop: 192.0.2.1
+        ap_profile: default-ap-profile
     """
 
-    # =================
-    # Argument Defaults
-    # =================
-    MAX_TIME = 600
+    MAX_TIME = 60
     CHECK_INTERVAL = 10
-    AP_MODE = "local"
 
-    # ============
-    # Stage Schema
-    # ============
     schema = {
-        'access_points': list,
-        Optional('ap_mode'): str,
-
+        Optional("interface"): str,
+        Optional("physical_interface"): str,
+        Optional("switchport"): str,
+        Optional("vlan"): int,
+        Optional("auto_negotiate"): bool,
+        Optional("address"): {
+            Optional("ipv4"): Or(str, list),
+            Optional("ipv6"): Or(str, list),
+        },
+        Optional("gateway"): {
+            Optional("ipv4"): Or(str, list),
+            Optional("ipv6"): Or(str, list),
+        },
+        Optional("routes"): {
+            Optional("ipv4"): ListOf({
+                "subnet": str,
+                "next_hop": str,
+            }),
+            Optional("ipv6"): ListOf({
+                "subnet": str,
+                "next_hop": str,
+            }),
+        },
+        Optional("ap_profile"): str,
+        Optional("credential_name"): str,
+        Optional("max_time"): int,
+        Optional("check_interval"): int,
     }
 
-    # ==============================
-    # Execution order of Stage steps
-    # ==============================
     exec_order = [
-        'verify_accesspoint_mode'
+        "configure_wireless_management",
+        "verify_wireless_management",
     ]
 
-    def verify_accesspoint_mode(self, device, steps, access_points, ap_mode=AP_MODE, max_time=MAX_TIME,
-                                check_interval=CHECK_INTERVAL):
-        for ap_name in access_points:
-            with steps.start("Checking mode for accesspoint {}".format(ap_name)) as step:
+    def configure_wireless_management(
+            self, device, steps, interface=None, physical_interface=None,
+            switchport=None, vlan=None, auto_negotiate=None, address=None,
+            gateway=None, routes=None, ap_profile=None,
+            credential_name=None):
+        """Configure WMI through the C9800 SDK API."""
+        values = _resolve_wireless_management(device, {
+            "interface": interface,
+            "physical_interface": physical_interface,
+            "switchport": switchport,
+            "vlan": vlan,
+            "auto_negotiate": auto_negotiate,
+            "address": address,
+            "gateway": gateway,
+            "routes": routes,
+            "ap_profile": ap_profile,
+            "credential_name": credential_name,
+        })
+
+        if not any(value is not None for value in values.values()):
+            self.skipped(
+                "Wireless management values are not provided in the Clean "
+                "or testbed YAML. Skipping wireless management "
+                "configuration."
+            )
+
+        with steps.start(
+                f"Configure wireless management on {device.name}") as step:
+            missing = []
+            if not values["interface"]:
+                missing.append("interface")
+            if values["switchport"] in {"access", "trunk"}:
+                if not values["physical_interface"]:
+                    missing.append("physical_interface")
+                if values["vlan"] is None:
+                    missing.append("vlan")
+            if values["credential_name"] and not values["ap_profile"]:
+                missing.append("ap_profile")
+
+            if missing:
+                step.failed(
+                    "Missing required wireless management values in the "
+                    "Clean and testbed YAML "
+                    f"(device.management.wireless): {', '.join(missing)}"
+                )
+
+            try:
+                device.api.configure_wireless_management(
+                    interface=values["interface"],
+                    physical_interface=values["physical_interface"],
+                    switchport=values["switchport"],
+                    vlan=values["vlan"],
+                    auto_negotiate=values["auto_negotiate"],
+                    address=values["address"],
+                    gateway=values["gateway"],
+                    routes=values["routes"],
+                    ap_profile=values["ap_profile"],
+                    credential_name=values["credential_name"],
+                )
+            except (AttributeError, SubCommandFailure, ValueError) as error:
+                step.failed(
+                    f"Failed to configure wireless management on "
+                    f"{device.name}",
+                    from_exception=error,
+                )
+
+    def verify_wireless_management(
+            self, device, steps, interface=None, physical_interface=None,
+            switchport=None, vlan=None, address=None, max_time=MAX_TIME,
+            check_interval=CHECK_INTERVAL):
+        """Verify the WMI uplink, SVI, and wireless binding."""
+        values = _resolve_wireless_management(device, {
+            "interface": interface,
+            "physical_interface": physical_interface,
+            "switchport": switchport,
+            "vlan": vlan,
+            "address": address,
+        })
+        interface = values["interface"]
+        physical_interface = values["physical_interface"]
+        switchport = values["switchport"]
+        vlan = values["vlan"]
+        expected_ipv4_interfaces = _get_ip_interfaces(
+            values["address"], "ipv4"
+        )
+        expected_primary_ipv4 = (
+            expected_ipv4_interfaces[0]
+            if expected_ipv4_interfaces else None
+        )
+        expected_ipv6 = _get_ip_interfaces(values["address"], "ipv6")
+
+        if switchport == "trunk":
+            with steps.start(
+                    f"Verify WMI VLAN {vlan} is forwarding on "
+                    f"{physical_interface}") as step:
                 timeout = Timeout(max_time, check_interval)
                 while timeout.iterate():
-                    # Fetch ap mode from get_ap_mode api
                     try:
-                        ap_mode_fetch = device.api.get_ap_mode(ap_name)
-                    except (AttributeError, SubCommandFailure) as e:
-                        step.failed("Failed to find access point mode", from_exception=e)
-
-                    # Verify if the mode for the given accesspoint
-                    if ap_mode_fetch == "":
-                        log.warning('Access point {} has not yet registered'.format(ap_name))
-                        timeout.sleep()
-                    elif ap_mode_fetch.lower() == ap_mode.lower():
-                        step.passed('Access point {} has registered with {} mode'.format(ap_name, ap_mode))
-                    else:
-                        step.failed('The access point {} could not register with the given ap mode'. \
-                                    format(ap_name))
+                        output = device.parse(
+                            f"show interfaces {physical_interface} trunk"
+                        )
+                        interfaces = output.get("interface", {})
+                        trunk = next(
+                            (data for name, data in interfaces.items()
+                             if name.lower() == physical_interface.lower()),
+                            None,
+                        )
+                        if trunk and trunk.get("status") == "trunking":
+                            active = trunk.get(
+                                "vlans_allowed_active_in_mgmt_domain"
+                            )
+                            forwarding = trunk.get(
+                                "vlans_in_stp_forwarding_not_pruned"
+                            )
+                            if (_vlan_in_list(vlan, active)
+                                    and _vlan_in_list(vlan, forwarding)):
+                                break
+                    except Exception:
+                        log.debug(
+                            "Unable to verify WMI trunk state",
+                            exc_info=True,
+                        )
+                    timeout.sleep()
                 else:
-                    step.failed("Accesspoints failed to register to the controller")
+                    step.failed(
+                        f"VLAN {vlan} is not active and forwarding on "
+                        f"{physical_interface}"
+                    )
+
+        with steps.start(
+                f"Verify WMI interface {interface} is up/up") as step:
+            timeout = Timeout(max_time, check_interval)
+            while timeout.iterate():
+                try:
+                    output = device.parse(f"show ip interface {interface}")
+                    svi = next(
+                        (data for name, data in output.items()
+                         if name.lower() == interface.lower()),
+                        None,
+                    )
+                    expected_ipv4_addresses = {
+                        ipv4_interface
+                        for ipv4_interface in expected_ipv4_interfaces
+                    }
+                    configured_ipv4_addresses = {
+                        ipaddress.ip_interface(ipv4_address)
+                        for ipv4_address in (
+                            svi.get("ipv4", {}) if svi else {}
+                        )
+                    }
+                    if (svi and svi.get("enabled") is True
+                            and svi.get("oper_status") == "up"
+                            and expected_ipv4_addresses.issubset(
+                                configured_ipv4_addresses)):
+                        break
+                except Exception:
+                    log.debug(
+                        "Unable to verify WMI interface state",
+                        exc_info=True,
+                    )
+                timeout.sleep()
+            else:
+                step.failed(
+                    f"WMI interface {interface} is not up/up with the "
+                    "expected IPv4 addresses"
+                )
+
+        if expected_ipv6:
+            with steps.start(
+                    f"Verify WMI interface {interface} IPv6 addresses") as step:
+                timeout = Timeout(max_time, check_interval)
+                expected_ipv6_addresses = {
+                    ipv6_interface.ip for ipv6_interface in expected_ipv6
+                }
+                while timeout.iterate():
+                    try:
+                        output = device.parse("show ipv6 interface brief")
+                        interfaces = output.get("interface", {})
+                        svi = next(
+                            (data for name, data in interfaces.items()
+                             if name.lower() == interface.lower()),
+                            None,
+                        )
+                        configured_ipv6_addresses = {
+                            ipaddress.ip_interface(ipv6_address).ip
+                            for ipv6_address in (
+                                svi.get("ipv6_addresses", []) if svi else []
+                            )
+                        }
+                        if (svi and svi.get("interface_state") == "up"
+                                and svi.get("protocol_state") == "up"
+                                and expected_ipv6_addresses.issubset(
+                                    configured_ipv6_addresses)):
+                            break
+                    except Exception:
+                        log.debug(
+                            "Unable to verify WMI IPv6 interface state",
+                            exc_info=True,
+                        )
+                    timeout.sleep()
+                else:
+                    step.failed(
+                        f"WMI interface {interface} is not up/up with all "
+                        "expected IPv6 addresses"
+                    )
+
+        with steps.start(
+                f"Verify {interface} is the wireless management interface"
+        ) as step:
+            try:
+                output = device.parse("show wireless interface summary")
+            except Exception as error:
+                step.failed(
+                    "Unable to parse wireless management interface summary",
+                    from_exception=error,
+                )
+
+            interfaces = output.get("interfaces", {})
+            summary = next(
+                (data for name, data in interfaces.items()
+                 if name.lower() == interface.lower()),
+                None,
+            )
+            type_matches = (
+                summary
+                and summary.get("interface_type", "").lower()
+                == "management"
+            )
+            vlan_matches = (
+                vlan is None
+                or (summary and summary.get("vlan_id") == vlan)
+            )
+            address_matches = (
+                expected_primary_ipv4 is None
+                or (summary
+                    and summary.get("ip_address")
+                    == str(expected_primary_ipv4.ip)
+                    and summary.get("ip_netmask")
+                    == str(expected_primary_ipv4.netmask))
+            )
+            if not (type_matches and vlan_matches and address_matches):
+                step.failed(
+                    f"Wireless management summary does not show {interface} "
+                    "as Management with the expected VLAN and address"
+                )
 
 
 class VerifyApAssociation(BaseStage):
@@ -144,237 +454,3 @@ class VerifyApAssociation(BaseStage):
                         timeout.sleep()
                 else:
                     step.failed("Accesspoints failed to register to the controller")
-
-
-class ConfigureRrmDcaChannel(BaseStage):
-    """ This stage removes the specified channels from the controller.
-
-    Stage Schema
-    ------------
-    configure_rrm_dca_channel:
-        N/A
-
-    """
-    # =================
-    # Argument Defaults
-    # =================
-    CHANNEL_LIST = ["52", "56", "60", "64", "100", "104", "108", "112", "116", "120", "124", "128", "132", "136", "140",
-                    "144"]
-
-    # ============
-    # Stage Schema
-    # ============
-    schema = {
-        Optional('channel_list'): list
-    }
-
-    # ==============================
-    # Execution order of Stage steps
-    # ==============================
-    exec_order = [
-        'configure_rrm_dca_channel',
-        'verify_rrm_dcs_channels_removed'
-    ]
-
-    def configure_rrm_dca_channel(self, device, steps, channel_list=CHANNEL_LIST):
-
-        command_list = []
-        command_str = "ap dot11 5ghz rrm channel dca remove "
-
-        for ch in channel_list:
-            command_list.append(command_str + ch)
-        with steps.start("Removing dca channel for {}".format(device.name)) as step:
-
-            try:
-                device.configure("wireless rf-network {}".format(device.name))
-
-                for command in command_list:
-                    device.configure(command)
-                device.configure("ap dot11 5ghz rrm group-mode auto")
-            except Exception as e:
-                step.failed("Failed during removing rrm dca channel", from_exception=e)
-
-    def verify_rrm_dcs_channels_removed(self, device, steps, channel_list=CHANNEL_LIST):
-
-        with steps.start("Verifying channels have been removed") as step:
-            if device.api.verify_unused_channel(channel_list):
-                step.passed("Unused channels have deleted successfully")
-            else:
-                step.failed("All un used channels have not deleted")
-
-
-class VerifyInstallationMode(BaseStage):
-    """ This stage verifies the configured installation mode.
-
-    Stage Schema
-    ------------
-    verify_installation_mode:
-        verify_installation_mode(str):installation_mode to be verified if present
-
-    Examples:
-        verify_installation_mode:
-            installation_mode: "INSTALL"
-    """
-    # =================
-    # Argument Defaults
-    # =================
-    INSTALLATION_MODE = "INSTALL"
-
-    # ============
-    # Stage Schema
-    # ============
-    schema = {
-        'installation_mode': str,
-
-    }
-    # ==============================
-    # Execution order of Stage steps
-    # ==============================
-    exec_order = [
-        'verify_installation_mode'
-    ]
-
-    def verify_installation_mode(self, device, steps, installation_mode=INSTALLATION_MODE):
-        with steps.start("Checking installation mode for {}".format(device.name)) as step:
-            # Fetch installation mode from get_installation_mode api
-            try:
-                installation_mode_fetch = device.api.get_installation_mode()
-            except Exception as e:
-                step.failed("Failed to find installation mode", from_exception=e)
-            # Verify if the installation mode for the given device
-            if installation_mode_fetch.lower() != installation_mode.lower():
-                step.failed("Actual mode {} is different than the expected mode {}". \
-                            format(installation_mode_fetch, installation_mode))
-
-
-class ConfigureApTxPower(BaseStage):
-    """ This stage verifies the configured Tx power.
-
-    Stage Schema
-    ------------
-    configure_ap_tx_power:
-        configure_ap_tx_power(str): tx power to be verified
-
-    Examples:
-        configure_ap_tx_power:
-            tx_power: 
-                - "1"
-                - "2"
-    """
-    # =================
-    # Argument Defaults
-    # =================
-    TX_POWER = "1"
-    ASSIGNMENT_MODE = "AUTO"
-
-    # ============
-    # Stage Schema
-    # ============
-    schema = {
-        'access_points': list,
-        'tx_power': str,
-
-    }
-
-    # ==============================
-    # Execution order of Stage steps
-    # ==============================
-    exec_order = [
-        'configure_ap_tx_power',
-        'verify_ap_tx_power_configure'
-    ]
-
-    def configure_ap_tx_power(self, device, steps, access_points, tx_power=TX_POWER):
-
-        for ap_name in access_points:
-
-            with steps.start("Checking the tx power for {}".format(device.name)) as step:
-                # Fetch ap_model from get_ap_model api
-                try:
-                    ap_model = device.api.get_ap_model(ap_name)
-                    device.api.execute_ap_tx_power_commands(ap_name, ap_model, tx_power)
-                except (AttributeError, SubCommandFailure) as e:
-                    step.failed("Failed to find access point model", from_exception=e)
-
-                device.configure("ap dot11 5ghz rrm txpower {}".format(tx_power))
-                device.configure("ap dot11 24ghz rrm txpower {}".format(tx_power))
-
-    def verify_ap_tx_power_configure(self, device, steps, access_points, tx_power=TX_POWER,
-                                     assignment_mode=ASSIGNMENT_MODE):
-        for ap_name in access_points:
-            with steps.start("Verifying Assignment mode and TX power are configured properly") as step:
-                if device.api.verify_assignment_mode(assignment_mode):
-                    if device.api.verify_tx_power(ap_name, tx_power):
-                        step.passed("Assignment mode and TX power are configured properly")
-                    else:
-                        step.failed("TX power {} is not configured".format(tx_power))
-                else:
-                    step.failed("Given assignment mode " + assignment_mode + " is not configured")
-
-
-class VerifyHaState(BaseStage):
-    """ This stage verifies the if HA pair has formed successfully
-
-        Stage Schema
-        ------------
-        verify_ha_state:
-
-        Examples:
-            verify_ha_state:
-        """
-
-    # =================
-    # Argument Defaults
-    # =================
-    TIMEOUT = 900
-    RETRY_INTERVAL = 30
-
-    # ============
-    # Stage Schema
-    # ============
-    schema = {
-            Optional('timeout'): int,
-    }
-
-    # ==============================
-    # Execution order of Stage steps
-    # ==============================
-    exec_order = [
-        'verify_show_redundancy_states',
-        'verify_show_chassis'
-    ]
-
-    def verify_show_redundancy_states(self, device, steps, timeout=TIMEOUT, interval=RETRY_INTERVAL):
-        with steps.start("Checking the HA pairing in show redundancy states for {}".format(device)) as step:
-            retry_timeout = Timeout(timeout, interval)
-            while retry_timeout.iterate():
-                # Verify show redundancy states for HA pairing
-                try:
-                    show_redundancy = device.parse("show redundancy states")
-                    if show_redundancy.get("peer_state") and "STANDBY HOT" in show_redundancy.get("peer_state"):
-                        step.passed('Device is in STANDBY HOT state')
-                    elif show_redundancy.get("peer_state") and "STANDBY HOT" not in show_redundancy.get("peer_state"):
-                        log.warning('Device is not in STANDBY HOT state yet')
-                        retry_timeout.sleep()
-                    elif show_redundancy.get("peer_state") is None:
-                        log.warning('Standby Device has not yet registered')
-                        retry_timeout.sleep()
-                except (SchemaUnsupportedKeyError, SubCommandFailure, SchemaMissingKeyError) as e:
-                    step.failed("Failed to parse show redundancy states", from_exception=e)
-            step.failed("Device never formed the HA Instance after timeout of {}. Hence failed".format(timeout))
-
-    def verify_show_chassis(self, device, steps, timeout=TIMEOUT, interval=RETRY_INTERVAL):
-        with steps.start("Checking the HA pairing in show chassis for {}".format(device)) as step:
-            retry_timeout = Timeout(timeout, interval)
-            while retry_timeout.iterate():
-                show_chassis = device.parse("show chassis")
-                for chassis_details in show_chassis.get("chassis_index").values():
-                    if chassis_details.get("role") == "Standby" and chassis_details.get("current_state") == "Ready":
-                        step.passed("Device has formed HA and Standby chassis is ready")
-                    elif chassis_details.get("role") == "Standby" and chassis_details.get(
-                            "current_state") != "Ready":
-                        log.warning("Device has formed HA but Standby chassis is not ready. Hence waiting...")
-                        retry_timeout.sleep()
-                    elif chassis_details.get("role") == "Active":
-                        continue
-            step.failed("Device never formed the HA Instance after timeout of {}. Hence failed".format(timeout))

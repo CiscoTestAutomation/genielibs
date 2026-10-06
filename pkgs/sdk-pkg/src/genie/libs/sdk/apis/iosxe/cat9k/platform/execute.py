@@ -35,12 +35,16 @@ def execute_clear_platform_software_fed_switch_punt_entries(
         ) from error
 
 
-def execute_set_config_register(device, config_register, timeout=300):
+def execute_set_config_register(device, config_register, timeout=300,
+                                preserve_console_speed=False):
     '''Set config register to load image in boot variable
         Args:
             device ('obj'): Device object
-            config_register ('str'): Hexadecimal value to set the config register to
+            config_register ('str'): Hexadecimal value to set the config
+                register to
             timeout ('int'): Max time to set config-register in seconds
+            preserve_console_speed ('bool'): Retained for API compatibility.
+                Cat9K manual-boot behavior remains unchanged.
     '''
     # Collect all connections to process
     conn_list = getattr(device, 'subconnections', None) or [device.default]
