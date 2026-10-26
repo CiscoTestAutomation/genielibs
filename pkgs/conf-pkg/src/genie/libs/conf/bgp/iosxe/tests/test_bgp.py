@@ -744,6 +744,73 @@ class test_bgp(TestCase):
                 'no router bgp 304.304',
                     ]))
 
+    def test_af_network_and_v6_aggregate_spacing(self):
+        '''Test whitespace in address-family network and IPv6 aggregate-address CLI generation'''
+        Genie.testbed = testbed = Testbed()
+        dev1 = Device(testbed=testbed, name='PE1', os='iosxe')
+
+        with self.assertNoWarnings():
+            bgp = Bgp(bgp_id=100)
+            dev1.add_feature(bgp)
+
+            af_v4 = bgp.device_attr[dev1].vrf_attr[None].address_family_attr['ipv4 unicast']
+            af_v4.af_network_number = '10.4.0.0'
+            af_v4.af_network_mask = 24
+            af_v4.af_network_route_map = 'RM_IPV4'
+
+            af_v6 = bgp.device_attr[dev1].vrf_attr[None].address_family_attr['ipv6 unicast']
+            af_v6.af_v6_aggregate_address_ipv6_address = '2001:db8::/32'
+            af_v6.af_v6_aggregate_address_as_set = True
+            af_v6.af_v6_aggregate_address_summary_only = True
+            af_v6.af_v6_network_number = '2001:db8:1::/48'
+            af_v6.af_v6_network_route_map = 'RM_IPV6'
+
+            cfgs = bgp.build_config(apply=False)
+            self.assertCountEqual(cfgs.keys(), [dev1.name])
+            self.assertMultiLineEqual(str(cfgs[dev1.name]), '\n'.join([
+                'router bgp 100',
+                ' address-family ipv4 unicast',
+                '  network 10.4.0.0 mask 24 route-map RM_IPV4',
+                '  exit',
+                ' address-family ipv6 unicast',
+                '  aggregate-address 2001:db8::/32 as-set summary-only',
+                '  network 2001:db8:1::/48 route-map RM_IPV6',
+                '  exit',
+                ' exit',
+            ]))
+
+    def test_vrf_name_initialization_and_string_vrf(self):
+        '''Test vrf_name resolution when VRF is indexed by string name or when _vrf_name is unset'''
+        Genie.testbed = testbed = Testbed()
+        dev1 = Device(testbed=testbed, name='PE1', os='iosxe')
+
+        with self.assertNoWarnings():
+            bgp = Bgp(bgp_id=100)
+            dev1.add_feature(bgp)
+
+            # Indexing vrf_attr by string name without a Vrf instance registered in testbed
+            bgp.device_attr[dev1].vrf_attr['Mgmt-vrf'].cluster_id = '150'
+            bgp.device_attr[dev1].vrf_attr['Mgmt-vrf'].address_family_attr['ipv4 unicast'].\
+                af_client_to_client_reflection = True
+
+            cfgs = bgp.build_config(apply=False)
+            self.assertCountEqual(cfgs.keys(), [dev1.name])
+            self.assertMultiLineEqual(str(cfgs[dev1.name]), '\n'.join([
+                'router bgp 100',
+                ' bgp cluster-id 150',
+                ' address-family ipv4 unicast vrf Mgmt-vrf',
+                '  bgp client-to-client reflection',
+                '  exit',
+                ' exit',
+            ]))
+
+            # Fallback initialization when _vrf_name is absent on VrfAttributes instance
+            vrf_sub = bgp.device_attr[dev1].vrf_attr[None]
+            del vrf_sub.__dict__['_vrf_name']
+            cfg_str = vrf_sub.build_config(apply=False)
+            self.assertEqual(vrf_sub.vrf_name, 'default')
+            self.assertEqual(cfg_str, '')
+
 
 if __name__ == '__main__':
     unittest.main()
