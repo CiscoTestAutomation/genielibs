@@ -385,10 +385,13 @@ class Bgp(ABC):
                 # self.bgp_id condition is for the partial_configuration
                 # scenarios
                 if attributes.format('{bgp_id}') or self.bgp_id:
-                    if not self.vrf:
-                        self.vrf_name == 'default'
+                    if not getattr(self, 'vrf', None):
+                        vrf_name = getattr(self, 'vrf_name', None) or 'default'
                     else:
-                        self.vrf_name == self.vrf.name
+                        vrf_name = self.vrf.name
+                    self._vrf_name = vrf_name
+                    if getattr(self, 'vrf_name', None) != vrf_name:
+                        self.vrf_name = vrf_name
 
                     # iosxe: router bgp 100 / [instance someword] /
                     # [vrf someword] /[bgpalways-compare-med] |
@@ -510,6 +513,14 @@ class Bgp(ABC):
                                 attributes=address_family_attributes,
                                 unconfig=unconfig))
                 else:
+                    if not getattr(self, 'vrf', None):
+                        vrf_name = getattr(self, 'vrf_name', None) or 'default'
+                    else:
+                        vrf_name = self.vrf.name
+                    self._vrf_name = vrf_name
+                    if getattr(self, 'vrf_name', None) != vrf_name:
+                        self.vrf_name = vrf_name
+
                     for neighbor_sub, neighbor_attributes in \
                         attributes.mapping_values('neighbor_attr',
                                                   keys=self.neighbors):
@@ -840,9 +851,9 @@ class Bgp(ABC):
                         if attributes.value('af_network_number'):
                             base_s = 'network {af_network_number}'
                             if attributes.value('af_network_mask'):
-                                base_s += 'mask {af_network_mask}'
+                                base_s += ' mask {af_network_mask}'
                             if attributes.value('af_network_route_map'):
-                                base_s += 'route-map {af_network_route_map}'
+                                base_s += ' route-map {af_network_route_map}'
 
                             configurations.append_line(
                                 attributes.format(base_s))
@@ -857,10 +868,10 @@ class Bgp(ABC):
                                   '{af_v6_aggregate_address_ipv6_address}'
                             if attributes.value(
                                 'af_v6_aggregate_address_as_set'):
-                                cfg += 'as-set'
+                                cfg += ' as-set'
                             if attributes.value(
                                 'af_v6_aggregate_address_summary_only'):
-                                cfg += 'summary-only'
+                                cfg += ' summary-only'
 
                             configurations.append_line(
                                 attributes.format(cfg))
@@ -874,7 +885,7 @@ class Bgp(ABC):
                             cfg = 'network {af_v6_network_number}'
                             if attributes.value(
                                 'af_v6_network_route_map'):
-                                cfg += 'route-map {af_v6_network_route_map}'
+                                cfg += ' route-map {af_v6_network_route_map}'
 
                             configurations.append_line(
                                 attributes.format(cfg))
