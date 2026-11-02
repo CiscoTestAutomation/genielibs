@@ -33,10 +33,9 @@ def set_snmp_snmpset(
     try:
 
         return device.execute(cmd)
-    
+
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure snmp set on the device. Error:\n{e}")
-
 
 def set_snmpv3_snmpset(
     device, user_name, ip_address, oid, auth_password, priv_password,
@@ -44,19 +43,16 @@ def set_snmpv3_snmpset(
     string=None, option=None
 ):
     """ SNMPv3 snmpset command with authPriv security
-
         Example command:
             snmpset -v 3 -l authPriv -u SNMPV3_USER -a SHA -A AuthPass123 -x AES -X PrivPass123 <ip> <oid>
             snmpset -v 3 -l authPriv -u SNMPV3_USER -a SHA -A AuthPass123 -x AES -X PrivPass123 <mgmt_address> 1.3.6.1.2.1.1.4.0 s admin@cisco.com
-            
+
             Setting an integer value via option
             set_snmp_snmpset(..., oid='1.3.6.1.2.1.1.4.0', string=None, option='i 2')
              → snmpset ... 1.3.6.1.2.1.1.4.0 i 2   (sets integer value 2)
-
-            Setting an IP address via option  
+            Setting an IP address via option
             set_snmp_snmpset(..., oid='...', string=None, option='a 192.168.1.1')
              → snmpset ... <oid> a 192.168.1.1   (sets IP address)
-
         Args:
             device (`obj`): SNMP device
             user_name (`str`): SNMPv3 username
@@ -88,3 +84,46 @@ def set_snmpv3_snmpset(
         return device.execute(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure snmpv3 set on the device. Error:\n{e}") from e
+
+def configure_snmp_server_view(device, mib_view, family_name, state = 'excluded'):
+    """ Configures the snmp server view on device
+        Args:
+            device ('obj'): device to use
+            mib_view ('str'): Name of the view
+            family_name ('str'): MIB view family name
+            state ('str'): mib family excluded|included
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(f"Configuring snmpserver view on device {device}")
+
+    try:
+        device.execute(f"snmp-server view {mib_view} {family_name} {state}")
+    except SubCommandFailure as error:
+        raise SubCommandFailure(
+            f"Could not configure snmp server view. Error:\n{str(error)}"
+        )
+
+
+def unconfigure_snmp_server_view(device, mib_view, family_name, state = 'excluded'):
+    """ Unconfigures the snmp server view on device
+        Args:
+            device ('obj'): device to use
+            mib_view ('str'): Name of the view
+            family_name ('str'): MIB view family name
+            state ('str'): mib family excluded|included
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(f"Unconfiguring snmp server view on device {device}")
+
+    try:
+        device.execute(f"no snmp-server view {mib_view} {family_name} {state}")
+    except SubCommandFailure as error:
+        raise SubCommandFailure(
+            f"Could not unconfigure snmp server view. Error:\n{str(error)}"
+        )

@@ -1161,8 +1161,10 @@ class TestRecovery(unittest.TestCase):
         recovery_exception = RuntimeError('recovery failed')
         recovery_steps.side_effect = recovery_exception
         section = SignalSection()
-        section.uid = 'ResetConfiguration'
-        section.result = Passed
+        section.uid = 'SetControllerMode'
+        original_stage_result = Errored.clone(
+            'SetControllerMode failed while detecting device state')
+        section.result = original_stage_result
         device = section.parameters['device'] = MagicMock()
         device.chassis_type = 'single'
         device.is_ha = False
@@ -1178,7 +1180,7 @@ class TestRecovery(unittest.TestCase):
                 configure_console_speed=False)
 
         outcome = section.parent.parameters[
-            'recovery_outcomes']['ResetConfiguration']
+            'recovery_outcomes']['SetControllerMode']
         self.assertEqual(
             [Errored, Failed],
             [step.result for step in steps.details])
@@ -1356,3 +1358,66 @@ class TestRecovery(unittest.TestCase):
         outcome = section.parent.parameters['recovery_outcomes']['Connect']
         self.assertTrue(outcome.retry_clean)
         self.assertTrue(outcome.terminate_clean)
+
+    def test_recovery_steps_destroy_error_does_not_mask_boot_failure(self):
+        device = MagicMock()
+        device.name = 'test_device'
+        first_boot_failure = RuntimeError(
+            'Device reached login prompt before rommon prompt')
+        final_boot_failure = RuntimeError('Recovery retry failed')
+        device.api.device_recovery_boot.side_effect = [
+            first_boot_failure,
+            final_boot_failure,
+        ]
+        device.destroy.side_effect = AttributeError(
+            "'NoneType' object has no attribute 'disconnect'")
+
+        with self.assertRaisesRegex(
+                Exception,
+                "Failed to boot device 'test_device' after powercycle",
+        ) as cm:
+            _recovery_steps(
+                device,
+                clear_line=False,
+                powercycler=True,
+                configure_console_speed=True,
+            )
+
+        self.assertIs(final_boot_failure, cm.exception.__cause__)
+        self.assertNotIn('connection_provider', str(cm.exception))
+        self.assertEqual(2, device.api.device_recovery_boot.call_count)
+        self.assertEqual(2, device.api.execute_power_cycle_device.call_count)
+        device.destroy.assert_called_once_with()
+        device.api.configure_management_console.assert_called_once_with()
+        device.api.verify_no_boot_manual.assert_called_once_with()
+
+    def test_recovery_steps_verify_error_preserves_boot_failure(self):
+        device = MagicMock()
+        device.name = 'test_device'
+        boot_failure = RuntimeError(
+            'Device reached login prompt before rommon prompt')
+        device.api.device_recovery_boot.side_effect = boot_failure
+        device.destroy.side_effect = AttributeError(
+            "'NoneType' object has no attribute 'disconnect'")
+        device.api.verify_no_boot_manual.side_effect = TypeError(
+            'device is not connected, output must be provided.')
+
+        with self.assertRaisesRegex(
+                Exception,
+                "Failed to boot device 'test_device' after powercycle",
+        ) as cm:
+            _recovery_steps(
+                device,
+                clear_line=False,
+                powercycler=True,
+                configure_console_speed=True,
+            )
+
+        self.assertIs(boot_failure, cm.exception.__cause__)
+        self.assertNotIn('device is not connected', str(cm.exception))
+        device.api.device_recovery_boot.assert_called_once_with()
+        device.api.execute_power_cycle_device.assert_called_once_with(delay=30)
+        device.destroy.assert_called_once_with()
+        device.api.configure_management_console.assert_called_once_with()
+        device.api.verify_no_boot_manual.assert_called_once_with()
+        device.disconnect.assert_not_called()

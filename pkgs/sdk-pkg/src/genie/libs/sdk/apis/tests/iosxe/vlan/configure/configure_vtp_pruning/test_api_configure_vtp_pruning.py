@@ -1,35 +1,14 @@
-import os
-import unittest
-from pyats.topology import loader
+from unittest import TestCase
+from unittest.mock import Mock
+
 from genie.libs.sdk.apis.iosxe.vlan.configure import configure_vtp_pruning
 
 
-class TestConfigureVtpPruning(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          SC_9200-1:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: c9300
-            type: c9300
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['SC_9200-1']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureVtpPruning(TestCase):
 
     def test_configure_vtp_pruning(self):
-        result = configure_vtp_pruning(self.device)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        result = configure_vtp_pruning(device)
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once_with('vtp pruning')

@@ -737,7 +737,7 @@ def copy_startup_config_to_flash_memory(device, timeout):
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not copy saved configuration on {device}. Error:\n{e}")
 
-def copy_startup_config_to_scp(device, host, file, username, password, timeout=120):
+def copy_startup_config_to_scp(device, host, file, username, password, timeout=120, vrf=None):
     """Secure replacement: copy startup configuration using SCP.
 
     Args:
@@ -747,6 +747,7 @@ def copy_startup_config_to_scp(device, host, file, username, password, timeout=1
         timeout ('int', optional): Command timeout (default 120 seconds)
         username ('str'): SCP username (required)
         password ('str'): SCP password (required)
+        vrf ('str', optional): VRF name (default None)
 
     Returns:
         None
@@ -790,6 +791,8 @@ def copy_startup_config_to_scp(device, host, file, username, password, timeout=1
     ])
 
     cmd = f"copy startup-config scp://{username}@{host}//{file}"
+    if vrf:
+        cmd += f" vrf {vrf}"
     try:
         device.execute(cmd, reply=dialog, timeout=timeout,
                        error_pattern=[r".*%Error.*", r".*Invalid input.*"])

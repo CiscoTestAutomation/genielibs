@@ -1531,23 +1531,92 @@ class TestUtilsApi(unittest.TestCase):
         self.assertTrue(context.exception.__suppress_context__)
 
     def test_device_recovery_boot(self):
+        from genie.libs.clean.recovery.iosxe.recovery import recovery_worker
+
         device = create_test_device(name='aDevice', os='iosxe')
         device.destroy = Mock()
         device.start = 'telnet 127.0.0.1 0000'
         device.instantiate = Mock()
         device.is_ha = False
-        device.clean = {'device_recovery':
-                            {'golden_image':'bootflash:packages.conf',
-                            'recovery_password':'lab'}}
+        device.clean = {
+            'device_recovery': {
+                'golden_image': 'bootflash:packages.conf',
+                'recovery_password': 'lab',
+            },
+        }
         with patch("genie.libs.sdk.apis.utils.Lookup") as lookup_mock:
             lookup_clean = mock.Mock()
-            lookup_clean.clean.recovery.recovery.recovery_worker = mock.Mock()
+            worker = mock.create_autospec(recovery_worker)
+            lookup_clean.clean.recovery.recovery.recovery_worker = worker
             lookup_mock.from_device.return_value = lookup_clean
             device_recovery_boot(device)
-            expected_calls = [call(device=device, console_activity_pattern=None, console_breakboot_char='\x03', console_breakboot_telnet_break=False,
-             grub_activity_pattern=None, grub_breakboot_char='c', break_count=15, timeout=750, golden_image='bootflash:packages.conf', tftp_boot={}, recovery_password='lab')]
-            lookup_clean.clean.recovery.recovery.recovery_worker.mock_calls
-            self.assertEqual(lookup_clean.clean.recovery.recovery.recovery_worker.mock_calls, expected_calls)
+            worker.assert_called_once_with(
+                start='telnet 127.0.0.1 0000',
+                item=0,
+                device=device,
+                console_activity_pattern=None,
+                console_breakboot_char='\x03',
+                console_breakboot_telnet_break=False,
+                grub_activity_pattern=None,
+                grub_breakboot_char='c',
+                break_count=15,
+                timeout=750,
+                golden_image='bootflash:packages.conf',
+                tftp_boot={},
+                recovery_password='lab')
+
+    def test_device_recovery_boot_sdwan_start_list(self):
+        from genie.libs.clean.recovery.iosxe.sdwan.recovery import (
+            recovery_worker,
+        )
+
+        device = create_test_device(
+            name='aDevice', os='iosxe', platform='sdwan')
+        device.destroy = Mock()
+        device.start = ['telnet 127.0.0.1 0000']
+        device.instantiate = Mock()
+        device.is_ha = False
+        device.clean = {
+            'device_recovery': {
+                'tftp_boot': {
+                    'image': ['image.bin'],
+                    'ip_address': ['192.0.2.10'],
+                    'subnet_mask': '255.255.255.0',
+                    'gateway': '192.0.2.1',
+                    'tftp_server': '192.0.2.2',
+                },
+            },
+        }
+
+        with patch("genie.libs.sdk.apis.utils.Lookup") as lookup_mock:
+            lookup_clean = mock.Mock()
+            worker = mock.create_autospec(recovery_worker)
+            lookup_clean.clean.recovery.recovery.recovery_worker = worker
+            lookup_mock.from_device.return_value = lookup_clean
+
+            device_recovery_boot(device)
+
+            worker.assert_called_once_with(
+                start='telnet 127.0.0.1 0000',
+                item=0,
+                device=device,
+                console_activity_pattern=None,
+                console_breakboot_char='\x03',
+                console_breakboot_telnet_break=False,
+                grub_activity_pattern=None,
+                grub_breakboot_char='c',
+                break_count=15,
+                timeout=750,
+                golden_image=[],
+                tftp_boot={
+                    'image': ['image.bin'],
+                    'ip_address': ['192.0.2.10'],
+                    'subnet_mask': '255.255.255.0',
+                    'gateway': '192.0.2.1',
+                    'tftp_server': '192.0.2.2',
+                    'ether_port': 0,
+                },
+                recovery_password=None)
 
     def test_configure_management_console(self):
         dev1 = MagicMock()

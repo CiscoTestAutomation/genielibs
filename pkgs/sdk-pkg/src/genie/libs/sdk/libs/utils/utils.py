@@ -14,6 +14,15 @@ from unicon.core.errors import ConnectionError
 log = logging.getLogger(__name__)
 
 
+def _request_system_shell_recovery_timeout(timeout):
+    """Return a bounded timeout for exception-path prompt recovery."""
+    try:
+        timeout = float(timeout)
+    except (TypeError, ValueError):
+        timeout = 10
+    return min(max(timeout, 1), 10)
+
+
 def get_tftp_server_address(device):
     """Select a TFTP server address from the device testbed.
 

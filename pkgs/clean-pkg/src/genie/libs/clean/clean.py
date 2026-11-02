@@ -18,7 +18,6 @@ from pyats.aetest.parameters import ParameterDict
 from pyats.aetest.sections import TestSection
 
 # Genie
-from genie.testbed import load
 from genie.harness.utils import load_class
 from genie.libs.clean.utils import (
     pretty_schema_exception,
@@ -140,13 +139,15 @@ class CleanTestcase(Testcase):
     """Execute one device's ordered stages with shared generated-testbed state.
 
     ``testbed_config`` is injected into every stage's parameter dictionary. A
-    stage may add fragments to it without depending on Kleenex internals; the
+    stage may add fragments to it without depending on Kleenex internals. A
+    coordinated stage receives ``coordination_context`` explicitly; the
     owning cleaner and worker handle transport after the testcase succeeds.
     """
 
     def __init__(
             self, device: Any, global_stage_reuse_limit: int, *args: Any,
             testbed_config: TypingOptional[Any] = None,
+            coordination_context: TypingOptional[Any] = None,
             **kwargs: Any) -> None:
         """Initialize a device Clean testcase and its shared stage context.
 
@@ -156,6 +157,8 @@ class CleanTestcase(Testcase):
             *args: Positional arguments forwarded to the AEtest testcase.
             testbed_config: Optional collector shared with every clean stage so
                 stages can publish runtime testbed changes.
+            coordination_context: Optional process-safe context shared by
+                coordinated Clean stages.
             **kwargs: Keyword arguments forwarded to the AEtest testcase.
         """
         # Retain device execution state and the worker-owned collector that
@@ -163,6 +166,7 @@ class CleanTestcase(Testcase):
         self.device = device
         self.global_stage_reuse_limit = global_stage_reuse_limit
         self.testbed_config = testbed_config
+        self.coordination_context = coordination_context
         self.stages = {}
         self.device_recovery_processor = None
         self.image_handler = get_image_handler(device)
@@ -235,6 +239,9 @@ class CleanTestcase(Testcase):
                 # preserving legacy values with pre-collector pyATS versions.
                 if self.testbed_config is not None:
                     cls.parameters['testbed_config'] = self.testbed_config
+                if self.coordination_context is not None:
+                    cls.parameters['coordination_context'] = \
+                        self.coordination_context
 
                 if self.device_recovery_processor:
                     processors.affix(
@@ -415,23 +422,22 @@ class DeviceClean(BaseCleaner):
 
     def clean(
             self, device: Any, reporter: TypingOptional[Any] = None,
-            *args: Any, **kwargs: Any) -> None:
+            *args: Any, coordination_context: TypingOptional[Any] = None,
+            **kwargs: Any) -> None:
         """Execute configured Genie Clean stages for one pyATS device.
 
         Args:
             device: pyATS device selected by the Kleenex worker.
             reporter: Optional device reporter used for stage-level results.
             *args: Reserved positional arguments retained for compatibility.
+            coordination_context: Optional process-safe coordination context
+                passed explicitly by Kleenex for coordinated Clean.
             **kwargs: Reserved keyword arguments retained for compatibility.
 
         Raises:
             CleanRetryRequest: If recovery requests another complete attempt.
             Exception: If the completed Clean testcase has a failing result.
         """
-
-        # In this section we will convert to Genie Testbed
-        testbed = load(device.testbed)
-        device = testbed.devices[device.name]
 
         global_stage_reuse_limit = getattr(
             self, 'global_stage_reuse_limit', GLOBAL_STAGE_REUSE_LIMIT)
@@ -441,7 +447,8 @@ class DeviceClean(BaseCleaner):
         # callers that bypass BaseCleaner initialization backward compatible.
         clean_testcase = CleanTestcase(
             device, global_stage_reuse_limit,
-            testbed_config=getattr(self, 'testbed_config', None))
+            testbed_config=getattr(self, 'testbed_config', None),
+            coordination_context=coordination_context)
         if reporter:
             clean_testcase.reporter = reporter.testcase(clean_testcase)
 
@@ -475,5 +482,9 @@ class DeviceClean(BaseCleaner):
 
 class PyatsDeviceClean(DeviceClean):
 
-    def clean(self, device, reporter=None, *args, **kwargs):
-        super().clean(device, reporter, *args, **kwargs)
+    def clean(
+            self, device, reporter=None, *args, coordination_context=None,
+            **kwargs):
+        super().clean(
+            device, reporter, *args,
+            coordination_context=coordination_context, **kwargs)

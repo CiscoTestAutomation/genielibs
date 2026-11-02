@@ -20,8 +20,7 @@ class TestUnconfigureSnmpServerHost(unittest.TestCase):
 
         self.assertIsNone(result)
         device.configure.assert_called_once_with(
-            'no snmp-server host 5.5.5.5 6 '
-            '[QggBEaZ^MSMV`ATHVFB]Pcd^Z`O`\\'
+            'no snmp-server host 5.5.5.5 version 6 [QggBEaZ^MSMV`ATHVFB]Pcd^Z`O`\\'
         )
 
     def test_unconfigure_snmp_server_host_without_version(self):
@@ -30,6 +29,26 @@ class TestUnconfigureSnmpServerHost(unittest.TestCase):
         result = unconfigure_snmp_server_host(device, '10.1.1.1', 'public')
 
         self.assertIsNone(result)
-        device.configure.assert_called_once_with(
-            'no snmp-server host 10.1.1.1 public'
+        device.configure.assert_called_once_with('no snmp-server host 10.1.1.1 public')
+
+    def test_unconfigure_snmp_server_host_with_security_level(self):
+        device = Mock()
+
+        result = unconfigure_snmp_server_host(
+            device, '10.1.1.1', version='v3',
+            community_string='snmpuser1', security_level='priv'
         )
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once_with(
+            'no snmp-server host 10.1.1.1 version v3 priv snmpuser1'
+        )
+
+    def test_unconfigure_snmp_server_host_security_level_crlf_rejected(self):
+        device = Mock()
+
+        with self.assertRaises(ValueError):
+            unconfigure_snmp_server_host(
+                device, '10.1.1.1', version='v3',
+                community_string='snmpuser1', security_level='priv\nmalicious'
+            )

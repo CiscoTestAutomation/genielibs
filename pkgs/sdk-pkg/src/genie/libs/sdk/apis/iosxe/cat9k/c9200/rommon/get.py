@@ -4,6 +4,7 @@ log = logging.getLogger(__name__)
 
 # Genie
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
+from genie.libs.sdk.apis.iosxe.rommon.get import get_tftp_boot_command as _get_tftp_boot_command
 
 def get_recovery_details(device, golden_image: list = None, tftp_boot: dict = None):
     """
@@ -75,7 +76,7 @@ def get_tftp_boot_command(device, recovery_info):
         recovery_info (dict):
            tftp_boot (dict):
                tftp_server (str): IP or hostname of TFTP server
-               image (list): List of image filenames/paths
+               image: One primary path or supported Clean image/file metadata.
 
     Returns:
         cmd: Full TFTP URL ROMMON boot command, e.g.
@@ -88,11 +89,11 @@ def get_tftp_boot_command(device, recovery_info):
     """
     tftp_boot_info = recovery_info.get('tftp_boot', {})
     tftp_server = tftp_boot_info.get('tftp_server', '')
-    tftp_image_list = tftp_boot_info.get('image', [])
-    image_to_boot = tftp_image_list[0] if tftp_image_list else None
-
-    if not tftp_server or not image_to_boot:
+    if not tftp_server:
         raise Exception(f"{device.name}: Missing TFTP server or image for TFTP boot")
+
+    # Select the scalar image before interpolating it into a platform URL.
+    _, image_to_boot = _get_tftp_boot_command(device, recovery_info)
     cmd = f"tftp://{tftp_server}/{image_to_boot}"
     log.info(f"{device.name}: Using  TFTP command: {cmd}")
 

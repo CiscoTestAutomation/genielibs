@@ -42,6 +42,8 @@ But got the following structure
             raise Exception(self.EXPECTED_IMAGE_STRUCTURE_MSG.format(
                 yaml.dump({'images': images})))
 
+        BaseImageHandler.normalize_image_roles(self, ('switch',))
+
     def valid_structure_1(self, images):
 
         schema = ListOf(str)

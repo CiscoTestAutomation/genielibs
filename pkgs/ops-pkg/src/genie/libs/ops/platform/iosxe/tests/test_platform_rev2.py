@@ -16,6 +16,7 @@ from genie.libs.parser.iosxe.show_platform import ShowVersion, \
                                                   ShowModule
 
 from genie.libs.parser.iosxe.rv1.show_platform import \
+    ShowInventory as ShowInventoryRev1, \
     ShowPlatform as ShowPlatformRev1
 from genie.libs.parser.iosxe.rv2.show_platform import \
     ShowInventory as ShowInventoryRev2
@@ -41,6 +42,7 @@ class test_platform_rev2_c9610r(unittest.TestCase):
             {'': PlatformOutput.showRedundancyC9610R}
         f.maker.outputs[ShowInventoryRev2] = \
             {'': PlatformOutput.showInventoryC9610R}
+        f.maker.outputs[ShowInventoryRev1] = {'': {'member': {}}}
         f.maker.outputs[ShowPlatformRev1] = \
             {'': PlatformOutput.showPlatformC9610R}
         f.maker.outputs[ShowModule] = \
@@ -200,7 +202,9 @@ class test_platform_rev2_members_svl(unittest.TestCase):
             },
         }
 
-    def _build_platform(self, show_version=None, show_module=None):
+    def _build_platform(
+        self, show_version=None, show_module=None, member_inventory=None
+    ):
         f = Platform(device=self.device)
         f.maker.outputs[ShowVersion] = {
             '': show_version if show_version is not None else self._svl_show_version()
@@ -215,6 +219,9 @@ class test_platform_rev2_members_svl(unittest.TestCase):
         f.maker.outputs[Dir] = {'': {'dir': {'dir': '/'}}}
         f.maker.outputs[ShowRedundancy] = {'': {}}
         f.maker.outputs[ShowInventoryRev2] = {'': {}}
+        f.maker.outputs[ShowInventoryRev1] = {
+            '': {'member': member_inventory or {}}
+        }
         f.maker.outputs[ShowPlatformRev1] = {'': {}}
         return f
 
@@ -244,6 +251,53 @@ class test_platform_rev2_members_svl(unittest.TestCase):
 
         self.assertFalse(getattr(f, 'members', None),
                          "members should be empty/absent without switch_num")
+
+    def test_member_inventory_enriches_rev2_topology_and_is_cleaned_up(self):
+        show_version = self._svl_show_version()
+        show_version['version'].pop('switch_num')
+        inventory = {
+            '1': {'inventory': {
+                'Switch 1 Chassis': {
+                    'name': 'Switch 1 Chassis',
+                    'pid': 'C9606R',
+                    'vid': 'V01',
+                    'sn': 'CHASSIS1',
+                },
+                'Switch 1 Slot 5 Linecard': {
+                    'name': 'Switch 1 Slot 5 Linecard',
+                    'pid': 'C9600-LC-48YL',
+                    'vid': 'V02',
+                    'sn': 'LINECARD1',
+                },
+            }},
+            '2': {'inventory': {
+                'Switch 2 Chassis': {
+                    'name': 'Switch 2 Chassis',
+                    'pid': 'C9606R',
+                    'vid': 'V01',
+                    'sn': 'CHASSIS2',
+                },
+                'Switch 2 Slot 5 Linecard': {
+                    'name': 'Switch 2 Slot 5 Linecard',
+                    'pid': 'C9600-LC-48YL',
+                    'vid': 'V02',
+                    'sn': 'LINECARD2',
+                },
+            }},
+        }
+        f = self._build_platform(
+            show_version=show_version,
+            member_inventory=inventory,
+        )
+
+        f.learn()
+
+        self.assertEqual(f.member_inventory, inventory)
+        self.assertEqual(f.members['1']['serial'], 'CHASSIS1')
+        self.assertEqual(f.members['2']['serial'], 'CHASSIS2')
+        self.assertEqual(f.slot['lc']['1/5']['sn'], 'LINECARD1')
+        self.assertEqual(f.slot['lc']['2/5']['sn'], 'LINECARD2')
+        self.assertFalse(hasattr(f, '_member_inventory'))
 
 
 if __name__ == '__main__':

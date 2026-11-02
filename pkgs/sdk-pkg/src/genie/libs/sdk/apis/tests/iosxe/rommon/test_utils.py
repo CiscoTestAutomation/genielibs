@@ -6,7 +6,8 @@ from types import SimpleNamespace
 from unittest.mock import Mock, call, patch
 
 from unicon import Connection
-from unicon.core.errors import SubCommandFailure
+from unicon.core.errors import (
+    StateMachineError, SubCommandFailure, UniconAuthenticationError)
 from unicon.eal.dialogs import Dialog, Statement
 from unicon.plugins.generic.patterns import GenericPatterns
 from unicon.plugins.generic.statements import generic_statements
@@ -65,6 +66,8 @@ class TestSendBreakBoot(unittest.TestCase):
         conn.spawn.settings.PROMPT_RECOVERY_COMMANDS = []
         conn.spawn.settings.PROMPT_RECOVERY_INTERVAL = 0
         conn.spawn.settings.PROMPT_RECOVERY_RETRIES = 0
+        conn.settings.LOGIN_PROMPT = None
+        conn.settings.PASSWORD_PROMPT = None
         conn.spawn.read_update_buffer.return_value = True
         conn.spawn.match = SimpleNamespace(
             last_match='rommon>',
@@ -160,19 +163,18 @@ class TestSendBreakBoot(unittest.TestCase):
     @patch('genie.libs.sdk.apis.iosxe.rommon.utils.wait_futures')
     @patch('genie.libs.sdk.apis.iosxe.rommon.utils.ThreadPoolExecutor')
     @patch('genie.libs.sdk.apis.iosxe.rommon.utils.log.info')
-    def test_send_break_boot_sends_one_ctrl_c_at_switch_prompt(
+    def test_send_break_boot_default_matches_three_dot_activity(
         self, mock_log, mock_executor, mock_wait, mock_sleep
     ):
-        """Send one break before stopping at an existing switch prompt."""
+        """The default matches three dots and sends one break."""
         device, con = self._build_device(GenericPatterns().rommon_prompt)
-        con.spawn.buffer = '....\r\nswitch:'
+        con.spawn.buffer = 'Initializing Hardware ...\r\nswitch:'
         con.spawn.match_buffer.side_effect = self._match_buffer(con.spawn)
         con.spawn.trim_buffer.side_effect = self._trim_buffer(con.spawn)
         self._setup_sync_executor(mock_executor, mock_wait)
 
         send_break_boot(
             device,
-            console_activity_pattern=r'\.\.\.\.',
             console_breakboot_char='\x03',
             break_count=15,
             timeout=1)
@@ -300,7 +302,13 @@ class TestSendBreakBoot(unittest.TestCase):
             self.assertEqual(
                 refused_statement.action.__name__,
                 'connection_refused_handler')
-            self.assertIn(r'\.\.\.\.', str(connection_dialog))
+            self.assertIn(r'\.{3,}', str(connection_dialog))
+            patterns = [statement.pattern for statement in
+                        connection_dialog]
+            self.assertIn(generic_statements.login_stmt.pattern, patterns)
+            self.assertIn(generic_statements.password_stmt.pattern, patterns)
+            self.assertNotIn(
+                generic_statements.password_ok_stmt.pattern, patterns)
             self.assertNotIn('standard connection prompt',
                              str(connection_dialog))
             self.assertIs(con.connect_reply, connect_reply)
@@ -321,6 +329,178 @@ class TestSendBreakBoot(unittest.TestCase):
         self.assertEqual(con.state_machine.current_state, 'rommon')
         self.assertFalse(con.mit)
         self.assertIs(con.connect_reply, connect_reply)
+        self.assertEqual(con.connection_timeout, 30)
+
+    def _exercise_terminal_server_reconnect(self, output):
+        """Run the real state-machine dialog against staged console output."""
+        device, con = self._build_device(GenericPatterns().rommon_prompt)
+        device.connected = False
+        con.connected = False
+        con.context = {
+            'credentials': {
+                'terminal_server': {
+                    'username': 'ts-user', 'password': 'ts-password'},
+                'default': {
+                    'username': 'dut-user', 'password': 'dut-password'},
+            },
+            'login_creds': ['terminal_server', 'default'],
+            'fallback_creds': [],
+            'cred_action': {'terminal_server': {'post': 'sendline()'}},
+        }
+        con.spawn.hostname = None
+        con.spawn.last_sent = ''
+        con.spawn.buffer = ''
+        con.spawn.match_buffer.side_effect = self._match_buffer(con.spawn)
+        con.spawn.trim_buffer.side_effect = self._trim_buffer(con.spawn)
+        boot_output = iter(output)
+        events = []
+        phase = 0
+
+        def _read_update_buffer():
+            nonlocal phase
+            if phase == 0:
+                con.spawn.buffer += 'Username: '
+                phase = 1
+            elif phase == 1 and ('sendline', 'ts-user') in events:
+                con.spawn.buffer += 'Password: '
+                phase = 2
+            elif phase == 2 and ('sendline', 'ts-password') in events:
+                phase = 3
+            if phase == 3:
+                try:
+                    con.spawn.buffer += next(boot_output)
+                except StopIteration:
+                    pass
+            return bool(con.spawn.buffer)
+
+        con.spawn.read_update_buffer.side_effect = _read_update_buffer
+
+        def _sendline(value=''):
+            events.append(('sendline', value))
+            con.spawn.last_sent = value
+
+        def _send(value):
+            events.append(('send', value))
+            con.spawn.buffer += '\r\nswitch: '
+
+        con.spawn.sendline.side_effect = _sendline
+        con.spawn.send.side_effect = _send
+
+        def _connect(connection_dialog, skip_initialization):
+            self.assertTrue(skip_initialization)
+            self.assertNotIn(
+                generic_statements.password_ok_stmt.pattern,
+                [statement.pattern for statement in connection_dialog])
+            # Unicon's provider normally initializes this before go_to().
+            con.context['cred_list'] = con.context['login_creds']
+            con.state_machine.go_to(
+                'any', spawn=con.spawn, context=con.context, timeout=2,
+                dialog=connection_dialog, dialog_replacement=True)
+
+        con.connect.side_effect = _connect
+        send_break_boot(device, break_count=3, timeout=2)
+        return con, events
+
+    @patch('genie.libs.sdk.apis.iosxe.rommon.utils.time.sleep')
+    def test_unconnected_device_authenticates_terminal_server_before_break(
+            self, mock_sleep):
+        """Reconnect authenticates before BREAK with coalesced or split ACK."""
+        cases = {
+            'coalesced': (
+                'Terminal server access granted: Password OK\r\n....',),
+            'split_ack': (
+                '\r\n\r\nTerminal server access granted: Password OK\r\n\r\n',
+                '....'),
+            'generic_ack': ('\r\nPassword OK\r\n\r\n', '....'),
+        }
+        for name, output in cases.items():
+            with self.subTest(name=name):
+                con, events = self._exercise_terminal_server_reconnect(output)
+                self.assertEqual(events, [
+                    ('sendline', 'ts-user'),
+                    ('sendline', 'ts-password'),
+                    ('sendline', ''),
+                    ('send', '\x03'),
+                ])
+                self.assertEqual(con.state_machine.current_state, 'rommon')
+                con.sendline.assert_not_called()
+                con.connect.assert_called_once()
+                self.assertEqual(con.connection_timeout, 30)
+
+    def test_unconnected_terminal_server_ack_alone_does_not_succeed(self):
+        """Authentication success alone is not evidence of DUT ROMMON."""
+        device, con = self._build_device(GenericPatterns().rommon_prompt)
+        device.connected = False
+        con.connected = False
+        con.spawn.hostname = None
+        con.spawn.buffer = (
+            'Terminal server access granted: Password OK\r\n')
+        con.spawn.match_buffer.side_effect = self._match_buffer(con.spawn)
+        con.spawn.trim_buffer.side_effect = self._trim_buffer(con.spawn)
+        con.spawn.read_update_buffer.side_effect = (
+            lambda: bool(con.spawn.buffer))
+
+        def _connect(connection_dialog, skip_initialization):
+            con.state_machine.go_to(
+                'any', spawn=con.spawn, context=con.context, timeout=1,
+                dialog=connection_dialog, dialog_replacement=True)
+
+        con.connect.side_effect = _connect
+
+        with self.assertRaises(StateMachineError):
+            send_break_boot(device, timeout=1)
+
+        con.spawn.send.assert_not_called()
+        self.assertNotEqual(con.state_machine.current_state, 'rommon')
+
+    def test_unconnected_device_does_not_break_after_authentication_failure(
+            self):
+        """Rejected terminal-server credentials never reach the DUT break."""
+        device, con = self._build_device(GenericPatterns().rommon_prompt)
+        device.connected = False
+        con.connected = False
+        con.context = {
+            'credentials': {
+                'terminal_server': {
+                    'username': 'ts-user', 'password': 'ts-password'},
+            },
+            'login_creds': ['terminal_server'],
+            'fallback_creds': [],
+        }
+        con.spawn.hostname = None
+        con.spawn.last_sent = ''
+        con.spawn.buffer = ''
+        con.spawn.match_buffer.side_effect = self._match_buffer(con.spawn)
+        con.spawn.trim_buffer.side_effect = self._trim_buffer(con.spawn)
+        prompts = iter(('Username: ', 'Password: ',
+                        '% Authentication failed\n'))
+
+        def _read_update_buffer():
+            if not con.spawn.buffer:
+                try:
+                    con.spawn.buffer = next(prompts)
+                except StopIteration:
+                    return False
+            return True
+
+        con.spawn.read_update_buffer.side_effect = _read_update_buffer
+        con.spawn.sendline.side_effect = (
+            lambda value: setattr(con.spawn, 'last_sent', value))
+
+        def _connect(connection_dialog, skip_initialization):
+            self.assertTrue(skip_initialization)
+            con.context['cred_list'] = con.context['login_creds']
+            con.state_machine.go_to(
+                'any', spawn=con.spawn, context=con.context, timeout=2,
+                dialog=connection_dialog, dialog_replacement=True)
+
+        con.connect.side_effect = _connect
+
+        with self.assertRaises(UniconAuthenticationError):
+            send_break_boot(device, timeout=2)
+
+        con.spawn.send.assert_not_called()
+        self.assertNotEqual(con.state_machine.current_state, 'rommon')
         self.assertEqual(con.connection_timeout, 30)
 
     def test_unconnected_device_rejects_unsupported_unicon(self):
@@ -348,7 +528,15 @@ class TestSendBreakBoot(unittest.TestCase):
                 [
                     (generic_statements.connection_refused_stmt.pattern,
                      'connection_refused_handler'),
-                    (r'\.\.\.\.', 'telnet_breakboot'),
+                    (generic_statements.bad_password_stmt.pattern,
+                     'bad_password_handler'),
+                    (generic_statements.login_incorrect.pattern,
+                     'incorrect_login_handler'),
+                    (generic_statements.login_stmt.pattern,
+                     'login_handler'),
+                    (generic_statements.password_stmt.pattern,
+                     'password_handler'),
+                    (r'\.{3,}', 'telnet_breakboot'),
                 ],
             ),
             (
@@ -359,7 +547,15 @@ class TestSendBreakBoot(unittest.TestCase):
                 [
                     (generic_statements.connection_refused_stmt.pattern,
                      'connection_refused_handler'),
-                    (r'\.\.\.\.', 'console_breakboot'),
+                    (generic_statements.bad_password_stmt.pattern,
+                     'bad_password_handler'),
+                    (generic_statements.login_incorrect.pattern,
+                     'incorrect_login_handler'),
+                    (generic_statements.login_stmt.pattern,
+                     'login_handler'),
+                    (generic_statements.password_stmt.pattern,
+                     'password_handler'),
+                    (r'\.{3,}', 'console_breakboot'),
                     ('grub activity', 'grub_breakboot'),
                 ],
             ),
@@ -375,11 +571,18 @@ class TestSendBreakBoot(unittest.TestCase):
                 def _connect(connection_dialog, skip_initialization):
                     self.assertTrue(skip_initialization)
                     actual_statements = [
-                        (statement.pattern, statement.action.__name__)
+                        (statement.pattern,
+                         getattr(statement.action, '__name__', None))
                         for statement in connection_dialog
                     ]
-                    self.assertEqual(
-                        actual_statements, expected_statements)
+                    for statement in expected_statements:
+                        self.assertIn(statement, actual_statements)
+                    patterns = [statement.pattern for statement in
+                                connection_dialog]
+                    self.assertIn(generic_statements.login_stmt.pattern,
+                                  patterns)
+                    self.assertIn(generic_statements.password_stmt.pattern,
+                                  patterns)
                     con.state_machine.update_cur_state('rommon')
 
                 con.connect.side_effect = _connect
@@ -459,6 +662,10 @@ class TestSendBreakBoot(unittest.TestCase):
         device.connected = False
         con1.connected = False
         con2.connected = False
+        con1.settings.LOGIN_PROMPT = r'TS1 user:\s*$'
+        con1.settings.PASSWORD_PROMPT = r'TS1 secret:\s*$'
+        con2.settings.LOGIN_PROMPT = r'TS2 user:\s*$'
+        con2.settings.PASSWORD_PROMPT = r'TS2 secret:\s*$'
         con1_reply = con1.connect_reply
         con2_reply = con2.connect_reply
 
@@ -483,12 +690,18 @@ class TestSendBreakBoot(unittest.TestCase):
             self.assertIs(parent.connect_reply, parent_reply)
             break_statement = next(
                 statement for statement in connection_dialog
-                if statement.pattern == r'\.\.\.\.'
+                if statement.pattern == r'\.{3,}'
             )
             self.assertEqual(
                 break_statement.args['rommon_patterns'],
                 [r'(?P<loader>rommon)>', r'(?P<loader>switch):'],
             )
+            auth_patterns = [statement.pattern for statement in
+                             connection_dialog]
+            self.assertIn(con1.settings.LOGIN_PROMPT, auth_patterns)
+            self.assertIn(con1.settings.PASSWORD_PROMPT, auth_patterns)
+            self.assertIn(con2.settings.LOGIN_PROMPT, auth_patterns)
+            self.assertIn(con2.settings.PASSWORD_PROMPT, auth_patterns)
             self.assertIs(con1.connect_reply, con1_reply)
             self.assertIs(con2.connect_reply, con2_reply)
             con1.state_machine.update_cur_state('rommon')

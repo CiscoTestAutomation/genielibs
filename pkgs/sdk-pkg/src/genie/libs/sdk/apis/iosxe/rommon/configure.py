@@ -1,13 +1,74 @@
 ''' Common Config functions for rommon'''
 
 import logging
+import re
+from contextlib import contextmanager
+from contextvars import ContextVar
+from pyats.utils.schemaengine import SchemaError
 log = logging.getLogger(__name__)
 # Unicon
 from unicon.core.errors import SubCommandFailure
 from genie.libs.clean.utils import get_image_handler
+from genie.libs.sdk.apis.iosxe.rommon.get import _normalize_image_paths
 from genie.libs.sdk.libs.utils.utils import get_recovery_tftp_server
 import ipaddress
 from ipaddress import IPv4Address, IPv6Address, IPv4Interface, IPv6Interface, ip_interface
+
+
+
+# Legacy configuration providers discard the delegated API return value.
+# Capture the actual path at that delegation boundary without device-global state.
+_rommon_tftp_image_capture = ContextVar('rommon_tftp_image_capture', default=None)
+
+
+@contextmanager
+def _capture_rommon_tftp_image():
+    """Collect successfully configured transport paths in this provider call."""
+    images = []
+    token = _rommon_tftp_image_capture.set(images)
+    try:
+        yield images
+    finally:
+        _rommon_tftp_image_capture.reset(token)
+
+
+def _record_rommon_tftp_image(image_path):
+    images = _rommon_tftp_image_capture.get()
+    if images is not None:
+        images.append(image_path)
+
+
+def _get_rommon_tftp_image(device, image_path):
+    """Validate the primary image before configuring ROMMON."""
+    if image_path is None:
+        image_handler = get_image_handler(device)
+        image_path = getattr(image_handler, 'image', None)
+    try:
+        return _normalize_image_paths(image_path)[0]
+    except (SchemaError, ImportError) as e:
+        raise SubCommandFailure(f'Invalid ROMMON TFTP image metadata: {e}') from e
+
+
+def _verify_rommon_tftp_file(device, image_path, connection=None):
+    """Verify the configured transport path in the supported Cat9k environment."""
+    # These platform paths support `set` environment readback. Do not assume
+    # that untested IOS-XE ROMMON implementations support the same command.
+    if (getattr(device, 'platform', None) != 'cat9k' or
+            getattr(device, 'model', None) not in ('c9300', 'c9200')):
+        return
+    environment = (connection if connection is not None else device).execute('set')
+    lines = environment.splitlines() if isinstance(environment, str) else []
+    # A nested Unicon execute can retain the assignment echo before the query
+    # prompt. Ignore only that echo, never a value in the returned environment.
+    if (len(lines) >= 2 and lines[0].startswith('TFTP_FILE=') and
+            re.fullmatch(r'switch:\s*(?:set)?', lines[1])):
+        lines = lines[2:]
+    paths = [line[len('TFTP_FILE='):] for line in lines if line.startswith('TFTP_FILE=')]
+    if paths != [image_path]:
+        raise SubCommandFailure(
+            f'ROMMON TFTP_FILE readback did not match selected image {image_path!r}. '
+            'Check ROMMON assignment support and console output; aborting boot '
+            'to avoid an existing/stale TFTP_FILE value.')
 
 
 def configure_rommon_tftp(device, use_ipv6=False, image_path=None):
@@ -17,6 +78,9 @@ def configure_rommon_tftp(device, use_ipv6=False, image_path=None):
     Args:
         device('obj'): Device object
         use_ipv6('bool', optional): To use use_ipv6. Defaults to False.
+        image_path: Primary image path or supported Clean image/file metadata.
+            None uses the platform-validated Clean image. Empty or ambiguous
+            metadata fails without configuring ROMMON variables.
     Returns:
         None
     Raises:
@@ -38,6 +102,7 @@ def configure_rommon_tftp(device, use_ipv6=False, image_path=None):
     if state != 'rommon':
         raise Exception(f'The device is not in rommon state')
 
+    selected_image = _get_rommon_tftp_image(device, image_path)
 
     # Check if management attribute in device object, if not set to empty dict
     if not hasattr(device, 'management'):
@@ -73,13 +138,7 @@ def configure_rommon_tftp(device, use_ipv6=False, image_path=None):
     tftp_server = get_recovery_tftp_server(device)
     tftp.setdefault("TFTP_SERVER", str(tftp_server))
 
-    # get the image from clean data
-    if image_path:
-        tftp.setdefault("TFTP_FILE", image_path)
-    else:
-        image_handler = get_image_handler(device)
-        if image_handler.image:
-            tftp.setdefault("TFTP_FILE", image_handler.image[0])
+    tftp["TFTP_FILE"] = selected_image
 
     log.info("checking if all the tftp information is given by the user")
     if not all(tftp.values()):
@@ -92,9 +151,13 @@ def configure_rommon_tftp(device, use_ipv6=False, image_path=None):
         try:
             # Set rommon variables for tftp boot
             device.execute(cmd)
+            if set_command == 'TFTP_FILE':
+                _verify_rommon_tftp_file(device, selected_image)
         except Exception as e:
             raise SubCommandFailure(
                 f"Failed to set the rommon variable {set_command}. Error:\n{e}")
+
+    _record_rommon_tftp_image(selected_image)
 
 
 def configure_rommon_tftp_ha(device, use_ipv6=False, image_path=None):
@@ -104,6 +167,9 @@ def configure_rommon_tftp_ha(device, use_ipv6=False, image_path=None):
     Args:
         device('obj'): Device object
         use_ipv6('bool', optional): To use use_ipv6. Defaults to False.
+        image_path: Primary image path or supported Clean image/file metadata.
+            None uses the platform-validated Clean image. Empty or ambiguous
+            metadata fails before configuring any RP.
     Returns:
         None
     Raises:
@@ -164,6 +230,8 @@ def configure_rommon_tftp_ha(device, use_ipv6=False, image_path=None):
     if missing_information:
         raise SubCommandFailure('\n'.join(missing_information))
 
+    selected_image = _get_rommon_tftp_image(device, image_path)
+
     def _process_tftp_boot_details(rommon_dict):
         # To process the tftp information for each rp
         tftp_details = []
@@ -211,12 +279,7 @@ def configure_rommon_tftp_ha(device, use_ipv6=False, image_path=None):
                 "TFTP_SERVER": str(tftp_server),
             })
 
-            # get the image from clean data
-            image_handler = get_image_handler(device)
-            if image_path:
-                tftp.setdefault("TFTP_FILE", image_path)
-            elif image_handler.image:
-                tftp.setdefault("TFTP_FILE", image_handler.image[0])
+            tftp["TFTP_FILE"] = selected_image
 
             log.info("checking if all the tftp information is given by the user")
             if not all(tftp.values()):
@@ -235,8 +298,12 @@ def configure_rommon_tftp_ha(device, use_ipv6=False, image_path=None):
                 if con.state_machine.current_state == 'rommon':
                     log.info(f"{device.name} rp{rp_number}: executing ROMMON cmd: {cmd}")
                     con.execute(cmd)
+                    if set_command == 'TFTP_FILE':
+                        _verify_rommon_tftp_file(device, selected_image, connection=con)
                 else:
                     break
             except Exception as e:
                 log.error(f"{device.name} rp{rp_number}: ROMMON cmd failed: {cmd} ({e})")
                 raise
+
+    _record_rommon_tftp_image(selected_image)

@@ -202,7 +202,8 @@ class test_platform_rev1_members_svl(unittest.TestCase):
             },
         }
 
-    def _build_platform(self, show_version=None, show_module=None):
+    def _build_platform(self, show_version=None, show_module=None,
+                        show_inventory=None):
         f = Platform(device=self.device)
         f.maker.outputs[ShowVersion] = {
             '': show_version if show_version is not None else self._svl_show_version()
@@ -216,7 +217,9 @@ class test_platform_rev1_members_svl(unittest.TestCase):
         # execute against the mock connection.
         f.maker.outputs[Dir] = {'': {'dir': {'dir': '/'}}}
         f.maker.outputs[ShowRedundancy] = {'': {}}
-        f.maker.outputs[ShowInventoryRev1] = {'': {}}
+        f.maker.outputs[ShowInventoryRev1] = {
+            '': show_inventory if show_inventory is not None else {}
+        }
         f.maker.outputs[ShowPlatformRev1] = {'': {}}
         return f
 
@@ -246,6 +249,28 @@ class test_platform_rev1_members_svl(unittest.TestCase):
 
         self.assertFalse(getattr(f, 'members', None),
                          "members should be empty/absent without switch_num")
+
+    def test_members_fall_back_to_member_inventory(self):
+        sv = self._svl_show_version()
+        sv['version'].pop('switch_num')
+        inventory = {'member': {
+            '1': {'inventory': {'Switch 1 Chassis': {
+                'name': 'Switch 1 Chassis',
+                'pid': 'C9610R', 'vid': 'V01', 'sn': 'ONE',
+            }}},
+            '2': {'inventory': {'Switch 2 Chassis': {
+                'name': 'Switch 2 Chassis',
+                'pid': 'C9610R', 'vid': 'V01', 'sn': 'TWO',
+            }}},
+        }}
+        f = self._build_platform(
+            show_version=sv, show_module={}, show_inventory=inventory
+        )
+        f.learn()
+
+        self.assertEqual(f.members['1']['serial'], 'ONE')
+        self.assertEqual(f.members['2']['serial'], 'TWO')
+        self.assertEqual(f.member_inventory, inventory['member'])
 
 
 if __name__ == '__main__':

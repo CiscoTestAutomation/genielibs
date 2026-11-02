@@ -1,7 +1,21 @@
 # Python
 import logging
 
+from genie.libs.clean.utils import get_image_handler
+
 log = logging.getLogger(__name__)
+
+
+def _normalize_image_paths(images):
+    """Use the shared Clean normalizer, failing safely with an older Clean."""
+    try:
+        from genie.libs.clean.stages.image_handler import normalize_image_paths
+    except ImportError as e:
+        raise ImportError(
+            'ROMMON TFTP image normalization is unavailable. Install matching '
+            'genie.libs.clean and genie.libs.sdk builds containing DEVX-62550') from e
+    return normalize_image_paths(images)
+
 
 def get_recovery_details(device, golden_image: list = None, tftp_boot: dict = None):
     '''
@@ -52,14 +66,26 @@ def get_tftp_boot_command(device, recovery_info):
         device: device object
         recovery_info (dict):
            tftp_boot (dict):
-               image (list): List of image filenames/paths
+               image: Primary image path or supported Clean image/file metadata.
+           tftp_image: Fallback image metadata from get_recovery_details.
 
     Returns:
         cmd : ROMMON TFTP command, always "tftp:" for generic IOS-XE platforms.
         image_to_boot : The image filename.
 
+    Raises:
+        SchemaError: Missing, unsupported, or ambiguous primary image metadata.
+        ImportError: Matching Clean image normalization support is unavailable.
+
     """
-    tftp_image_list = recovery_info['tftp_boot'].get('image', [])
-    image_to_boot = tftp_image_list[0] if tftp_image_list else None
+    tftp_boot = recovery_info.get('tftp_boot', {})
+    if 'image' in tftp_boot:
+        image_metadata = tftp_boot['image']
+    else:
+        # Let the platform schema separate primary images from packages.
+        image_handler = get_image_handler(device)
+        image_metadata = (image_handler.image if image_handler is not None
+                          else recovery_info.get('tftp_image'))
+    image_to_boot = _normalize_image_paths(image_metadata)[0]
     cmd = "tftp:"
     return cmd, image_to_boot

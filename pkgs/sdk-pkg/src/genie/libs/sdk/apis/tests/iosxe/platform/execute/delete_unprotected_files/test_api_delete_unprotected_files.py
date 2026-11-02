@@ -1,6 +1,7 @@
 from unittest import TestCase
 from unittest.mock import ANY, MagicMock, call, patch
 
+from genie.metaparser.util.exceptions import SchemaEmptyParserError
 from genie.libs.sdk.apis.iosxe.platform.execute import (
     _get_child_directory,
     delete_unprotected_files,
@@ -180,6 +181,70 @@ class TestDeleteUnprotectedFiles(TestCase):
                 device=device),
         ])
         self.assertEqual(file_utils.deletefile.call_count, 2)
+
+    def test_recursive_deletion_skips_child_directory_that_disappeared(self):
+        device = MagicMock()
+        device.parse.side_effect = [
+            {
+                'dir': {
+                    'dir': 'bootflash:/',
+                    'bootflash:/': {
+                        'files': {
+                            'missing': {
+                                'permissions': 'drwx',
+                                'size': '20',
+                            },
+                            'existing': {
+                                'permissions': 'drwx',
+                                'size': '10',
+                            },
+                        },
+                    },
+                },
+            },
+            SchemaEmptyParserError('Parser Output is empty'),
+            {
+                'dir': {
+                    'dir': 'bootflash:/existing/',
+                    'bootflash:/existing/': {
+                        'files': {
+                            'old.log': {
+                                'permissions': '-rw-',
+                                'size': '1024',
+                            },
+                        },
+                    },
+                },
+            },
+        ]
+        device.execute.side_effect = [
+            '%Error opening bootflash:/missing/ (No such file or directory)',
+            'existing directory output',
+        ]
+        file_utils = MagicMock()
+
+        with patch(
+            'genie.libs.sdk.apis.iosxe.platform.execute.FileUtils.from_device',
+            return_value=file_utils,
+        ):
+            delete_unprotected_files(
+                device,
+                directory='bootflash:/',
+                protected=[],
+                files_to_delete=['missing', 'existing'],
+                dir_output='root directory output',
+                destination='bootflash:/',
+                recursive=True,
+            )
+
+        device.parse.assert_has_calls([
+            call('dir bootflash:/', output='root directory output'),
+            call('dir bootflash:/missing/', output=ANY),
+            call('dir bootflash:/existing/', output=ANY),
+        ])
+        file_utils.deletefile.assert_called_once_with(
+            'bootflash:/existing/old.log', timeout_seconds=300,
+            force=True, device=device)
 
     def test_recursive_deletion_normalizes_filesystem_root_path(self):
         device = MagicMock()

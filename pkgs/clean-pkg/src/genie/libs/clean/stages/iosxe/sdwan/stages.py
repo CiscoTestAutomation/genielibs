@@ -114,6 +114,15 @@ connect:
 
             log.info('Checking connection to device: %s' % device.name)
 
+            # The SD-WAN Connect stage may be invoked after the generic
+            # Connect stage has already established the device connection.
+            # Preserve that authenticated connection instead of creating a
+            # second connection and entering recovery unnecessarily.
+            if device.connected:
+                log.info('Device %s is already connected', device.name)
+                step.passed("Successfully connected".format(device.name))
+                return
+
             # Create a timeout that will loop
             retry_timeout = Timeout(float(retry_timeout),
                                     float(retry_interval))
@@ -154,6 +163,8 @@ connect:
 
                 device.connect_reply.append(autoinstall)
                 device.connect_reply.append(config_dialog)
+
+                connection_succeeded = False
 
                 try:
                     output = device.connect()
@@ -241,15 +252,15 @@ connect:
                                 init_exec_commands=init_exec_commands,
                                 init_config_commands=init_config_commands)
                             device.settings.HA_INIT_CONFIG_COMMANDS = []
+                            device.connect()
+                            log.info("connected as 'iosxe/sdwan'")
 
+                        connection_succeeded = bool(device.connected)
                     except Exception:
                         log.error("Connection to the device failed",
                                   exc_info=True)
                         if device.connected:
                             device.destroy_all()
-                    finally:
-                        step.passed("Successfully connected".format(
-                            device.name))
                 else:
                     if 'Controller-Managed' in output:
 
@@ -265,16 +276,18 @@ connect:
                         try:
                             device.connect()
                             log.info("connected as 'iosxe/sdwan'")
+                            connection_succeeded = bool(device.connected)
                         except Exception:
                             log.error("Connection to the device failed",
                                       exc_info=True)
                             device.destroy_all()
                     else:
                         log.info("Connected as 'iosxe'")
+                        connection_succeeded = bool(device.connected)
 
+                if connection_succeeded:
                     step.passed("Successfully connected".format(device.name))
-                finally:
-                    step.passed("Successfully connected".format(device.name))
+                    return
 
                 retry_timeout.sleep()
 

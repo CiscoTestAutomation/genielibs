@@ -1355,7 +1355,7 @@
                       "revision": "1"
                     },
                     "uid": "platform",
-                    "url": "https://github.com/CiscoTestAutomation/genielibs/tree/main/pkgs/ops-pkg/src/genie/libs/ops/platform/iosxe/cat9k/c9500/rev1/platform.py#L13"
+                    "url": "https://github.com/CiscoTestAutomation/genielibs/tree/main/pkgs/ops-pkg/src/genie/libs/ops/platform/iosxe/cat9k/c9500/rev1/platform.py#L11"
                   }
                 },
                 "module_name": "platform.iosxe.cat9k.c9500.platform",
@@ -1380,7 +1380,7 @@
               "revision": "1"
             },
             "uid": "platform",
-            "url": "https://github.com/CiscoTestAutomation/genielibs/tree/main/pkgs/ops-pkg/src/genie/libs/ops/platform/iosxe/rev1/platform.py#L13"
+            "url": "https://github.com/CiscoTestAutomation/genielibs/tree/main/pkgs/ops-pkg/src/genie/libs/ops/platform/iosxe/rev1/platform.py#L14"
           },
           "rev2": {
             "class": "Platform",
@@ -1391,7 +1391,7 @@
               "revision": "2"
             },
             "uid": "platform",
-            "url": "https://github.com/CiscoTestAutomation/genielibs/tree/main/pkgs/ops-pkg/src/genie/libs/ops/platform/iosxe/rev2/platform.py#L13"
+            "url": "https://github.com/CiscoTestAutomation/genielibs/tree/main/pkgs/ops-pkg/src/genie/libs/ops/platform/iosxe/rev2/platform.py#L14"
           }
         },
         "module_name": "platform.iosxe.platform",
@@ -1415,7 +1415,7 @@
               "revision": "1"
             },
             "uid": "platform",
-            "url": "https://github.com/CiscoTestAutomation/genielibs/tree/main/pkgs/ops-pkg/src/genie/libs/ops/platform/iosxr/rev1/platform.py#L16"
+            "url": "https://github.com/CiscoTestAutomation/genielibs/tree/main/pkgs/ops-pkg/src/genie/libs/ops/platform/iosxr/rev1/platform.py#L21"
           }
         },
         "module_name": "platform.iosxr.platform",

@@ -11,7 +11,8 @@ from genie.conf.base import Testbed, Device, Link, Interface
 
 # Genie XBu_shared
 from genie.libs.conf.interface import NamedTunnelTeInterface, \
-    LoopbackInterface, SubInterface, IPv4Addr, IPv6Addr
+    LoopbackInterface, SubInterface, IPv4Addr, IPv6Addr, \
+    ParsedInterfaceName
 from genie.libs.conf.base import IPv4Address, IPv6Address
 from genie.libs.conf.vlan import Vlan
 from genie.libs.conf.vrf import Vrf
@@ -21,6 +22,50 @@ from genie.libs.conf.evpn.vni import Vni
 
 
 class test_interface(TestCase):
+
+    def test_ParsedInterfaceName(self):
+
+        Genie.testbed = Testbed()
+        dev1 = Device(name='PE1', os='iosxr')
+
+        # Optics port name
+        d_parsed = ParsedInterfaceName('0/0/2/-PORT-0', device=dev1)
+        self.assertEqual(d_parsed.type, None)
+        self.assertEqual(d_parsed.number, '0/0/2/-PORT-0')
+        self.assertEqual(d_parsed.rack, '0')
+        self.assertEqual(d_parsed.slot, '0')
+        self.assertEqual(d_parsed.instance, '2')
+        self.assertEqual(d_parsed.port, '0')
+        self.assertEqual(d_parsed.cpu, '0/0/CPU0')
+        self.assertEqual(d_parsed.subintf_sep, None)
+        self.assertEqual(d_parsed.subintf, None)
+        self.assertEqual(d_parsed.reconstruct(), '0/0/2/-PORT-0')
+
+        # Same, lowercase
+        d_parsed = ParsedInterfaceName('0/0/2/-port-0', device=dev1)
+        self.assertEqual(d_parsed.rack, '0')
+        self.assertEqual(d_parsed.slot, '0')
+        self.assertEqual(d_parsed.instance, '2')
+        self.assertEqual(d_parsed.port, '0')
+
+        # Standard interface names are still parsed by the base class
+        d_parsed = ParsedInterfaceName('TenGigE0/5/0/12', device=dev1)
+        self.assertEqual(d_parsed.type, 'TenGigE')
+        self.assertEqual(d_parsed.number, '0/5/0/12')
+        self.assertEqual(d_parsed.rack, '0')
+        self.assertEqual(d_parsed.slot, '5')
+        self.assertEqual(d_parsed.instance, '0')
+        self.assertEqual(d_parsed.port, '12')
+        self.assertEqual(d_parsed.reconstruct(), 'TenGigE0/5/0/12')
+
+        # Missing port number is not an optics port name
+        d_parsed = ParsedInterfaceName('0/0/2/-PORT-', device=dev1)
+        self.assertEqual(d_parsed.type, None)
+        self.assertEqual(d_parsed.number, None)
+        self.assertEqual(d_parsed.rack, None)
+        self.assertEqual(d_parsed.slot, None)
+        self.assertEqual(d_parsed.instance, None)
+        self.assertEqual(d_parsed.port, None)
 
     def test_vni_lines_confg(self):
         # For failures

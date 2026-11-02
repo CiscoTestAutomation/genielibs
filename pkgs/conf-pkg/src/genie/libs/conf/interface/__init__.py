@@ -152,18 +152,32 @@ class ParsedInterfaceName(types.SimpleNamespace):
             else:
                 # 0/RP0/CPU0/0
                 # 0/RSP0/CPU0/0
-                # 0/0/0/0
-                m = re.match(r'^(?P<rsip>(?P<rack>\d+)[/_](?P<slot>(?:RP|RSP)?\d+)[/_](?P<instance>\d+)[/_](?P<port>\d+))(?:[/_](?P<subport>\d+))?', d['number'])
+                # 0/0/CPU0/0
+                m = re.match(
+                    r'^(?P<rsip>(?P<rack>\d+)[/_]'
+                    r'(?P<slot>(?:RP|RSP)?\d+)[/_]CPU'
+                    r'(?P<instance>\d+)[/_](?P<port>\d+))'
+                    r'(?:[/_](?P<subport>\d+))?',
+                    d['number'],
+                )
                 if m:
                     # IOS-XR
                     d.update(m.groupdict())
-                    d['cpu'] = '{rack}/{slot}/CPU0'.format_map(d)
+                    d['cpu'] = '{rack}/{slot}/CPU{instance}'.format_map(d)
 
+                # 0/0/0/0
                 else:
-                    m = re.match(r'^(?P<module>(?:(?P<net_module>\d+)[/_])?\d+)[/_](?P<port>\d+)$', d['number'])
+                    m = re.match(r'^(?P<rsip>(?P<rack>\d+)[/_](?P<slot>(?:RP|RSP)?\d+)[/_](?P<instance>\d+)[/_](?P<port>\d+))(?:[/_](?P<subport>\d+))?', d['number'])
                     if m:
-                        # IOS/NX-OS
+                        # IOS-XR
                         d.update(m.groupdict())
+                        d['cpu'] = '{rack}/{slot}/CPU0'.format_map(d)
+
+                    else:
+                        m = re.match(r'^(?P<module>(?:(?P<net_module>\d+)[/_])?\d+)[/_](?P<port>\d+)$', d['number'])
+                        if m:
+                            # IOS/NX-OS
+                            d.update(m.groupdict())
 
         super().__init__(**d)
 
@@ -1506,5 +1520,4 @@ class VniInterface(NveInterface):
     @abc.abstractmethod
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
 

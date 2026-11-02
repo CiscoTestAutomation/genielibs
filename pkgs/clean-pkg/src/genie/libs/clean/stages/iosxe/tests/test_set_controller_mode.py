@@ -1,6 +1,7 @@
 import logging
 import unittest
 
+from types import SimpleNamespace
 from unittest.mock import Mock, MagicMock
 from collections import OrderedDict
 
@@ -10,12 +11,25 @@ from genie.libs.clean.stages.tests.utils import CommonStageTests, create_test_de
 from pyats.aetest.parameters import ParameterDict
 
 from pyats.aetest.steps import Steps
+from pyats.kleenex.testbed_config import TestbedConfigCollector
 from pyats.results import Passed, Failed, Skipped
 from pyats.aetest.signals import TerminateStepSignal, AEtestSkippedSignal
 
 
 # Disable logging. It may be useful to comment this out when developing tests.
 logging.disable(logging.CRITICAL)
+
+
+def set_active_connection(device, via):
+    """Add a current default connection with its selected testbed via."""
+    device.connections.update({
+        'a': {'protocol': 'telnet'},
+        'ssh': {'protocol': 'ssh'},
+    })
+    device.connectionmgr.connections['cli'] = SimpleNamespace(
+        via=via, connected=True)
+    device.default_connection_alias = 'cli'
+    device.destroy_all = Mock()
 
 
 class SetControllermode(unittest.TestCase):
@@ -48,6 +62,24 @@ class SetControllermode(unittest.TestCase):
 
         # Check that the result is expected
         self.assertEqual(Passed, steps.details[0].result)
+
+    def test_reuses_connect_stage_via_for_reconnect(self):
+        steps = Steps()
+        set_active_connection(self.device, via='a')
+        self.device.connect = Mock()
+        self.device.execute = Mock()
+        self.device.parse = Mock(return_value={})
+        self.device.api.get_username_password = Mock(
+            return_value=('admin', 'admin'))
+
+        self.cls.set_controller_mode(
+            steps=steps, device=self.device, mode='disable')
+
+        self.device.destroy_all.assert_called_once_with()
+        self.device.connect.assert_called_once_with(
+            learn_tokens=False,
+            via='a',
+        )
 
     def test_includes_platform_reload_dialog_for_grub_handling(self):
         """Verify the stage appends the platform's reload dialog so that
@@ -255,6 +287,22 @@ class ConfirmAndSetDefault(unittest.TestCase):
         # Check that the result is expected
         self.assertEqual(Passed, steps.details[0].result)
 
+    def test_reuses_connect_stage_via_with_token_learning(self):
+        steps = Steps()
+        set_active_connection(self.device, via='a')
+        self.device.connect = Mock(
+            return_value='Router operating mode: Autonomous')
+
+        self.cls.confirm_and_set_default(
+            steps=steps, device=self.device, mode='disable')
+
+        self.device.destroy_all.assert_called_once_with()
+        self.device.connect.assert_called_once_with(
+            learn_tokens=True,
+            overwrite_testbed_tokens=True,
+            via='a',
+        )
+
     def test_pass_mode_disable(self):
         # Make sure we have a unique Steps() object for result verification
         steps = Steps()
@@ -293,6 +341,118 @@ class ConfirmAndSetDefault(unittest.TestCase):
         # Check that the result is expected
         self.assertEqual(Passed, steps.details[0].result)
 
+    def test_mode_disable_reuses_active_via_with_token_learning(self):
+        steps = Steps()
+        set_active_connection(self.device, via='a')
+        self.device.connect = Mock(
+            return_value='Router operating mode: Autonomous')
+
+        self.cls.confirm_and_set_default(
+            steps=steps, device=self.device, mode='disable')
+
+        self.device.destroy_all.assert_called_once_with()
+        self.device.connect.assert_called_once_with(
+            learn_tokens=True,
+            overwrite_testbed_tokens=True,
+            via='a',
+        )
+
+    def test_mode_enable_prefers_explicit_via(self):
+        steps = Steps()
+        set_active_connection(self.device, via='a')
+        self.device.connect = Mock(
+            return_value='Router operating mode: Controller-Managed')
+        parsed_output = MagicMock()
+        parsed_output.q.contains_key_value.return_value.get_values.side_effect = [
+            '17.15.1a', ['17.12.1a']
+        ]
+        self.device.parse = Mock(return_value=parsed_output)
+        self.device.execute = Mock()
+
+        self.cls.confirm_and_set_default(
+            steps=steps,
+            device=self.device,
+            mode='enable',
+            via='ssh',
+        )
+
+        self.device.destroy_all.assert_called_once_with()
+        self.device.connect.assert_called_once_with(
+            learn_tokens=True,
+            overwrite_testbed_tokens=True,
+            via='ssh',
+        )
+
+    def test_pass_mode_disable_publishes_autonomous_platform(self):
+        steps = Steps()
+        collector = TestbedConfigCollector()
+        self.device.platform = 'c8000be'
+        self.device.connect = Mock(
+            return_value='Router operating mode: Autonomous')
+
+        self.cls.confirm_and_set_default(
+            steps=steps,
+            device=self.device,
+            mode='disable',
+            testbed_config=collector,
+        )
+
+        self.assertEqual(
+            {
+                'devices': {
+                    'PE1': {
+                        'platform': 'c8000be',
+                    },
+                },
+            },
+            collector.as_dict(),
+        )
+        self.assertEqual('SetControllerMode',
+                         collector.documents[0]['source']['stage'])
+
+    def test_pass_mode_enable_publishes_learned_sdwan_platform(self):
+        steps = Steps()
+        collector = TestbedConfigCollector()
+        self.device.platform = 'c8000be'
+
+        def connect(**kwargs):
+            self.device.platform = 'sdwan'
+            return 'Router operating mode: Controller-Managed'
+
+        self.device.connect = Mock(side_effect=connect)
+        self.device.execute = Mock()
+        active_versions = Mock()
+        active_versions.get_values.return_value = '17.9.1'
+        inactive_versions = Mock()
+        inactive_versions.get_values.return_value = []
+        parsed_output = Mock()
+        parsed_output.q.contains_key_value.side_effect = [
+            active_versions,
+            inactive_versions,
+        ]
+        self.device.parse = Mock(return_value=parsed_output)
+
+        self.cls.confirm_and_set_default(
+            steps=steps,
+            device=self.device,
+            mode='enable',
+            testbed_config=collector,
+        )
+
+        self.device.connect.assert_called_once_with(
+            learn_tokens=True,
+            overwrite_testbed_tokens=True,
+        )
+        self.assertEqual(
+            {
+                'devices': {
+                    'PE1': {
+                        'platform': 'sdwan',
+                    },
+                },
+            },
+            collector.as_dict(),
+        )
 
     def test_fail_inactive_version(self):
         # Make sure we have a unique Steps() object for result verification

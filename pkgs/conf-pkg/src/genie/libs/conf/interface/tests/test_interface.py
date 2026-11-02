@@ -62,6 +62,12 @@ class test_interface(TestCase):
         self.assertEqual(d_parsed.number, '0/RP0/CPU0/0')
         self.assertEqual(d_parsed.subintf_sep, None)
         self.assertEqual(d_parsed.subintf, None)
+        self.assertEqual(d_parsed.rack, '0')
+        self.assertEqual(d_parsed.slot, 'RP0')
+        self.assertEqual(d_parsed.instance, '0')
+        self.assertEqual(d_parsed.port, '0')
+        self.assertEqual(d_parsed.cpu, '0/RP0/CPU0')
+        self.assertEqual(d_parsed.rsip, '0/RP0/CPU0/0')
         self.assertEqual(d_parsed.reconstruct(), 'MgmtEth0/RP0/CPU0/0')
         d_parsed = ParsedInterfaceName(' GigabitEthernet 0/0/0/0.0 ')
         self.assertEqual(d_parsed.type, 'GigabitEthernet')
@@ -206,4 +212,3 @@ class test_interface(TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-

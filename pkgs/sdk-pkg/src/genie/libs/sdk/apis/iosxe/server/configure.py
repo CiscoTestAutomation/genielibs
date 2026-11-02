@@ -90,7 +90,7 @@ def configure_tacacs_server(device, server_config):
     for sc in server_config:
         if "host" in sc:
             config.append("tacacs server {}\n".format(sc["host"]))
-            
+
             # Handle different address types
             address_type = sc.get("address_type", "ipv4")  # Default to ipv4 if not specified
             if address_type == "ipv4":
@@ -109,7 +109,7 @@ def configure_tacacs_server(device, server_config):
             config.append(
                 "key {} {}\n".format(sc["key_type"], sc["key"])
             )
-        
+
         # Add TLS configuration options
         if "tls_port" in sc:
             config.append("tls port {}\n".format(sc["tls_port"]))
@@ -128,7 +128,7 @@ def configure_tacacs_server(device, server_config):
 
         if "tls_trustpoint_server" in sc:
             config.append("tls trustpoint server {}\n".format(sc["tls_trustpoint_server"]))
-        
+
         # Add new IPv4 TLS configuration options
         if "tls_ip_tacacs_source_interface" in sc:
             config.append("tls ip tacacs source-interface {}\n".format(sc["tls_ip_tacacs_source_interface"]))
@@ -176,7 +176,7 @@ def configure_radius_server(device, server_config):
                     server_name ('str'): Radius server name
                     ipv4 (Hostname or A.B.C.D):  IPv4 Address of radius server
                     ipv6 (Hostname or X:X:X:X::X):  IPv6 Address of radius server
-                    auth_port (<0-65534>): UDP port for RADIUS authentication server
+
                     acct_port (<0-65534>): UDP port for RADIUS accounting server
                     key_encryption (int(0,6,7)): 0(UNENCRYPTED key), 6(ENCRYPTED key), 7(HIDDEN key)
                     key (LINE): Radius server pre shared secret key
@@ -271,7 +271,7 @@ def configure_radius_server(device, server_config):
 def configure_radius_server_secure(device, server_config):
     """ Configure radius server with TLS and Message-Authenticator (secure).
 
-    Addresses both IOS-XE security warnings:
+    Addresses IOS-XE security warning:
 
     1. SECURITY WARNING - Module: AAA, Command: radius server <name>,
        Reason: TLS is not configured, exposing traffic to potential
@@ -355,7 +355,6 @@ def configure_radius_server_secure(device, server_config):
             BlastRadius (BROC 23 & 24):
                 Enable 'send_ma' and 'validate_ma' in server_config to suppress warnings.
                 These knobs will be enforced by default in a future IOS-XE release.
-
             TLS/DTLS:
                 RADIUS without TLS exposes traffic to eavesdropping.
                 Configure tls_trustpoint_client and tls_trustpoint_server
@@ -475,7 +474,7 @@ def configure_radius_server_secure(device, server_config):
         tls_configured = True
 
     if not tls_configured:
-        log.error(
+        log.debug(
             "SECURITY WARNING - Module: AAA, "
             "Command: {}, "
             "Reason: TLS is not configured, exposing traffic to potential eavesdropping, "
@@ -484,6 +483,8 @@ def configure_radius_server_secure(device, server_config):
             "tls_trustpoint_client, and tls_trustpoint_server in server_config "
             "to enhance security".format(parent_cli)
         )
+
+
 
     try:
         device.configure(config_list)
@@ -696,15 +697,15 @@ def configure_radius_server_dtls_port(device, server_name=None, dtls_port=None):
             SubCommandFailure
     """
     config_list = []
-    
+
     if server_name:
         config_list.append(f'radius server {server_name}')
     if dtls_port:
         config_list.append(f'dtls port {dtls_port}')
-    
+
     if not config_list:
         raise ValueError("At least one of server_name or dtls_port must be provided")
-    
+
     try:
         device.configure(config_list)
     except SubCommandFailure as e:

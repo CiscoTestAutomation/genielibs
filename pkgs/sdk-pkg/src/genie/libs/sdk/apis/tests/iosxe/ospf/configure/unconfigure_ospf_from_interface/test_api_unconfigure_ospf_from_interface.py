@@ -1,35 +1,32 @@
-import os
 import unittest
-from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.ospf.configure import unconfigure_ospf_from_interface
+from unittest import TestCase
+from unittest.mock import Mock
+
+from genie.libs.sdk.apis.iosxe.ospf.configure import (
+    unconfigure_ospf_from_interface,
+)
 
 
-class TestUnconfigureOspfFromInterface(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          Switch:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: c9200
-            type: c9200
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['Switch']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestUnconfigureOspfFromInterface(TestCase):
 
     def test_unconfigure_ospf_from_interface(self):
-        result = unconfigure_ospf_from_interface(self.device, 'loopback1', '1', '0')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.configure.return_value = None
+
+        result = unconfigure_ospf_from_interface(device, "loopback1", "1", "0")
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once()
+        commands = device.configure.call_args.args[0]
+        self.assertIsInstance(commands, list)
+        self.assertEqual(
+            commands,
+            [
+                "interface loopback1",
+                "no ip ospf 1 area 0",
+            ],
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()

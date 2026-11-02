@@ -3,12 +3,18 @@
 # Python
 import ipaddress
 import logging
+import time
 
 # Genie
 from genie.utils.timeout import Timeout
 from genie.libs.clean import BaseStage
-from genie.metaparser.util.schemaengine import ListOf, Optional, Or
+from genie.metaparser.util.schemaengine import Any, ListOf, Optional, Or
 from unicon.core.errors import SubCommandFailure
+
+from genie.libs.clean.wireless_registration import (
+    WLC_READINESS,
+    WirelessAPRegistration,
+)
 
 # Logger
 log = logging.getLogger(__name__)
@@ -66,6 +72,327 @@ def _get_ip_interfaces(address, address_family):
     ]
 
 
+class RegisterAp(BaseStage):
+    """Register APs from a C9800 WLC worker.
+
+    The stage consumes AP aliases from the coordination contract.  AP
+    workers publish their learned radio MAC and configured state through
+    KIPC; the WLC worker then verifies independent summary, join, and uptime
+    evidence before confirming each AP.
+    """
+
+    REGISTRATION_TIMEOUT = 900
+    CHECK_INTERVAL = 15
+
+    schema = {
+        Optional("coordination_group"): str,
+        Optional("expected_aps"): Any(),
+        Optional("registration_timeout"): int,
+        Optional("check_interval"): int,
+    }
+
+    exec_order = ["register_ap"]
+
+    @staticmethod
+    def _resolve_expected_aps(device, expected_aps):
+        """Resolve alias-only AP expectations into registration identities.
+
+        Args:
+            device (obj): WLC device with the reserved testbed.
+            expected_aps (list or dict): AP aliases or explicit mappings.
+
+        Returns:
+            list or dict: AP identities accepted by ``WirelessAPRegistration``.
+
+        Raises:
+            ValueError: If ``expected_aps`` is not a list or mapping.
+        """
+        if isinstance(expected_aps, dict):
+            return expected_aps
+        if not isinstance(expected_aps, list):
+            raise ValueError("expected_aps must be a list or mapping")
+
+        testbed_devices = getattr(
+            getattr(device, "testbed", None), "devices", {}) or {}
+        resolved = []
+        for item in expected_aps:
+            if isinstance(item, dict):
+                resolved.append(item)
+                continue
+            ap_device = testbed_devices.get(item)
+            if ap_device is None:
+                ap_device = next(
+                    (candidate for candidate in testbed_devices.values()
+                     if item in {
+                         getattr(candidate, "name", None),
+                         getattr(candidate, "alias", None),
+                     }),
+                    None,
+                )
+            resolved.append({
+                "ap_id": item,
+                "ap_name": getattr(ap_device, "name", None) or item,
+            })
+        return resolved
+
+    @staticmethod
+    def _expected_aps_from_context(device, context):
+        """Return AP participants from the injected coordination group.
+
+        Args:
+            device (obj): WLC device with the reserved testbed.
+            context (object): Group-scoped KIPC context.
+
+        Returns:
+            list: AP aliases resolved to registration identities.
+        """
+        participants = [
+            participant for participant in context.participants
+            if participant != context.coordinator
+        ]
+        return RegisterAp._resolve_expected_aps(device, participants)
+
+    @staticmethod
+    def _collect_registration_diagnostics(device, registration, ap_id):
+        """Collect WLC diagnostics for one AP registration attempt.
+
+        Args:
+            device (obj): WLC device being cleaned.
+            registration (WirelessAPRegistration): Group registration state.
+            ap_id (str): AP participant identifier.
+
+        Returns:
+            dict: Diagnostic evidence, including an error marker on failure.
+        """
+        expected = registration.expected_aps[ap_id]
+        status = registration.snapshot_ap(ap_id) or {}
+        radio_mac = status.get("radio_mac") or expected.get("radio_mac")
+        try:
+            diagnostics = device.api.get_ap_registration_diagnostics(
+                radio_mac=radio_mac)
+        except Exception as error:
+            diagnostics = {"diagnostic_error": type(error).__name__}
+        registration.signal_registration_diagnostics(ap_id, diagnostics)
+        return diagnostics
+
+    def _fail_pending_aps(self, device, registration, pending, reason):
+        """Finalize every unresolved AP with diagnostics and failure state.
+
+        Args:
+            device (obj): C9800 WLC device being cleaned.
+            registration (WirelessAPRegistration): Group registration state.
+            pending (set): AP identifiers that have not reached a terminal
+                registration state.
+            reason (str): Failure reason published for each unresolved AP.
+        """
+        for ap_id in sorted(pending):
+            if registration.is_registration_confirmed(ap_id):
+                continue
+            diagnostics = self._collect_registration_diagnostics(
+                device, registration, ap_id)
+            registration.signal_registration_failed(
+                ap_id, reason, diagnostics)
+
+    def register_ap(
+            self, device, steps, expected_aps=None, coordination_group=None,
+            registration_timeout=REGISTRATION_TIMEOUT,
+            check_interval=CHECK_INTERVAL, coordination_context=None):
+        """Coordinate and verify registration for all expected APs.
+
+        Args:
+            device (obj): C9800 WLC device being cleaned.
+            steps (obj): Clean step manager.
+            expected_aps (list or dict, optional): AP aliases or identities.
+            coordination_group (str, optional): Expected KIPC group name.
+            registration_timeout (int): Maximum total registration duration
+                                        for the expected AP set, in seconds.
+            check_interval (int): Polling interval in seconds.
+            coordination_context (object, optional): Explicit KIPC context
+                for this coordinated Clean worker.
+        """
+        with steps.start(
+                "Coordinate AP registration from {}".format(device.name)) as step:
+            context = coordination_context
+            if context is None:
+                if coordination_group:
+                    step.failed(
+                        "Coordinated register_ap requires an injected KIPC "
+                        "context")
+                    return
+                log.info(
+                    "Skipping coordinated AP registration on %s; no KIPC "
+                    "coordination context is present", device.name)
+                return
+            if (coordination_group and
+                    coordination_group != context.group_id):
+                context.publish(
+                    WLC_READINESS,
+                    {
+                        "status": "failed",
+                        "reason": "WLC coordination group does not match "
+                                  "the injected KIPC context",
+                        "evidence": {"device": device.name},
+                    },
+                    terminal=True,
+                    if_unset=True,
+                )
+                step.failed(
+                    "WLC coordination group does not match the injected "
+                    "KIPC context")
+                return
+
+            registration = None
+            try:
+                if not expected_aps:
+                    expected_aps = self._expected_aps_from_context(
+                        device, context)
+                resolved_aps = self._resolve_expected_aps(device, expected_aps)
+                registration = WirelessAPRegistration(context, resolved_aps)
+                pending = set(registration.expected_aps)
+                registration.signal_wlc_ready({
+                    "device": device.name,
+                    "timestamp": time.time(),
+                })
+                log.info(
+                    "WLC %s signaled wlc_ready for AP(s) %s; polling every "
+                    "%s seconds for configuration and registration "
+                    "confirmation (timeout %s seconds)",
+                    device.name, sorted(pending), check_interval,
+                    registration_timeout)
+                failures = []
+                reported_configured = set()
+                deadline = time.monotonic() + registration_timeout
+
+                while pending:
+                    remaining = deadline - time.monotonic()
+                    if remaining <= 0:
+                        break
+
+                    snapshot = registration.snapshot_group()
+                    poll_status = {}
+                    for ap_id in tuple(pending):
+                        lifecycle = context.read(
+                            "participant/{}/lifecycle".format(ap_id), {})
+                        configured = snapshot.get(
+                            "protocol/wireless/ap/{}/status".format(ap_id),
+                            {},
+                        )
+                        poll_status[ap_id] = {
+                            "lifecycle": lifecycle.get("status", "unknown"),
+                            "configuration": configured.get(
+                                "status", "pending"),
+                        }
+                        if lifecycle.get("status") == "exited":
+                            # The parent may observe a normal AP worker exit
+                            # immediately after the AP publishes confirmation.
+                            # Confirmation is authoritative in that race.
+                            if registration.is_registration_confirmed(ap_id):
+                                pending.remove(ap_id)
+                                continue
+                            diagnostics = self._collect_registration_diagnostics(
+                                device, registration, ap_id)
+                            registration.signal_registration_failed(
+                                ap_id,
+                                "AP worker exited before registration",
+                                dict(lifecycle, diagnostics=diagnostics),
+                            )
+                            failures.append(ap_id)
+                            pending.remove(ap_id)
+                            continue
+                        if configured.get("status") == "failed":
+                            self._collect_registration_diagnostics(
+                                device, registration, ap_id)
+                            failures.append(ap_id)
+                            pending.remove(ap_id)
+                            continue
+                        if configured.get("status") != "configured":
+                            continue
+
+                        radio_mac = configured.get("radio_mac")
+                        if not radio_mac:
+                            failures.append(ap_id)
+                            registration.signal_registration_failed(
+                                ap_id,
+                                "AP did not report a radio MAC",
+                                configured,
+                            )
+                            pending.remove(ap_id)
+                            continue
+
+                        if ap_id not in reported_configured:
+                            log.info(
+                                "AP %s reported configured; checking WLC "
+                                "registration evidence by radio MAC", ap_id)
+                            reported_configured.add(ap_id)
+                        expected = registration.expected_aps[ap_id]
+                        evidence = device.api.get_ap_registration_evidence(
+                            radio_mac=radio_mac,
+                            ap_name=expected.get("ap_name"),
+                        )
+                        if evidence and evidence.get("status") == "confirmed":
+                            log.info(
+                                "AP %s registration confirmed on WLC %s",
+                                ap_id, device.name)
+                            registration.signal_registration_confirmed(
+                                ap_id, evidence)
+                            pending.remove(ap_id)
+
+                    if pending:
+                        log.info(
+                            "WLC %s still waiting for AP registration: %s; "
+                            "next poll in %s seconds",
+                            device.name, poll_status,
+                            min(check_interval, max(0, remaining)))
+                        time.sleep(min(check_interval, max(0, remaining)))
+
+                if failures:
+                    # A failed AP ends the WLC stage, but every other AP must
+                    # still receive diagnostics and a terminal failure state.
+                    self._fail_pending_aps(
+                        device,
+                        registration,
+                        pending,
+                        "registration aborted after another AP failed",
+                    )
+                    step.failed(
+                        "AP registration failed for: {}".format(
+                            ", ".join(sorted(failures))))
+                    return
+                if pending:
+                    self._fail_pending_aps(
+                        device, registration, pending, "registration timeout")
+                    step.failed(
+                        "AP registration timed out for: {}".format(
+                            ", ".join(sorted(pending))))
+            except Exception as error:
+                if registration is not None:
+                    registration.signal_wlc_failed(
+                        "WLC registration stage failed",
+                        {"error": type(error).__name__})
+                    for ap_id in registration.expected_aps:
+                        if not registration.is_registration_confirmed(ap_id):
+                            diagnostics = self._collect_registration_diagnostics(
+                                device, registration, ap_id)
+                            registration.signal_registration_failed(
+                                ap_id, "WLC registration stage failed",
+                                diagnostics)
+                else:
+                    # Initialization can fail before the registration adapter
+                    # exists. Publish directly through KIPC so AP workers do
+                    # not wait for the full readiness timeout.
+                    context.publish(
+                        WLC_READINESS,
+                        {
+                            "status": "failed",
+                            "reason": "WLC registration initialization failed",
+                            "evidence": {"error": type(error).__name__},
+                        },
+                        terminal=True,
+                        if_unset=True,
+                    )
+                step.failed("WLC registration stage failed", from_exception=error)
+
+
 class ConfigureWirelessManagement(BaseStage):
     """Configure and verify the C9800 wireless management interface.
 
@@ -86,8 +413,8 @@ class ConfigureWirelessManagement(BaseStage):
         gateway (dict, optional): WMI IPv4 and/or IPv6 gateway.
         routes (dict, optional): WMI IPv4 and/or IPv6 static routes.
         ap_profile (str, optional): AP profile for ``mgmtuser``.
-        credential_name (str, optional): Device credential entry for the AP
-            profile. Defaults to ``ap_profile`` in the API.
+        credential_name (str, optional): Controller credential entry containing
+            the AP username and password. Defaults to ``default`` in the API.
         max_time (int, optional): Maximum verification time. Defaults to 60.
         check_interval (int, optional): Verification interval. Defaults to
             10.

@@ -15,11 +15,38 @@ log = logging.getLogger(__name__)
 POST_RELOAD_WAIT_TIME=300
 
 def execute_prime_ap(device, controller_ip_address, controller_name):
+    """Configure the AP primary controller and restart CAPWAP.
+
+    Args:
+        device (obj): AP device object.
+        controller_ip_address (str): Wireless-management address of the WLC.
+        controller_name (str): Logical name of the target WLC.
+
+    Returns:
+        bool: True when both AP commands complete; otherwise False.
+    """
+
+    restart_dialog = Dialog([
+        Statement(
+            pattern=r'\[confirm\]\s*$',
+            action='sendline()',
+            loop_continue=True,
+            continue_timer=False,
+        )
+    ])
+
     try:
-        device.execute("capwap ap primary-base {name} {ip}".format(name=controller_name, ip=controller_ip_address))
-        device.execute("test capwap restart")
+        device.execute(
+            "capwap ap primary-base {name} {ip}".format(
+                name=controller_name, ip=controller_ip_address))
+        device.execute("test capwap restart", reply=restart_dialog)
     except (SubCommandFailure, TimeoutError) as e:
-        log.error("Failed to prime ap-{} to controller-{} due to error:\n {}".format(device.name, controller_name, e))
+        log.error(
+            "Failed to prime ap-%s to controller-%s due to error:\n %s",
+            device.name,
+            controller_name,
+            e,
+        )
         return False
     return True
 
@@ -100,4 +127,3 @@ def execute_archive_download(device, image_path, max_timeout=300, username=None,
                 return False 
 
     return True
-

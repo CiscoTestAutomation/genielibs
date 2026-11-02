@@ -1,5 +1,6 @@
 import os
 import unittest
+from unittest.mock import Mock
 from pyats.topology import loader
 from genie.libs.sdk.apis.iosxe.snmp.configure import configure_snmp_host_version
 
@@ -33,3 +34,21 @@ class TestConfigureSnmpHostVersion(unittest.TestCase):
         result = configure_snmp_host_version(self.device, '172.21.226.240', 'Mgmt-vrf', 'v3', 'public', 10001)
         expected_output = None
         self.assertEqual(result, expected_output)
+
+    def test_configure_snmp_host_version_with_security_level(self):
+        device = Mock()
+        configure_snmp_host_version(
+            device, '10.1.1.1', 'Mgmt-vrf', version_id='v3',
+            community_string='snmpuser1', security_level='priv'
+        )
+        device.configure.assert_called_once_with(
+            'snmp-server host 10.1.1.1 vrf Mgmt-vrf version v3 priv snmpuser1'
+        )
+
+    def test_configure_snmp_host_version_security_level_crlf_rejected(self):
+        device = Mock()
+        with self.assertRaises(ValueError):
+            configure_snmp_host_version(
+                device, '10.1.1.1', 'Mgmt-vrf', version_id='v3',
+                community_string='snmpuser1', security_level='priv\nmalicious'
+            )

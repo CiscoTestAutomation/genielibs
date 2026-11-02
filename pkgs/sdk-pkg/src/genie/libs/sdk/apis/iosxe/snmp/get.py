@@ -46,14 +46,13 @@ def get_snmp_snmpwalk(
 
     return device.execute(cmd, timeout=timeout)
 
-
 def get_snmpv3_snmpwalk(
     device, user_name, ip_address, oid, auth_password, priv_password,
     auth_protocol='SHA', priv_protocol='AES', security_level='authPriv',
     option=None, timeout=60
 ):
     """ Get snmpwalk output from SNMP device using SNMPv3 authPriv
-    
+
     SHA auth + AES-128 encryption
         Example command:
             snmpwalk -v 3 -l authPriv -u SNMPV3_USER -a SHA -A AuthPass123 -x AES -X PrivPass123 <mgmt_address> 1.3.6.1.2.1.1.1
@@ -260,7 +259,7 @@ def get_dir_byte_total(device, directory):
         output = device.execute(cmd)
     except SchemaEmptyParserError as e:
         raise Exception("Command 'dir' did not return any output") from e
-    
+
     # 11353194496 bytes total (6827765760 bytes free)
     p = re.compile(r"^(?P<bytes_total>\d+) bytes total \((?P<bytes_free>\d+) bytes free\)$")
     for line in output.splitlines():

@@ -40,6 +40,7 @@ from genie.libs.clean.utils import (
     _get_netconf_not_ready_reason,
 )
 from genie.libs.clean.exception import FailedToBootException
+from genie.libs.clean.stages.image_handler import normalize_image_paths
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
 
 # Unicon
@@ -1134,16 +1135,16 @@ class InstallImage(BaseStage):
                     )
                 if not output.get("location"):
                     step.skipped("No active packages found to commit.")
-                location = list(output.get("location").keys())
-                for each in location:
-                    for pkg in output.get("location").get(each).get("pkg_state"):
-                        file_state = output["location"][each]["pkg_state"][pkg]["state"]
-                        # Image is activated & uncommitted state
-                        if file_state == "U":
-                            output = device.execute("install commit")
-                            if "SUCCESS:" in output:
-                                log.info("The image is activated and committed")
-                            break
+                locations = output.get("location", {})
+                install_commit_required = any(
+                    package.get("state") == "U"
+                    for location in locations.values()
+                    for package in location.get("pkg_state", {}).values()
+                )
+                if install_commit_required:
+                    commit_output = device.execute("install commit")
+                    if "SUCCESS:" in commit_output:
+                        log.info("The image is activated and committed")
             except Exception as e:
                 step.failed("Failed to execute install commit",
                             from_exception=e)
@@ -1163,34 +1164,8 @@ class InstallImage(BaseStage):
                     device.clean_space = True
 
             def handle_issu_dialog(spawn, context):
-                """Handle ISSU in progress dialog by aborting the operation"""
-
-                # copy running-config startup-config
-                device.api.execute_copy_run_to_start()
-
-                # Execute install abort issu
-                log.warning("ISSU is in progress. Aborting the ISSU upgrade to proceed.")
-                output = device.execute("install abort issu", timeout=30)
-
-                # Check if the failure is due to "Nothing to Abort"
-                if "Nothing to Abort" in str(output) or "FAILED" in str(output):
-                    log.info("No ISSU operation to abort, Need to clean install state")
-
-                # Execute show issu detail to check current state
-                device.execute("show issu state detail", timeout=30)
-
-                # Configure service internal and clear install state
-                try:
-                    device.configure("service internal")
-                    log.info("Successfully configured service internal")
-                    device.api.execute_clear_install_state()
-                    log.info("Successfully cleared install state")
-                except Exception as e:
-                    log.warning(f"Failed to configure service internal or clear install state: {e}")
-
-                # Raise exception to indicate ISSU is in progress
+                """Mark ISSU in progress; recovery runs after execute."""
                 setattr(device, 'issu_in_progress', True)
-                raise Exception("ISSU operation detected - device marked as in progress")
 
             def _collect_install_log():
                 """Collect diagnostics without replacing the install error.
@@ -1214,11 +1189,26 @@ class InstallImage(BaseStage):
                     return diagnostic_exception
                 return None
 
-            def install_image_failing(device, step, context):
+            def _read_install_state(command, install_exception, **kwargs):
+                try:
+                    return device.execute(command, **kwargs).replace('\r', '')
+                except Exception as diagnostic_exception:
+                    step.failed(
+                        f"Failed to install the image; {command} also failed: "
+                        f"{diagnostic_exception}",
+                        from_exception=install_exception)
+
+            def install_image_failing(spawn, device, step, context,
+                                      allow_recovery=False):
                 """
                 Handle install image failure by collecting install logs and
                 failing the step.
                 """
+                # Recoverable failures are handled after execute raises.
+                if allow_recovery and (
+                        'Super package already added. '
+                        'Add operation not allowed') in spawn.buffer:
+                    return
                 exception = context.get('exception')
                 diagnostic_exception = _collect_install_log()
                 reason = "Failed to install the image"
@@ -1266,7 +1256,7 @@ class InstallImage(BaseStage):
                 ),
                 # Add handler for ISSU dialog
                 Statement(
-                    pattern=r".*Install ISSU in progress\. Abort the ISSU upgrade to proceed.*",
+                    pattern=r".*Install ISSU in progress\. Abort the ISSU upgrade to proceed[^\r\n]*",
                     action=handle_issu_dialog,
                     loop_continue=False,
                     continue_timer=False,
@@ -1283,10 +1273,11 @@ class InstallImage(BaseStage):
                     pattern=(
                         r".*FAILED: install_add"
                         r"(?:_activate(?:_issu)?_commit)?"
-                        r"(?:\s+exit\(\d+\))?.*"
+                        r"(?:\s+exit\(\d+\))?[^\r\n]*"
                     ),
                     action=install_image_failing,
-                    args={'device': device, 'step': step},
+                    args={'device': device, 'step': step,
+                          'allow_recovery': True},
                     loop_continue=False,
                     continue_timer=False,
                 ),
@@ -1388,19 +1379,125 @@ class InstallImage(BaseStage):
                             "Install command reported success before reload handling "
                             "completed. Continuing with reload handling.")
                         break
-                    if getattr(device, 'issu_in_progress', None):
+                    install_error = str(e)
+                    issu_blocked = (
+                        getattr(device, 'issu_in_progress', False) or
+                        ('Install ISSU in progress. '
+                         'Abort the ISSU upgrade to proceed') in install_error)
+                    already_added = (
+                        ('Super package already added. '
+                         'Add operation not allowed') in install_error)
+                    if issu_blocked or already_added:
+                        # The dialog stops at the failure line; consume the
+                        # trailing prompt so the next command output aligns.
+                        try:
+                            device.expect([r'#\s*$'], timeout=10)
+                        except SubCommandFailure:
+                            log.debug('No prompt left after install failure')
+                        # Check whether this is the stale TFTP state before
+                        # clearing install state.
+                        issu_state = _read_install_state(
+                            'show issu state detail', e, timeout=60,
+                            error_pattern=[])
+                        # The stuck operation itself must be a known leftover;
+                        # 'Previous ISSU Operation' describes an older one.
+                        current_state = re.search(
+                            r'(?m)^\s*Current state\s*:\s*(.*?)\s*$',
+                            issu_state)
+                        known_stale = current_state and current_state.group(
+                            1) in ('Added state', 'Standby activated state')
+                        stale_tftp_issu = known_stale and all(re.search(
+                            pattern, issu_state, re.IGNORECASE | re.MULTILINE)
+                            for pattern in (
+                                r'^\s*Current ISSU Status:\s*In Progress',
+                                r'^\s*Install Boot\s+No\s*$',
+                                r'^\s*Valid Boot Media\s+No\s*$',
+                                r'^\s*Auto abort timer:\s*inactive',
+                                r'^\s*Running image:\s*tftp://',
+                            ))
+                        if stale_tftp_issu:
+                            # Build is only logged; failures must not block.
+                            try:
+                                package = device.execute(
+                                    f'show install package {images[0]}',
+                                    timeout=120, error_pattern=[])
+                            except Exception as package_error:
+                                package = ''
+                                log.warning('Could not read the image build: '
+                                            f'{package_error}')
+                            build = re.search(
+                                r'(?m)^\s*(?:Build|Version):\s*(\S+)',
+                                package)
+                            install_build = build.group(1) if build else None
+                            log.info(
+                                f'Image being installed: {images[0]} '
+                                f'(build {install_build})')
+                            summary = _read_install_state(
+                                'show install summary', e, timeout=60)
+                            if re.search(r'(?mi)^\s*SMU\s', summary):
+                                step.failed(
+                                    'ISSU state is not safe to clear: '
+                                    'SMUs are present',
+                                    from_exception=e)
+                            images_state = re.findall(
+                                r'(?m)^\s*IMG\s+([ICDU])\s+(\S+)', summary)
+                            states = [state for state, _ in images_state]
+                            if ('C' not in states or
+                                    any(s in ('U', 'D') for s in states) or
+                                    not re.search(
+                                        r'Auto abort timer:\s*inactive',
+                                        summary, re.IGNORECASE)):
+                                step.failed('ISSU state is not safe to clear',
+                                            from_exception=e)
+                            stale_images = [
+                                img for state, img in images_state
+                                if state == 'I']
+                            log.warning(
+                                'Confirmed stale TFTP ISSU state (inactive: '
+                                f'{stale_images}, installing: '
+                                f'{install_build}); clearing install state')
+                            device.configure('service internal')
+                            if not device.api.execute_clear_install_state():
+                                step.failed(
+                                    'Failed to clear stale install state')
+                            device.api.execute_copy_run_to_start()
+                        else:
+                            if not issu_blocked:
+                                step.failed(
+                                    'Install package is already added, '
+                                    'but ISSU state is not stale',
+                                    from_exception=e)
+                            device.api.execute_copy_run_to_start()
+                            log.warning(
+                                'ISSU is in progress. '
+                                'Aborting the ISSU upgrade to proceed.')
+                            abort_output = device.execute(
+                                'install abort issu', timeout=30)
+                            _read_install_state('show issu state detail', e,
+                                                timeout=30)
+                            if ('Nothing to Abort' in str(abort_output) or
+                                    'FAILED' in str(abort_output)):
+                                step.failed(
+                                    'ISSU abort failed; '
+                                    'install state was not cleared')
                         retry_count += 1
                         if retry_count < install_retry_attempts:
-                            log.warning(f"ISSU in progress detected, retrying ({retry_count}/{install_retry_attempts})")
+                            log.warning(
+                                f"Recovered install state, retrying "
+                                f"({retry_count}/{install_retry_attempts})")
                             # Remove the flag
-                            delattr(device, 'issu_in_progress')
+                            if hasattr(device, 'issu_in_progress'):
+                                delattr(device, 'issu_in_progress')
                             continue
                         else:
-                            log.error("Max retries reached for ISSU in progress")
+                            log.error(
+                                "Max retries reached for ISSU in progress")
                             step.failed(
-                                f"Failed to install image after {install_retry_attempts} attempts due to "
-                                f"ongoing ISSU operations on device {device.name}. "
-                                f"Please ensure no ISSU operations are in progress and retry.")
+                                f"Failed to install image after "
+                                f"{install_retry_attempts} attempts due to "
+                                f"ongoing ISSU operations on device "
+                                f"{device.name}. Please ensure no ISSU "
+                                f"operations are in progress and retry.")
                     elif getattr(device, 'clean_space', None):
                         retry_count += 1
                         if retry_count < install_retry_attempts:
@@ -1478,7 +1575,8 @@ class InstallImage(BaseStage):
                 else:
                     device.reload("", **reload_args)
 
-            device.execute("install commit")
+            if "commit" not in install_cmd:
+                device.execute("install commit")
 
             image_mapping = self.history["InstallImage"].parameters.setdefault(
                 "image_mapping", {})
@@ -2479,9 +2577,14 @@ class RommonBoot(BaseStage):
     ------------
     rommon_boot:
 
-        image (list, optional): Image to boot with
+        image (list/str/dict, optional): One primary image path, optionally
+            wrapped in image/file metadata. Ambiguous or empty TFTP metadata
+            fails before booting; it does not reuse a ROMMON TFTP_FILE value.
 
         tftp (optional): If specified boot via tftp otherwise boot using local
+
+            image (list/str/dict, optional): One primary TFTP image in the
+                same supported Clean image/file formats.
 
             ip_address (list, optional): Management ip address to configure to reach to the
                 tftp server
@@ -2574,7 +2677,7 @@ class RommonBoot(BaseStage):
     ROMMON_TIMEOUT = 15
     RECONNECT_TIMEOUT = 120
     CONFIG_REGISTER = "0x0"
-    IMAGE = []
+    IMAGE = None
     TFTP = {}
     ROMMON_TFTP_BOOT_MAX_ATTEMPTS = 3
     ROMMON_TFTP_BOOT_SLEEP_INTERVAL = 30
@@ -2583,8 +2686,9 @@ class RommonBoot(BaseStage):
     # Stage Schema
     # ============
     schema = {
-        Optional("image"): list,
+        Optional("image"): Or(list, str, dict),
         Optional("tftp"): {
+            Optional("image"): Or(list, str, dict),
             Optional("ip_address"): list,
             Optional("subnet_mask"): str,
             Optional("gateway"): str,
@@ -2656,6 +2760,32 @@ class RommonBoot(BaseStage):
         with steps.start("Boot device from rommon") as step:
 
             golden_image = None
+            tftp = copy.deepcopy(tftp)
+            try:
+                if image is not None:
+                    # Preserve local golden-image lists; only TFTP requires one image.
+                    image = normalize_image_paths(image, require_single=False)
+                    if image[0].startswith('/') or 'tftp:' in image[0]:
+                        image = normalize_image_paths(image)
+                # Do not reject unused TFTP metadata for an explicit local boot.
+                # The SDK still validates it if a platform selects TFTP instead.
+                if 'image' in tftp and (image is None or
+                                       image[0].startswith('/') or 'tftp:' in image[0]):
+                    tftp['image'] = normalize_image_paths(tftp['image'])
+                elif image is None:
+                    # Resolve the image and recovery options once for all retries.
+                    recovery_info = device.api.get_recovery_details(tftp_boot=tftp)
+                    if tftp or not recovery_info['golden_image']:
+                        tftp = copy.deepcopy(recovery_info.get('tftp_boot', {}))
+                        if 'image' in tftp:
+                            # Legacy/plugin selectors still expect a flat path list.
+                            tftp['image'] = normalize_image_paths(tftp['image'])
+                            recovery_info = {**recovery_info, 'tftp_boot': tftp, 'tftp_image': tftp['image']}
+                        _, selected_image = device.api.get_tftp_boot_command(recovery_info)
+                        tftp['image'] = normalize_image_paths(selected_image)
+            except Exception as e:
+                step.failed(f"Invalid ROMMON boot image metadata: {e}", from_exception=e)
+                return
 
             # Check if image name has path or tftp:
             if image:
@@ -2715,6 +2845,8 @@ class RommonBoot(BaseStage):
                     'The highlighted entry will be (?:booted|executed) automatically'
                 )
 
+            # Keep the provider-selected transport image for this stage's retries.
+            tftp_boot_state = {}
             # Boot the device using the API with retry logic
             try:
                 retry_count = 0
@@ -2726,10 +2858,11 @@ class RommonBoot(BaseStage):
                         # Call the device_rommon_boot API
                         # API will use get_recovery_details to merge stage params with device_recovery
                         device.api.device_rommon_boot(
-                            tftp_boot=tftp,
+                            tftp_boot=copy.deepcopy(tftp),
                             golden_image=golden_image,
                             grub_activity_pattern=grub_activity_pattern,
-                            timeout=timeout
+                            timeout=timeout,
+                            tftp_boot_state=tftp_boot_state,
                         )
 
                         if retry_count > 0:
@@ -2871,6 +3004,10 @@ class CopyToDevice(BaseStage):
         prompt_recovery(bool, optional): Enable the prompt recovery when the  execution
             command timeout. Defaults to False.
 
+        shell (bool, optional): Use the IOS XE shell-based FileUtils transfer path for the
+            copy operation. When True, the copy is performed using the supported protocols
+            and the configured transfer VRF. Defaults to False.
+
         verify_md5 (dict, optional):
             enable: (bool): Enable md5sum verification of the copied image. Defaults to False.
             verify_host:(str,optinal) Hostname of the server to used for checking the md5sum of the image.
@@ -2920,6 +3057,7 @@ class CopyToDevice(BaseStage):
     PROTOCOL = "https"
     CONNECTION_ALIAS = "default"
     VERIFY_MD5_TIMEOUT = 60
+    SHELL = False
 
     # ============
     # Stage Schema
@@ -3084,6 +3222,12 @@ class CopyToDevice(BaseStage):
             default=PROMPT_RECOVERY,
         ):
         bool,
+        Optional(
+            "shell",
+            description="Use the IOS XE shell-based FileUtils transfer path for the copy operation.",
+            default=SHELL,
+        ):
+        bool,
         Optional("verify_md5"): {
             Required("enable",
                      description="Enable md5sum verification of the copied image."):
@@ -3132,6 +3276,7 @@ class CopyToDevice(BaseStage):
         prompt_recovery=PROMPT_RECOVERY,
         verify_running_image=VERIFY_RUNNING_IMAGE,
         verify_md5=VERIFY_MD5,
+        shell=SHELL,
         **kwargs,
     ):
         log.info(
@@ -3768,6 +3913,7 @@ class CopyToDevice(BaseStage):
                                                     overwrite=overwrite,
                                                     prompt_recovery=
                                                     prompt_recovery,
+                                                    shell=shell,
                                                     **kwargs,
                                                 )
                                                 if not res:
@@ -3817,6 +3963,7 @@ class CopyToDevice(BaseStage):
                                                     overwrite=overwrite,
                                                     prompt_recovery=
                                                     prompt_recovery,
+                                                    shell=shell,
                                                     **kwargs,
                                                 )
                                                 if not res:
@@ -4566,6 +4713,11 @@ class SetControllerMode(BaseStage):
         reload_timeout (int, optional): maximum time to wait for reload.
             Defaults to 600 secs
 
+        via (str, optional): connection from the testbed to use for internal
+            reconnects. If omitted, the stage reuses the current connection's
+            via when available, then falls back to normal pyATS connection
+            selection.
+
         delete_inactive_versions (bool, optional): delete non active version after
             changing image. Defaults to True
 
@@ -4574,6 +4726,7 @@ class SetControllerMode(BaseStage):
     set_controller_mode:
         mode: enable
         reload_timeout: 600
+        via: a
         delete_inactive_versions: True
     """
 
@@ -4582,6 +4735,7 @@ class SetControllerMode(BaseStage):
     # =================
     MODE = "enable"
     RELOAD_TIMEOUT = 600
+    VIA = None
     DELETE_INACTIVE_VERSIONS = True
 
     # ============
@@ -4590,6 +4744,7 @@ class SetControllerMode(BaseStage):
     schema = {
         Optional("mode"): str,
         Optional("reload_timeout"): int,
+        Optional("via"): str,
         Optional("delete_inactive_versions"): bool,
     }
 
@@ -4606,7 +4761,9 @@ class SetControllerMode(BaseStage):
                             steps,
                             device,
                             mode=MODE,
-                            reload_timeout=RELOAD_TIMEOUT):
+                            reload_timeout=RELOAD_TIMEOUT,
+                            via=VIA,
+                            testbed_config=None):
 
         # Check if we're already in the desired mode
         version_data = device.parse("show version")
@@ -4619,16 +4776,29 @@ class SetControllerMode(BaseStage):
             router_operating_mode = None
 
         if router_operating_mode == "Autonomous" and mode == "disable":
+            self._publish_device_platform(
+                device, testbed_config, mode, router_operating_mode)
             self.skipped("Router already in Autonomous mode")
         elif router_operating_mode == "Controller-Managed" and mode == "enable":
+            self._publish_device_platform(
+                device, testbed_config, mode, router_operating_mode)
             self.skipped("Router already in Controller-Managed mode")
 
         with steps.start("setting controller mode") as step:
 
+            reconnect_via = self._get_reconnect_via(device, via)
+
             if device.connected:
                 device.destroy_all()
 
-            device.connect()
+            connect_kwargs = {}
+            if reconnect_via:
+                connect_kwargs["via"] = reconnect_via
+
+            # ``learn_tokens`` is stored in the connection arguments by
+            # ConnectionManager. Explicitly disable it for this pre-transition
+            # reconnect; the final platform is learned after the mode change.
+            device.connect(learn_tokens=False, **connect_kwargs)
 
             _, password = device.api.get_username_password()
 
@@ -4704,16 +4874,94 @@ class SetControllerMode(BaseStage):
                 self.skipped("Unable to configure controller-mode. Is it a "
                              "feature of this device?")
 
-    def confirm_and_set_default(self, steps, device, mode=MODE):
+    @staticmethod
+    def _get_reconnect_via(device, via=None):
+        """Return an explicit via or the current default connection's via.
+
+        Args:
+            device: Device whose established connection will be reused.
+            via: Optional explicit connection path.
+
+        Returns:
+            The explicit or selected connection via, or ``None`` when it is
+            unavailable.
+        """
+        if via:
+            return via
+        try:
+            connection = device.connectionmgr.connections[
+                device.default_connection_alias]
+        except (AttributeError, KeyError):
+            return None
+
+        return getattr(connection, "via", None)
+
+    @classmethod
+    def _publish_device_platform(
+            cls, device, testbed_config, mode, router_operating_mode):
+        """Publish the platform learned by a successful Clean worker.
+
+        The parent overlays this value onto the original testbed before
+        constructing a fresh Device with the post-Clean abstraction.
+
+        Args:
+            device: Device containing the platform learned after reconnect.
+            testbed_config: Collector used to publish generated testbed data.
+            mode: Requested controller mode operation.
+            router_operating_mode: Verified operating mode after the operation.
+        """
+        if testbed_config is None:
+            return
+
+        testbed_config.add_device(
+            device.name,
+            {"platform": device.platform},
+            source={
+                "stage": cls.__name__,
+                "mode": mode,
+                "router_operating_mode": router_operating_mode,
+            },
+        )
+
+    def confirm_and_set_default(
+            self, steps, device, mode=MODE, via=VIA,
+            testbed_config=None):
+        """Reconnect after the mode transition and verify the resulting mode.
+
+        When supplied by the Clean worker, ``testbed_config`` receives the
+        platform learned by the post-transition token-learning reconnect after
+        the requested operating mode has been verified.
+
+        Args:
+            steps: Step container used to report operation and verification.
+            device: Device that completed the controller-mode transition.
+            mode: Requested controller mode operation.
+            via: Optional explicit connection path. When omitted, reuse the
+                current default connection's path.
+            testbed_config: Optional collector for publishing the learned
+                post-transition platform to the parent process.
+        """
 
         with steps.start("upgrade-confirm and set-default") as step:
+            reconnect_via = self._get_reconnect_via(device, via)
+            connect_kwargs = {}
+            if reconnect_via:
+                connect_kwargs["via"] = reconnect_via
+
             if device.connected:
                 device.destroy_all()
             if mode == "disable":
-                self.output = device.connect(learn_tokens=True,
-                                             overwrite_testbed_tokens=True)
+                self.output = device.connect(
+                    learn_tokens=True,
+                    overwrite_testbed_tokens=True,
+                    **connect_kwargs,
+                )
             else:
-                self.output = device.connect()
+                self.output = device.connect(
+                    learn_tokens=True,
+                    overwrite_testbed_tokens=True,
+                    **connect_kwargs,
+                )
 
                 parsed_output = device.parse("show sdwan software")
                 active_version = parsed_output.q.contains_key_value(
@@ -4733,9 +4981,13 @@ class SetControllerMode(BaseStage):
 
         with steps.start("Verify controller mode") as step:
             if "Controller-Managed" in self.output and mode == "enable":
+                self._publish_device_platform(
+                    device, testbed_config, mode, "Controller-Managed")
                 step.passed(
                     "Device booted up with controller-mode successfully.")
             elif "Autonomous" in self.output and mode == "disable":
+                self._publish_device_platform(
+                    device, testbed_config, mode, "Autonomous")
                 step.passed(
                     "Device booted up with autonomous-mode successfully.")
             elif "Controller-Managed" in self.output and mode == "disable":

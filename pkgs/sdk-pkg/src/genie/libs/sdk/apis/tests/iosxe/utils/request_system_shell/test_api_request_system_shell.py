@@ -1,6 +1,6 @@
 import os
 import unittest
-from unittest.mock import patch
+from unittest.mock import MagicMock, call, patch
 
 from pyats.topology import loader
 from unicon.core.errors import SubCommandFailure
@@ -123,6 +123,57 @@ class TestRequestSystemShell(unittest.TestCase):
         result = request_system_shell(self.device, command=cmds_list)
         self.assertEqual(result, expected_output)
 
+    def test_timeout_is_propagated_to_single_payload_command(self):
+        device = MagicMock()
+        device.execute.side_effect = ['entered', 'payload', None]
+
+        result = request_system_shell(
+            device, command='true', timeout=37
+        )
+
+        self.assertEqual(result, 'enteredpayload')
+        self.assertEqual(
+            call('true', timeout=37),
+            device.execute.call_args_list[1],
+        )
+
+    def test_timeout_is_propagated_to_payload_command_list(self):
+        device = MagicMock()
+        device.execute.side_effect = ['entered', 'first', 'second', None]
+
+        result = request_system_shell(
+            device, command=['true', 'pwd'], timeout=37
+        )
+
+        self.assertEqual(result, 'enteredfirstsecond')
+        self.assertEqual(
+            [call('true', timeout=37), call('pwd', timeout=37)],
+            device.execute.call_args_list[1:3],
+        )
+
+    def test_timeout_is_propagated_to_uname(self):
+        device = MagicMock()
+        device.execute.side_effect = ['entered', 'uname', None]
+
+        result = request_system_shell(device, uname=True, timeout=37)
+
+        self.assertEqual(result, 'entereduname')
+        self.assertEqual(
+            call('uname -a', timeout=37),
+            device.execute.call_args_list[1],
+        )
+
+    def test_omitted_timeout_is_forwarded_as_none(self):
+        device = MagicMock()
+        device.execute.side_effect = ['entered', 'payload', None]
+
+        request_system_shell(device, command='true')
+
+        self.assertEqual(
+            call('true', timeout=None),
+            device.execute.call_args_list[1],
+        )
+
     def test_request_system_shell_failure_includes_error(self):
         with patch.object(
             self.device,
@@ -135,4 +186,81 @@ class TestRequestSystemShell(unittest.TestCase):
         self.assertEqual(
             str(context.exception),
             'failed to enter system shell. Error:\nmock system shell error'
+        )
+
+    @patch(
+        'genie.libs.sdk.apis.iosxe.utils.recover_device_to_enable_state'
+    )
+    def test_payload_failure_recovers_prompt_and_preserves_error(
+        self, recover
+    ):
+        device = MagicMock()
+        original_error = SubCommandFailure(
+            'payload failed at continuation prompt'
+        )
+        device.execute.side_effect = ['entered', original_error]
+
+        with self.assertRaises(SubCommandFailure) as context:
+            request_system_shell(
+                device, command="unterminated '", timeout=37
+            )
+
+        recover.assert_called_once_with(device, timeout=10)
+        self.assertIs(context.exception.__cause__, original_error)
+        self.assertEqual(
+            str(context.exception),
+            'failed to enter system shell. Error:\n'
+            'payload failed at continuation prompt',
+        )
+
+    @patch(
+        'genie.libs.sdk.apis.iosxe.utils.recover_device_to_enable_state'
+    )
+    def test_payload_failure_skips_recovery_when_exit_is_false(
+        self, recover
+    ):
+        device = MagicMock()
+        original_error = SubCommandFailure('payload failed')
+        device.execute.side_effect = ['entered', original_error]
+
+        with self.assertRaises(SubCommandFailure):
+            request_system_shell(
+                device, command='false', timeout=37, exit=False
+            )
+
+        recover.assert_not_called()
+
+    @patch(
+        'genie.libs.sdk.apis.iosxe.utils.recover_device_to_enable_state'
+    )
+    def test_entry_failure_does_not_attempt_prompt_recovery(self, recover):
+        device = MagicMock()
+        device.execute.side_effect = SubCommandFailure('entry failed')
+
+        with self.assertRaises(SubCommandFailure):
+            request_system_shell(device, timeout=37)
+
+        recover.assert_not_called()
+
+    @patch('genie.libs.sdk.apis.iosxe.utils.log')
+    @patch(
+        'genie.libs.sdk.apis.iosxe.utils.recover_device_to_enable_state',
+        side_effect=RuntimeError('recovery failed'),
+    )
+    def test_recovery_failure_does_not_replace_payload_error(
+        self, recover, log
+    ):
+        device = MagicMock()
+        original_error = SubCommandFailure('payload failed')
+        device.execute.side_effect = ['entered', original_error]
+
+        with self.assertRaises(SubCommandFailure) as context:
+            request_system_shell(device, command='false', timeout=37)
+
+        recover.assert_called_once_with(device, timeout=10)
+        log.warning.assert_called_once()
+        self.assertIs(context.exception.__cause__, original_error)
+        self.assertEqual(
+            str(context.exception),
+            'failed to enter system shell. Error:\npayload failed',
         )

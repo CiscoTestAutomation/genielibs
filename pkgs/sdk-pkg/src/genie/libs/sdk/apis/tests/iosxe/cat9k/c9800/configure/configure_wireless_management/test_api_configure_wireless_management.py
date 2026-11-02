@@ -27,17 +27,17 @@ class TestConfigureWirelessManagement(unittest.TestCase):
                     }],
                 },
                 "ap_profile": "default-ap-profile",
-                "credential_name": "wireless",
+                "credential_name": "ap",
             },
         }
         self.device.credentials = {
-            "wireless": {
-                "username": "admin",
-                "password": "Secret12345",
+            "ap": {
+                "username": "ap-user",
+                "password": "test-ap-password",
             },
         }
 
-    def test_configures_wireless_management_from_testbed(self):
+    def test_configures_wireless_management_from_controller_credentials(self):
         result = configure_wireless_management(self.device)
 
         self.assertIsNone(result)
@@ -71,9 +71,15 @@ class TestConfigureWirelessManagement(unittest.TestCase):
             "wireless management interface Vlan121",
             "exit",
             "ap profile default-ap-profile",
-            "mgmtuser username admin password 0 Secret12345 "
-            "secret 0 Secret12345",
+            "mgmtuser username ap-user password 0 test-ap-password "
+            "secret 0 test-ap-password",
         ])
+
+    def test_rejects_missing_controller_ap_credentials(self):
+        self.device.credentials = {}
+        with self.assertRaisesRegex(
+                ValueError, "credential 'ap' was not found"):
+            configure_wireless_management(self.device)
 
     def test_rejects_interface_vlan_mismatch_before_configuration(self):
         self.device.management["wireless"]["vlan"] = 122

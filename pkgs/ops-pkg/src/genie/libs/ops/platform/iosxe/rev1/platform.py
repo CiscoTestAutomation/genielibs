@@ -8,6 +8,7 @@ from genie.libs.ops.utils.common import convert_to_bool, \
                                         slot_num
 # Genie Parsers
 from genie.libs.parser.iosxe import show_platform
+from genie.libs.ops.platform.iosxe.topology import populate_topology
 
 
 class Platform(SuperPlatform):
@@ -127,6 +128,10 @@ class Platform(SuperPlatform):
         self.add_leaf(cmd=show_inventory_command, revision='1',
                       src='[main][swstack]',
                       dest='swstack')
+
+        self.add_leaf(cmd=show_inventory_command, revision='1',
+                      src='[member]',
+                      dest='_member_inventory')
 
         # hw_revision
         self.add_leaf(cmd=show_version_command,
@@ -437,3 +442,8 @@ class Platform(SuperPlatform):
             for key, val in self.members.items():
                 coalesced.setdefault(str(key), {}).update(val or {})
             self.members = coalesced
+
+        member_inventory = getattr(self, '_member_inventory', {})
+        populate_topology(self, member_inventory)
+        if hasattr(self, '_member_inventory'):
+            del self._member_inventory

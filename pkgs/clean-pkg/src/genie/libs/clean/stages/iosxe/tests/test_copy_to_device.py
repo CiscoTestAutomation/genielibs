@@ -5,6 +5,8 @@ from unittest.mock import Mock, call, ANY, patch, mock_open
 from genie.libs.clean.stages.iosxe.stages import CopyToDevice
 from genie.libs.clean.stages.tests.utils import create_test_device
 
+from genie.metaparser.util.schemaengine import Schema
+
 from pyats.aetest.steps import Steps
 from pyats.results import Passed, Failed, Skipped, Passx
 from pyats.aetest.signals import TerminateStepSignal, AEtestStepSkippedSignal, AEtestSkippedSignal
@@ -1017,3 +1019,93 @@ class VerifyCopyToDevice(unittest.TestCase):
                  error_pattern=ANY),
             call('dir bootflash:')
         ])
+
+
+class TestCopyToDeviceShellOption(unittest.TestCase):
+    """Coverage for the optional shell transfer option."""
+
+    def setUp(self):
+        # Instantiate class object
+        self.cls = CopyToDevice()
+        self.cls.history = {'CopyToDevice': AttrDict({'parameters': {}})}
+
+        # Instantiate device object. This also sets up commonly needed
+        # attributes and Mock objects associated with the device.
+        self.device = create_test_device('PE1', os='iosxe')
+
+    def test_schema_accepts_shell_option(self):
+        """The CopyToDevice schema must accept shell: true."""
+        validated = Schema(self.cls.schema).validate({
+            'origin': {
+                'hostname': 'server1',
+                'files': ['/path/test.bin'],
+            },
+            'destination': {
+                'directory': 'bootflash:',
+            },
+            'protocol': 'scp',
+            'shell': True,
+        })
+        self.assertTrue(validated['shell'])
+
+    def test_schema_shell_defaults_to_false(self):
+        """Omitting shell must validate and default to False (unchanged behavior)."""
+        validated = Schema(self.cls.schema).validate({
+            'origin': {
+                'hostname': 'server1',
+                'files': ['/path/test.bin'],
+            },
+            'destination': {
+                'directory': 'bootflash:',
+            },
+            'protocol': 'scp',
+        })
+        # Schema.validate does not inject defaults, so shell is absent when
+        # omitted. The stage default is False, preserving existing behavior.
+        self.assertNotIn('shell', validated)
+        self.assertFalse(self.cls.SHELL)
+
+    def _run_copy(self, **extra_kwargs):
+        """Drive the copy_to_device stage with the SDK copy API mocked."""
+        steps = Steps()
+
+        testbed = Testbed(
+            'mytb',
+            servers={'server1': {
+                'address': '127.0.0.1',
+                'protocol': 'scp'
+            }})
+        self.device.testbed = testbed
+
+        self.device.execute = Mock(return_value='')
+
+        # Mock the SDK copy_to_device API so we can inspect the forwarded args
+        self.device.api.copy_to_device = Mock(return_value='Copied file')
+
+        # Supporting APIs so the stage reaches and passes the copy step
+        self.device.api.get_file_size_from_server = Mock(return_value=100)
+        self.device.api.verify_file_exists = Mock(side_effect=[False, True])
+        self.device.api.free_up_disk_space = Mock(return_value=True)
+
+        self.cls.copy_to_device(
+            steps=steps,
+            device=self.device,
+            origin=dict(files=['/path/test.bin'], hostname='server1'),
+            destination=dict(directory='bootflash:'),
+            protocol='scp',
+            verify_running_image=False,
+            **extra_kwargs)
+
+        self.assertEqual(Passed, steps.details[0].result)
+        self.device.api.copy_to_device.assert_called_once()
+        return self.device.api.copy_to_device.call_args
+
+    def test_shell_true_forwarded_to_sdk_api(self):
+        """shell=True must be forwarded to the SDK copy_to_device API."""
+        _, called_kwargs = self._run_copy(shell=True)
+        self.assertIs(called_kwargs['shell'], True)
+
+    def test_shell_defaults_to_false_in_sdk_call(self):
+        """Omitting shell must forward shell=False (default transfer path)."""
+        _, called_kwargs = self._run_copy()
+        self.assertIs(called_kwargs['shell'], False)
