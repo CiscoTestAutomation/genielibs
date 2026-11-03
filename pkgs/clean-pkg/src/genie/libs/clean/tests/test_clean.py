@@ -132,6 +132,43 @@ class TestGeneratedTestbedConfig(unittest.TestCase):
         self.assertIs(stage.parameters['testbed_config'], collector)
 
     @mock.patch('genie.libs.clean.clean.get_image_handler', return_value=None)
+    def test_clean_testcase_injects_coordination_context_into_stage_parameters(
+            self, _get_image_handler: mock.Mock) -> None:
+        """Verify coordinated stages receive the injected context by identity."""
+        class DeviceStub:
+            """Provide deterministic clean configuration for the stage test."""
+
+            name = 'uut'
+            clean = {'order': ['Coordinate']}
+
+        class Coordinate(BaseStage):
+            """Represent a stage that accepts the coordination context."""
+
+            schema = {}
+
+            def coordinate(self, coordination_context=None):
+                """Accept the context supplied by CleanTestcase."""
+
+        coordination_context = object()
+        testcase = CleanTestcase(
+            DeviceStub(), 3, coordination_context=coordination_context)
+        testcase.discover = mock.Mock()
+        testcase.stages = {
+            'Coordinate': {
+                'func': Coordinate,
+                'change_order_if_pass': None,
+                'change_order_if_fail': None,
+                'stage_reuse_limit': None,
+                'args': {},
+            },
+        }
+
+        stage = next(iter(testcase))
+
+        self.assertIs(
+            stage.parameters['coordination_context'], coordination_context)
+
+    @mock.patch('genie.libs.clean.clean.get_image_handler', return_value=None)
     def test_clean_testcase_reserves_collector_parameter(
             self, _get_image_handler: mock.Mock) -> None:
         """Verify configured stage arguments cannot replace the collector."""
@@ -196,18 +233,11 @@ class TestGeneratedTestbedConfig(unittest.TestCase):
         self.assertIs(stage.parameters['testbed_config'], legacy_value)
 
     @mock.patch('genie.libs.clean.clean.CleanTestcase')
-    @mock.patch('genie.libs.clean.clean.load')
     def test_device_clean_passes_its_collector_to_clean_testcase(
-            self, load_mock: mock.Mock,
-            testcase_class: mock.Mock) -> None:
+            self, testcase_class: mock.Mock) -> None:
         """Verify DeviceClean forwards its collector by identity."""
-        # Arrange conversion from the worker's pyATS device to a Genie device.
         original_device = mock.Mock(name='original-device')
         original_device.name = 'uut'
-        original_device.testbed = mock.Mock()
-        genie_device = mock.Mock()
-        genie_device.name = 'uut'
-        load_mock.return_value.devices = {'uut': genie_device}
 
         # Make the mocked Clean testcase complete successfully.
         testcase = testcase_class.return_value
@@ -220,22 +250,16 @@ class TestGeneratedTestbedConfig(unittest.TestCase):
 
         # The constructed testcase must receive the cleaner-owned collector.
         testcase_class.assert_called_once_with(
-            genie_device, mock.ANY,
-            testbed_config=cleaner.testbed_config)
+            original_device, mock.ANY,
+            testbed_config=cleaner.testbed_config,
+            coordination_context=None)
 
     @mock.patch('genie.libs.clean.clean.CleanTestcase')
-    @mock.patch('genie.libs.clean.clean.load')
     def test_device_clean_without_collector_passes_none(
-            self, load_mock: mock.Mock,
-            testcase_class: mock.Mock) -> None:
+            self, testcase_class: mock.Mock) -> None:
         """Verify legacy uninitialized cleaners remain backward compatible."""
-        # Arrange a device conversion identical to the normal DeviceClean path.
         original_device = mock.Mock()
         original_device.name = 'uut'
-        original_device.testbed = mock.Mock()
-        genie_device = mock.Mock()
-        genie_device.name = 'uut'
-        load_mock.return_value.devices = {'uut': genie_device}
 
         # Bypass BaseCleaner initialization to model a legacy/custom caller.
         testcase = testcase_class.return_value
@@ -248,7 +272,8 @@ class TestGeneratedTestbedConfig(unittest.TestCase):
 
         # A missing collector is represented explicitly as an inert None value.
         testcase_class.assert_called_once_with(
-            genie_device, mock.ANY, testbed_config=None)
+            original_device, mock.ANY, testbed_config=None,
+            coordination_context=None)
 
 
 source_json = {
@@ -999,12 +1024,25 @@ class TestDeviceClean(unittest.TestCase):
         self.testbed = mock.MagicMock()
         self.testbed.devices = {'TestDevice': self.device}
 
+    @mock.patch('genie.libs.clean.clean.CleanTestcase')
+    def test_passes_coordination_context_to_clean_testcase(
+            self, mocked_clean_testcase):
+        coordination_context = object()
+        testcase = mocked_clean_testcase.return_value
+        testcase.return_value = results.Passed
+        testcase.parameters = {}
+
+        DeviceClean().clean(
+            self.device, coordination_context=coordination_context)
+
+        mocked_clean_testcase.assert_called_once_with(
+            self.device, mock.ANY, testbed_config=mock.ANY,
+            coordination_context=coordination_context)
+
     @mock.patch('genie.libs.clean.clean.aetest')
     @mock.patch('genie.libs.clean.clean.CleanTestcase')
-    @mock.patch('genie.libs.clean.clean.load')
     def test_successful_recovery_raises_clean_retry_request(
-            self, mocked_load, mocked_clean_testcase, mocked_aetest):
-        mocked_load.return_value = self.testbed
+            self, mocked_clean_testcase, mocked_aetest):
         outcome = RecoveryOutcome(
             stage_uid='ResetConfiguration',
             attempted=True,
@@ -1027,10 +1065,8 @@ class TestDeviceClean(unittest.TestCase):
 
     @mock.patch('genie.libs.clean.clean.aetest')
     @mock.patch('genie.libs.clean.clean.CleanTestcase')
-    @mock.patch('genie.libs.clean.clean.load')
     def test_clean_failure_without_recovery_is_not_retryable(
-            self, mocked_load, mocked_clean_testcase, mocked_aetest):
-        mocked_load.return_value = self.testbed
+            self, mocked_clean_testcase, mocked_aetest):
         testcase = mocked_clean_testcase.return_value
         testcase.return_value = results.Failed
         testcase.parameters = {}

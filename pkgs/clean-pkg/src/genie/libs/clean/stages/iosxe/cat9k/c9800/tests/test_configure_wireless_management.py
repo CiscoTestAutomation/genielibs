@@ -65,7 +65,7 @@ class TestConfigureWirelessManagement(unittest.TestCase):
                 }],
             },
             "ap_profile": "default-ap-profile",
-            "credential_name": "wireless",
+            "credential_name": "ap",
         }
         self.api = SimpleNamespace(configure_wireless_management=Mock())
         self.device = SimpleNamespace(
@@ -88,7 +88,7 @@ class TestConfigureWirelessManagement(unittest.TestCase):
             gateway={"ipv4": "192.0.2.1"},
             routes=self.wireless["routes"],
             ap_profile="default-ap-profile",
-            credential_name="wireless",
+            credential_name="ap",
         )
 
     def test_configure_passes_optional_values_as_none(self):

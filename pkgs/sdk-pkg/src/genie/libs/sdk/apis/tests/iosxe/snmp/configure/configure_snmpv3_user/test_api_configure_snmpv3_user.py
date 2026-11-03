@@ -72,5 +72,68 @@ class TestConfigureSnmpv3User(TestCase):
             )
 
 
+    def test_configure_snmpv3_user_with_read_view(self):
+        """Verify read view is appended to group command."""
+        device = Mock()
+        device.name = 'Router1'
+        configure_snmpv3_user(
+            device, group_name='SNMPV3_GRP', user_name='SNMPV3_USR',
+            auth_password='AuthPass1', priv_password='PrivPass1',
+            read_view='SNMP_RW_VIEW'
+        )
+        config_list = device.configure.call_args[0][0]
+        self.assertEqual(
+            config_list[0],
+            'snmp-server group SNMPV3_GRP v3 priv read SNMP_RW_VIEW'
+        )
+
+    def test_configure_snmpv3_user_with_write_view(self):
+        """Verify write view is appended to group command."""
+        device = Mock()
+        device.name = 'Router1'
+        configure_snmpv3_user(
+            device, group_name='SNMPV3_GRP', user_name='SNMPV3_USR',
+            auth_password='AuthPass1', priv_password='PrivPass1',
+            write_view='SNMP_RW_VIEW'
+        )
+        config_list = device.configure.call_args[0][0]
+        self.assertEqual(
+            config_list[0],
+            'snmp-server group SNMPV3_GRP v3 priv write SNMP_RW_VIEW'
+        )
+
+    def test_configure_snmpv3_user_with_read_and_write_view(self):
+        """Verify both read and write views are appended to group command."""
+        device = Mock()
+        device.name = 'Router1'
+        configure_snmpv3_user(
+            device, group_name='SNMPV3_GRP', user_name='SNMPV3_USR',
+            auth_password='AuthPass1', priv_password='PrivPass1',
+            read_view='SNMP_READ_VIEW', write_view='SNMP_WRITE_VIEW'
+        )
+        config_list = device.configure.call_args[0][0]
+        self.assertEqual(
+            config_list[0],
+            'snmp-server group SNMPV3_GRP v3 priv read SNMP_READ_VIEW write SNMP_WRITE_VIEW'
+        )
+
+    def test_configure_snmpv3_user_views_with_acl(self):
+        """Verify read/write views and ACL together."""
+        device = Mock()
+        device.name = 'Router1'
+        configure_snmpv3_user(
+            device, group_name='SNMPV3_GRP', user_name='SNMPV3_USR',
+            auth_password='AuthPass1', priv_password='PrivPass1',
+            read_view='SNMP_RW_VIEW', write_view='SNMP_RW_VIEW',
+            acl_name='SNMP_ACL'
+        )
+        config_list = device.configure.call_args[0][0]
+        self.assertEqual(
+            config_list[0],
+            'snmp-server group SNMPV3_GRP v3 priv read SNMP_RW_VIEW write SNMP_RW_VIEW'
+        )
+        self.assertIn('access SNMP_ACL', config_list[1])
+
+
 if __name__ == '__main__':
     unittest.main()

@@ -46,11 +46,10 @@ def unconfigure_snmp(device,community_string):
 
 def configure_snmpv3_user(device, group_name, user_name, auth_password, priv_password,
                           auth_protocol='sha', priv_protocol='aes 128', access_type='priv',
-                          acl_name=None):
+                          acl_name=None, read_view=None, write_view=None):
     """
     snmp-server community is insecure and should not be used. SNMPv3 with authPriv security is recommended instead.
     Configures SNMPv3 group and user with authPriv security.
-
     Without an ACL, IOS-XE raises:
         INSECURE DYNAMIC WARNING - Module: SNMP,
         Reason: SNMP User without ACL,
@@ -59,8 +58,14 @@ def configure_snmpv3_user(device, group_name, user_name, auth_password, priv_pas
     To suppress this warning, pass acl_name (a standard ACL name/number that
     must already exist on the device).
 
+    Per Cisco C9000 IOS-XE Resilient Infrastructure Playbook, the secure
+    group configuration requires explicit read/write views:
+        snmp-server group <group> v3 priv read <view> write <view>
+    Pass write_view to enable snmpset (write) operations; without it
+    the SNMP agent returns noAccess on SET requests.
+
         Example:
-            snmp-server group SNMPV3_GROUP v3 priv
+            snmp-server group SNMPV3_GROUP v3 priv read SNMP_RW_VIEW write SNMP_RW_VIEW
             snmp-server user SNMPV3_USER SNMPV3_GROUP v3 auth sha <auth_pass> priv aes 128 <priv_pass> access SNMP_ACL
 
         Args:
@@ -74,10 +79,11 @@ def configure_snmpv3_user(device, group_name, user_name, auth_password, priv_pas
             access_type ('str', optional): group access level (priv, default: 'priv')
             acl_name ('str', optional): Standard ACL name/number to restrict SNMP access.
                 RECOMMENDED to avoid INSECURE DYNAMIC WARNING. Default: None.
-
+            read_view ('str', optional): SNMP view name for read access. Default: None.
+            write_view ('str', optional): SNMP view name for write access.
+                REQUIRED for snmpset operations. Default: None.
         Returns:
             None
-
         Raises:
             SubCommandFailure
     """
@@ -99,8 +105,14 @@ def configure_snmpv3_user(device, group_name, user_name, auth_password, priv_pas
             user_name, group_name, auth_protocol, priv_protocol
         )
 
+    group_cmd = f"snmp-server group {group_name} v3 {access_type}"
+    if read_view is not None:
+        group_cmd += f" read {read_view}"
+    if write_view is not None:
+        group_cmd += f" write {write_view}"
+
     config = [
-        f"snmp-server group {group_name} v3 {access_type}",
+        group_cmd,
         user_cmd
     ]
     try:
@@ -261,7 +273,7 @@ def unconfigure_snmp_server_group(device,
         Args:
             device ('obj'): device to use
             group_name ('str'): name of the group
-            version ('str'): v3 (v1 and v2c are insecure and not recommended)
+            version ('str'): v3 (v1 and v2c are insecure and not recommended);
             auth_type ('str'): priv (noauth is insecure and not recommended)
             mode ('str'): write or read mode
             acl_name ('str'): name of the Standard acl, acl list name, ipv6 named acl
@@ -276,34 +288,41 @@ def unconfigure_snmp_server_group(device,
             ValueError: If input parameters contain invalid characters
             SubCommandFailure
     """
-    # Input validation - prevent command injection via newlines or special chars
-    safe_pattern = re.compile(r'^[\w\-\.]+$')
+
+    safe_pattern = re.compile(r'^[\w\-.]+$')
 
     for param_name, param_value in [('group_name', group_name),
                                      ('version', version)]:
-        if not safe_pattern.match(param_value):
-            raise ValueError(f"Invalid characters in {param_name}: must be alphanumeric, hyphen, underscore, or dot")
+        if not safe_pattern.fullmatch(param_value):
+            raise ValueError(
+                f"Invalid characters in {param_name}: must be alphanumeric, "
+                "hyphen, underscore, or dot"
+            )
 
-    if auth_type is not None and auth_type != '' and not safe_pattern.match(auth_type):
+    if auth_type is not None and auth_type != '' and not safe_pattern.fullmatch(auth_type):
         raise ValueError("Invalid characters in auth_type")
-    if acl_name is not None and not safe_pattern.match(acl_name):
+    if acl_name is not None and not safe_pattern.fullmatch(acl_name):
         raise ValueError("Invalid characters in acl_name")
-    if view_name is not None and not safe_pattern.match(view_name):
+    if view_name is not None and not safe_pattern.fullmatch(view_name):
         raise ValueError("Invalid characters in view_name")
-    if context_name is not None and not safe_pattern.match(context_name):
+    if context_name is not None and not safe_pattern.fullmatch(context_name):
         raise ValueError("Invalid characters in context_name")
-    if notify_name is not None and not safe_pattern.match(notify_name):
+    if notify_name is not None and not safe_pattern.fullmatch(notify_name):
         raise ValueError("Invalid characters in notify_name")
     if match_type is not None and match_type not in ('exact', 'prefix'):
         raise ValueError("match_type must be 'exact' or 'prefix'")
 
-    # Warn about insecure SNMP versions
     if version in ('v1', 'v2c'):
-        log.warning("SNMPv1/v2c is insecure. Use v3 with auth and priv per Cisco hardening guidelines.")
+        log.warning(
+            "SNMPv1/v2c is insecure. Use v3 with auth and priv per Cisco "
+            "hardening guidelines."
+        )
 
-    # Warn about weak auth types
     if auth_type is not None and auth_type.lower() == 'noauth':
-        log.warning("noauth provides no authentication. Use 'priv' or 'auth' per Cisco hardening guidelines.")
+        log.warning(
+            "noauth provides no authentication. Use 'priv' or 'auth' per Cisco "
+            "hardening guidelines."
+        )
 
     cli = f"no snmp-server group {group_name} {version}"
 
@@ -335,7 +354,7 @@ def unconfigure_snmp_server_group(device,
 def configure_snmp_server_trap(device, intf=None, host_name=None, trap_type=None, version='v3',
                                user_name=None, config_type=None, engine_id=None):
     """ Configures the snmp traps or informs on device
-    
+
     Example:
         configure_snmp_server_trap(
             device=device,
@@ -346,15 +365,15 @@ def configure_snmp_server_trap(device, intf=None, host_name=None, trap_type=None
             user_name='snmpuser1',
             config_type='config'
         )
-        
+
         snmp-server trap-source GigabitEthernet0/0
         snmp-server enable traps
         snmp-server host 10.1.1.1 traps version v3 priv snmpuser1 config
-        
+
         snmp-server engineID remote 10.1.1.1 <engine_id>
-        
+
         snmp-server enable traps traps
-        
+
         snmp-server enable traps
 
 
@@ -627,34 +646,41 @@ def unconfigure_snmp_server_user(device,
         device=device,
         user_name='snmpuser1',
         group_name='snmpgroup1',
+        version='v3',
+        auth_type='sha',
+        auth_algorithm='128',
         auth_password='AuthPass123',
+        priv_method='aes',
         aes_algorithm='128',
         aes_password='PrivPass456'
         )
         --> no snmp-server user snmpuser1 snmpgroup1 v3 auth sha 128 AuthPass123 priv aes 128 PrivPass456
-        
+
         unconfigure_snmp_server_user(
         device=device,
         user_name='snmpuser1',
         group_name='snmpgroup1',
+        version='v3',
+        auth_type='sha',
+        auth_algorithm='128',
         auth_password='AuthPass123',
+        priv_method='aes',
         aes_algorithm='128',
         aes_password='PrivPass456',
         acl_type='ipv6',
         acl_name='SNMPv6-ACL'
         )
         --> no snmp-server user snmpuser1 snmpgroup1 v3 auth sha 128 AuthPass123 priv aes 128 PrivPass456 access ipv6 SNMPv6-ACL SNMPv6-ACL
-        
+
         Args:
             device ('obj'): device to use
             user_name ('str'): Name of the user
             group_name ('str'): Group to which the user belongs
-            version ('str'): v3 (v1 and v2c are insecure and not recommended)
-            auth ('str'): authentication parameters for the user
-            auth_type ('str'): sha (md5 is deprecated)
-            auth_algorithm ('str'): 256,192,128
+            version ('str', optional): v3 (v1 and v2c are insecure and not recommended). Default: 'v3'
+            auth_type ('str', optional): sha (md5 is deprecated). Default: 'sha'
+            auth_algorithm ('str', optional): 256,192,128. Default: '128'
             auth_password ('str'): authentication password for user
-            priv_method ('str'): aes (des and 3des are deprecated)
+            priv_method ('str', optional): aes (des and 3des are deprecated). Default: 'aes'
             aes_algorithm ('str'): 128,192,256
             aes_password ('str'): privacy password for user
             priv_password ('str'): privacy password for user
@@ -665,56 +691,68 @@ def unconfigure_snmp_server_user(device,
         Raises:
             SubCommandFailure
     """
-    # Input validation - prevent command injection via newlines or special chars
-    safe_pattern = re.compile(r'^[\w\-\.]+$')
+
+    safe_pattern = re.compile(r'^[\w\-.]+$')
 
     for param_name, param_value in [('user_name', user_name),
                                      ('group_name', group_name),
                                      ('version', version)]:
         if not safe_pattern.match(param_value):
-            raise ValueError(f"Invalid characters in {param_name}: must be alphanumeric, hyphen, underscore, or dot")
-    # Validate acl_name if provided
-    if acl_name is not None and not safe_pattern.match(acl_name):
-        raise ValueError("Invalid characters in acl_name: must be alphanumeric, hyphen, underscore, or dot")
+            raise ValueError(
+                f"Invalid characters in {param_name}: must be alphanumeric, "
+                "hyphen, underscore, or dot"
+            )
 
-    # Validate passwords don't contain newlines (command injection vector)
+    if acl_name is not None and not safe_pattern.match(acl_name):
+        raise ValueError(
+            "Invalid characters in acl_name: must be alphanumeric, "
+            "hyphen, underscore, or dot"
+        )
+
     for param_name, param_value in [('auth_password', auth_password),
                                      ('aes_password', aes_password)]:
         if param_value and '\n' in param_value:
             raise ValueError(f"{param_name} must not contain newline characters")
 
-    # Warn about insecure SNMP versions
     if version in ('v1', 'v2c'):
-        log.warning(f"SNMPv1/v2c is insecure. Use v3 with auth and priv for secure communication.")
+        log.warning(
+            "SNMPv1/v2c is insecure. Use v3 with auth and priv for secure communication."
+        )
 
-    # Warn about weak authentication algorithms
     if auth_type is not None and auth_type.lower() == 'md5':
-        log.warning("MD5 authentication is deprecated. Use SHA or SHA-256+ per Cisco hardening guidelines.")
+        log.warning(
+            "MD5 authentication is deprecated. Use SHA or SHA-256+ per Cisco hardening guidelines."
+        )
 
-    # Warn about weak encryption methods
     if priv_method is not None and priv_method.lower() in ('des', '3des'):
-        log.warning(f"{priv_method} encryption is deprecated. Use AES-128 or higher per Cisco hardening guidelines.")
+        log.warning(
+            f"{priv_method} encryption is deprecated. Use AES-128 or higher per Cisco hardening guidelines."
+        )
 
     cli = f"no snmp-server user {user_name} {group_name} {version}"
 
     if auth_type is not None and version == 'v3':
         if not auth_algorithm or not auth_password:
-            raise ValueError("auth_algorithm and auth_password are required when auth_type is specified")
+            raise ValueError(
+                "auth_algorithm and auth_password are required when auth_type is specified"
+            )
         if not safe_pattern.match(auth_type):
             raise ValueError("Invalid characters in auth_type")
-        cli = cli+' auth '+auth_type+' '+auth_algorithm+' '+auth_password
+        cli += f" auth {auth_type} {auth_algorithm} {auth_password}"
 
     if priv_method is not None and version == 'v3':
         if priv_method == 'aes':
             if not aes_algorithm or not aes_password:
-                raise ValueError("aes_algorithm and aes_password are required when priv_method is 'aes'")
-            cli = cli+' priv '+priv_method+' '+aes_algorithm+' '+aes_password
+                raise ValueError(
+                    "aes_algorithm and aes_password are required when priv_method is 'aes'"
+                )
+            cli += f" priv {priv_method} {aes_algorithm} {aes_password}"
 
     if acl_name is not None:
         if acl_type == 'ipv6':
-            cli = cli+' access ipv6 '+acl_name+' '+acl_name
+            cli += f" access ipv6 {acl_name} {acl_name}"
         else:
-            cli = cli+' access '+acl_name
+            cli += f" access {acl_name}"
 
     try:
         device.configure(cli)
@@ -723,20 +761,21 @@ def unconfigure_snmp_server_user(device,
             f"Could not unconfigure snmp user. Error:\n{error}"
         )
 
-# def configure_snmp_host_version(device,host_name,vrf_id,version_id,community_string, udp_port = 0):
-def configure_snmp_host_version(device,host_name,vrf_id,version_id='v3',community_string=None, udp_port = 0):
-    """ Configures the snmp-server host with vrf and version on device
-    Example:
+def configure_snmp_host_version(device,host_name,vrf_id,version_id='v3',community_string=None, udp_port = 0, security_level=None):
+    """ Configures the snmp-server host 172.21.226.240 vrf Mgmt-vrf version 2c public on device
+
+        Example:
         configure_snmp_host_version(device=device, host_name='172.21.226.240', vrf_id='Mgmt-vrf', community_string='snmpuser1')
         --> snmp-server host 172.21.226.240 vrf Mgmt-vrf version v3 snmpuser1
 
         Args:
             device ('obj'): device to use
-            community_string ('str'): community_string
             host_name ('str'): Host name
-            vrf_id ('str') : vrf(Mgmt-vrf) is special connection,usually we have it in mgmt-interface for management port.
-            version_id('str') : Snmp Version (v3 recommended, v1/v2c are insecure)
-            udp_port('int', optional) :  udp_port should be passed when enabling traps. The value can also be checked in snmp.server.
+            vrf_id ('str'): vrf(Mgmt-vrf) is special connection,usually we have it in mgmt-interface for management port.
+            version_id ('str', optional): Snmp Version (v3 recommended, v1/v2c are insecure). Default: 'v3'
+            community_string ('str', optional): community_string. Default: None
+            udp_port ('int', optional): udp_port should be passed when enabling traps. Default: 0
+            security_level ('str', optional): SNMPv3 security level (e.g. auth, priv). Default: None
         Returns:
             None
         Raises:
@@ -747,11 +786,14 @@ def configure_snmp_host_version(device,host_name,vrf_id,version_id='v3',communit
 
     for param_name, param_value in [('host_name', host_name), ('vrf_id', vrf_id),
                                      ('version_id', version_id)]:
-        if not safe_pattern.match(param_value):
+        if not safe_pattern.fullmatch(param_value):
             raise ValueError(f"Invalid characters in {param_name}")
 
-    if '\n' in community_string:
-        raise ValueError("community_string must not contain newline characters")
+    if security_level is not None and ('\r' in security_level or '\n' in security_level):
+        raise ValueError("security_level must not contain CR/LF characters")
+
+    if community_string is not None and ('\r' in community_string or '\n' in community_string):
+        raise ValueError("community_string must not contain CR/LF characters")
 
     # Warn about insecure SNMP versions
     if version_id in ('1', '2c', 'v1', 'v2c'):
@@ -759,10 +801,14 @@ def configure_snmp_host_version(device,host_name,vrf_id,version_id='v3',communit
 
     log.debug("Configuring snmp host version on device {device}".format(device=device))
 
-    if  udp_port == 0:
-        cmd = f"snmp-server host {host_name} vrf {vrf_id} version {version_id} {community_string}"
-    else:
-        cmd = f"snmp-server host {host_name} vrf {vrf_id} version {version_id} {community_string} udp-port {udp_port}"
+    cmd = f"snmp-server host {host_name} vrf {vrf_id} version {version_id}"
+    if security_level:
+        cmd += f" {security_level}"
+    if community_string is not None:
+        cmd += f" {community_string}"
+
+    if udp_port:
+        cmd += f" udp-port {udp_port}"
 
     try:
         device.configure(cmd)
@@ -770,46 +816,41 @@ def configure_snmp_host_version(device,host_name,vrf_id,version_id='v3',communit
         raise SubCommandFailure("Could not configure snmp host version. Error:\n{error}".format(error=e))
 
 
-def unconfigure_snmp_host_version(device,host_name,vrf_id,version_id='v3',community_string=None,udp_port = 0):
-    """ Unconfigures the snmp-server host with vrf and version on device
-    Example:
-        unconfigure_snmp_host_version(device=device, host_name='172.21.226.240', vrf_id='Mgmt-vrf', version_id='v3', community_string='snmpuser1')
-        --> no snmp-server host 172.21.226.240 vrf Mgmt-vrf version v3 snmpuser1
-
+def unconfigure_snmp_host_version(device,host_name,vrf_id,version_id='v3',community_string=None, udp_port = 0, security_level=None):
+    """ UnConfigures the snmp-server host 172.21.226.240 vrf Mgmt-vrf version 2c public on device
         Args:
             device ('obj'): device to use
-            community_string ('str'): community_string
             host_name ('str'): Host name
-            vrf_id ('str') : vrf(Mgmt-vrf) is special connection,usually we have it in mgmt-interface for management port.
-            version_id('str') : Snmp Version
-            udp_port('int', optional) :  udp_port should be passed when enabling traps. The value can also be checked in snmp.server.
+            vrf_id ('str'): vrf(Mgmt-vrf) is special connection,usually we have it in mgmt-interface for management port.
+            version_id ('str', optional): Snmp Version (v3 recommended, v1/v2c are insecure). Default: 'v3'
+            community_string ('str', optional): community_string. Default: None
+            udp_port ('int', optional): udp_port should be passed when enabling traps. Default: 0
+            security_level ('str', optional): SNMPv3 security level (e.g. auth, priv). Default: None
         Returns:
             None
         Raises:
             ValueError: If input parameters contain invalid characters
             SubCommandFailure
     """
-    safe_pattern = re.compile(r'^[\w\-\.:\/]+$')
-
     for param_name, param_value in [('host_name', host_name), ('vrf_id', vrf_id),
-                                     ('version_id', version_id)]:
-        if not safe_pattern.match(param_value):
-            raise ValueError(f"Invalid characters in {param_name}")
+                                     ('version_id', version_id),
+                                     ('community_string', community_string)]:
+        if param_value is not None and ('\r' in str(param_value) or '\n' in str(param_value)):
+            raise ValueError(f"{param_name} must not contain CR/LF characters")
 
-    if '\n' in community_string:
-        raise ValueError("community_string must not contain newline characters")
-
-    # Warn about insecure SNMP versions
-    if version_id in ('1', '2c', 'v1', 'v2c'):
-        log.warning("SNMPv1/v2c is insecure. Use v3 per Cisco hardening guidelines.")
+    if security_level is not None and ('\r' in security_level or '\n' in security_level):
+        raise ValueError("security_level must not contain CR/LF characters")
 
     log.debug("Unconfiguring snmp host version on device {device}".format(device=device))
 
-    if  udp_port == 0:
-        cmd = f"no snmp-server host {host_name} vrf {vrf_id} version {version_id} {community_string}"
-    else:
-        cmd = f"no snmp-server host {host_name} vrf {vrf_id} version {version_id} {community_string} udp-port {udp_port}"
+    cmd = f"no snmp-server host {host_name} vrf {vrf_id} version {version_id}"
+    if security_level:
+        cmd += f" {security_level}"
+    if community_string is not None:
+        cmd += f" {community_string}"
 
+    if udp_port:
+        cmd += f" udp-port {udp_port}"
     try:
         device.configure(cmd)
     except SubCommandFailure as e:
@@ -1136,7 +1177,7 @@ def configure_object_list_schema_transfer_for_bulkstat(device, type_, object_nam
 
 
 def _build_snmp_server_host_command(
-    host_ip, version=None, community_string=None, unconfigure=False
+    host_ip, version=None, community_string=None, unconfigure=False, security_level=None
 ):
     """Build ``snmp-server host`` CLI for supported calling patterns.
         Args:
@@ -1152,9 +1193,10 @@ def _build_snmp_server_host_command(
         Raises:
             ValueError: If input parameters contain invalid characters
     """
+
     safe_pattern = re.compile(r'^[\w\-\.:\/]+$')
 
-    if not safe_pattern.match(str(host_ip)):
+    if not safe_pattern.fullmatch(str(host_ip)):
         raise ValueError("Invalid characters in host_ip")
 
     if community_string is None:
@@ -1164,13 +1206,20 @@ def _build_snmp_server_host_command(
     command = ["snmp-server", "host", str(host_ip)]
 
     if version is not None:
-        if not safe_pattern.match(str(version)):
+        if not safe_pattern.fullmatch(str(version)):
             raise ValueError("Invalid characters in version")
+        command.append("version")
         command.append(str(version).strip())
 
+    if security_level is not None:
+        if not safe_pattern.fullmatch(str(security_level)):
+            raise ValueError("Invalid characters in security_level")
+        command.append(str(security_level))
+
     if community_string is not None:
-        if '\n' in str(community_string):
-            raise ValueError("community_string must not contain newline characters")
+        # allowlist is too strict here: community strings may contain punctuation
+        if '\r' in str(community_string) or '\n' in str(community_string):
+            raise ValueError("community_string must not contain CR/LF characters")
         command.append(str(community_string).strip())
 
     if unconfigure:
@@ -1179,7 +1228,9 @@ def _build_snmp_server_host_command(
     return " ".join(command)
 
 
-def configure_snmp_server_host(device, host_ip, version='v3', community_string=None):
+def configure_snmp_server_host(device, host_ip, version='v3',
+                               community_string=None,
+                               security_level=None):
     """ Configures the snmp-server host on device
     Example:
         configure_snmp_server_host(device=device, host_ip='10.1.1.1', version='v3', community_string='snmpuser1')
@@ -1190,8 +1241,9 @@ def configure_snmp_server_host(device, host_ip, version='v3', community_string=N
             host_ip ('str'): IP address of the SNMP notification host
             version ('str', optional): SNMP version. If community_string is
                 omitted, this value is treated as the community string for
-                backward compatibility.
-            community_string ('str', optional): Community string
+                backward compatibility. Default: 'v3'
+            community_string ('str', optional): Community string. Default: None
+            security_level ('str', optional): SNMPv3 security level - 'auth', 'noauth', or 'priv'. Default: None
         Returns:
             None
         Raises:
@@ -1208,21 +1260,23 @@ def configure_snmp_server_host(device, host_ip, version='v3', community_string=N
                 host_ip=host_ip,
                 version=version,
                 community_string=community_string,
+                security_level=security_level,
             )
         )
     except SubCommandFailure as error:
         raise SubCommandFailure(f"Could not configure host on snmp-server. Error:\n{str(error)}")
 
 
-def unconfigure_snmp_server_host(device, host_ip, version=None, community_string=None):
+def unconfigure_snmp_server_host(device, host_ip, version=None, community_string=None, security_level=None):
     """ Unconfigures the snmp-server host
         Args:
             device ('obj'): device to use
             host_ip ('str'): IP address of the SNMP notification host
             version ('str', optional): SNMP version. If community_string is
                 omitted, this value is treated as the community string for
-                backward compatibility.
-            community_string ('str', optional): Community string
+                backward compatibility. Default: None
+            community_string ('str', optional): Community string. Default: None
+            security_level ('str', optional): SNMPv3 security level - 'auth', 'noauth', or 'priv'. Default: None
         Returns:
             None
         Raises:
@@ -1235,6 +1289,7 @@ def unconfigure_snmp_server_host(device, host_ip, version=None, community_string
                 version=version,
                 community_string=community_string,
                 unconfigure=True,
+                security_level=security_level,
             )
         )
     except SubCommandFailure as error:

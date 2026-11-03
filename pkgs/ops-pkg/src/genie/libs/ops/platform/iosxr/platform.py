@@ -16,6 +16,11 @@ from genie.libs.parser.iosxr.show_platform import ShowVersion, ShowSdrDetail,\
 class Platform(SuperPlatform):
     '''Platform Genie Ops Object'''
 
+    _FIXED_SINGLE_RP_SYSTEM_TYPES = frozenset({
+        '8711-32FH-M',
+        'NCS-57C1-48Q6-SYS',
+    })
+
     def get_active_uptime(self, item):
         for node in item:
             if 'active' in item[node]['role'].lower():
@@ -58,6 +63,46 @@ class Platform(SuperPlatform):
                         break
 
         del self._inventory_modules
+
+    def _populate_topology(self):
+        """Publish conservative chassis topology from normalized Ops data."""
+        self.chassis_type = None
+        self.chassis_type_confident = False
+        self.chassis_member_count = None
+
+        slots = getattr(self, 'slot', {}) or {}
+        rp_slots = {
+            name: data
+            for name, data in (slots.get('rp', {}) or {}).items()
+            if isinstance(data, dict)
+        }
+        linecards = slots.get('lc', {}) or {}
+        self.is_modular = bool(linecards)
+        self.modularity_confident = bool(linecards)
+
+        states = {
+            str(data.get('redundancy_state') or '').strip().lower()
+            for data in rp_slots.values()
+        }
+        if (
+            len(rp_slots) >= 2
+            and any('active' in state for state in states)
+            and any('standby' in state for state in states)
+        ):
+            self.chassis_type = 'dual_rp'
+            self.chassis_type_confident = True
+            self.chassis_member_count = 2
+            return
+
+        if (
+            len(rp_slots) == 1
+            and str(getattr(self, 'chassis', '')).upper()
+            in self._FIXED_SINGLE_RP_SYSTEM_TYPES
+        ):
+            self.chassis_type_confident = True
+            self.chassis_member_count = 1
+            self.is_modular = False
+            self.modularity_confident = True
 
     def learn(self):
         '''Learn Platform Ops'''
@@ -275,5 +320,6 @@ class Platform(SuperPlatform):
 
         # Augment slot data with serial numbers from show inventory
         self._populate_slot_serial_numbers()
+        self._populate_topology()
 
 # vim: ft=python et sw=4

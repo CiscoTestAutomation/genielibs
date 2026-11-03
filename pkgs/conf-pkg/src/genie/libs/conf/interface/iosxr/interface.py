@@ -3,6 +3,7 @@
 '''
 
 __all__ = (
+    'ParsedInterfaceName',
     'Interface',
     'PhysicalInterface',
     'VirtualInterface',
@@ -63,6 +64,48 @@ class ConfigurableInterfaceNamespace(ConfigurableBase):
     @property
     def device(self):
         return self.interface.device
+
+
+class ParsedInterfaceName(genie.libs.conf.interface.ParsedInterfaceName):
+
+    # Optics port names such as '0/0/2/-PORT-0' are not valid interface
+    # names, so the base parser rejects them.
+    _port_re = re.compile(
+        r'^\s*(?P<rack>\d+)[/_](?P<slot>\d+)[/_](?P<instance>\d+)'
+        r'[/_]-PORT-(?P<port>\d+)\s*$', re.IGNORECASE)
+
+    def __init__(self, name, device=None, **kwargs):
+        if device is None and isinstance(
+                name, genie.libs.conf.interface.ParsedInterfaceName):
+            # copy constructor
+            return super().__init__(vars(name))
+
+        if isinstance(name, str):
+            m = self._port_re.match(name)
+            if m:
+                d = dict(
+                    # main parts
+                    type=None,
+                    number=None,
+                    subintf_sep=None,
+                    subintf=None,
+                    # sub-parts
+                    net_module=None,
+                    module=None,
+                    rack=None,
+                    slot=None,
+                    instance=None,
+                    port=None,
+                    subport=None,
+                    cpu=None,
+                    rsip=None,
+                )
+                d.update(m.groupdict())
+                d['number'] = '{rack}/{slot}/{instance}/-PORT-{port}'.format_map(d)
+                d['cpu'] = '{rack}/{slot}/CPU0'.format_map(d)
+                return super().__init__(name=None, **d)
+
+        super().__init__(name, device=None, **kwargs)
 
 
 class Interface(genie.libs.conf.interface.Interface):

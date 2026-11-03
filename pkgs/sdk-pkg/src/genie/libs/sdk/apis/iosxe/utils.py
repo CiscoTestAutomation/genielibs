@@ -16,6 +16,8 @@ from genie.libs.sdk.apis.execute import (
     _get_disk_cleanup_operation_timeout,
     _get_entry_type,
 )
+from genie.libs.sdk.libs.utils.utils import (
+    _request_system_shell_recovery_timeout)
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
 from genie.utils.timeout import Timeout
 from genie.libs.parser.iosxe.ping import Ping
@@ -1857,7 +1859,8 @@ def request_system_shell(device, switch_type=None, processor_slot=None, uname=Fa
             uname ('bool', optional): To execute uname -a in shell. Default is False.
             exit ('bool', optional): To exit from shell prompt. Default is True.
             command ('str', optional): command to execute in shell prompt
-            timeout ('int', optional): Timeout in seconds for waiting for the console. Default is None.
+            timeout ('int', optional): Timeout in seconds for entering the
+                shell and executing requested shell commands. Default is None.
 
         Returns:
             Cli output
@@ -1887,19 +1890,34 @@ def request_system_shell(device, switch_type=None, processor_slot=None, uname=Fa
         cmd += f' {processor_slot}'
 
     output = None
+    shell_entered = False
     try:
         output = device.execute(cmd, reply=dialog, allow_state_change=True, timeout=timeout)
+        shell_entered = True
         if uname:
-            output += device.execute('uname -a')
+            output += device.execute('uname -a', timeout=timeout)
         if command:
             for command in command_list:
-                output += device.execute(command)
+                output += device.execute(command, timeout=timeout)
         if exit:
             device.execute('exit', reply=exit_dialog)
     except SubCommandFailure as e:
+        if exit and shell_entered:
+            try:
+                recover_device_to_enable_state(
+                    device,
+                    timeout=_request_system_shell_recovery_timeout(timeout),
+                )
+            except Exception as recovery_error:
+                log.warning(
+                    "Unable to recover %s to enable mode after a failed "
+                    "system-shell request: %s",
+                    getattr(device, 'name', 'device'),
+                    recovery_error,
+                )
         raise SubCommandFailure(
             f"failed to enter system shell. Error:\n{e}"
-        )
+        ) from e
     return output
 
 def btdecode_grep(device, file_path, search_string, timeout=60):

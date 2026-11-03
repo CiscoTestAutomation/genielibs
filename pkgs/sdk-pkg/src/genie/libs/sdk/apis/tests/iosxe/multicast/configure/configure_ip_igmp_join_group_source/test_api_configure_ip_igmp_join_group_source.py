@@ -1,35 +1,37 @@
-import os
 import unittest
-from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.multicast.configure import configure_ip_igmp_join_group_source
+from unittest import TestCase
+from unittest.mock import Mock
+
+from genie.libs.sdk.apis.iosxe.multicast.configure import (
+    configure_ip_igmp_join_group_source,
+)
 
 
-class TestConfigureIpIgmpJoinGroupSource(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          stack3-nyquist-1:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: c9300
-            type: c9300
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['stack3-nyquist-1']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureIpIgmpJoinGroupSource(TestCase):
 
     def test_configure_ip_igmp_join_group_source(self):
-        result = configure_ip_igmp_join_group_source(self.device, 'te1/0/1', '226.1.1.1', '')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.configure.return_value = None
+
+        result = configure_ip_igmp_join_group_source(
+            device,
+            "te1/0/1",
+            "226.1.1.1",
+            "",
+        )
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once()
+        commands = device.configure.call_args.args[0]
+        self.assertIsInstance(commands, list)
+        self.assertEqual(
+            commands,
+            [
+                "interface te1/0/1",
+                "ip igmp join-group 226.1.1.1",
+            ],
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()

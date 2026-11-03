@@ -19,8 +19,8 @@ from genie.libs.clean.recovery.iosxe.sdwan.dialogs import (BreakBootDialog,
 log = logging.getLogger(__name__)
 
 
-def recovery_worker(start,
-                    device,
+def recovery_worker(start=None,
+                    device=None,
                     console_activity_pattern=None,
                     console_breakboot_char=None,
                     grub_activity_pattern=None,
@@ -32,7 +32,8 @@ def recovery_worker(start,
     """ Starts a Spawn and processes device dialogs during recovery of a device
 
         Args:
-            start (obj): Start method under device object
+            start (obj, optional): Start method under device object. If omitted,
+                it is obtained after the device is instantiated.
             device (obj): Device object
             console_activity_pattern (str): Pattern to send the break at
             console_breakboot_char (str): Character to send when console_activity_pattern is matched
@@ -82,6 +83,20 @@ def recovery_worker(start,
     # Set a target for each recovery session
     # so it's easier to distinguish expect debug logs on the console.
     device.instantiate(connection_timeout=timeout)
+
+    # Older SDK dispatchers did not pass the SD-WAN-specific start argument.
+    # Keep the worker compatible with those dispatchers while allowing the
+    # current dispatcher to provide the exact instantiated start command.
+    if start is None:
+        start = getattr(device, 'start', None)
+    if isinstance(start, (list, tuple)):
+        if not start:
+            raise ValueError(
+                f"Device {device.name} has no connection start command")
+        start = start[0]
+    if not start:
+        raise ValueError(
+            f"Device {device.name} has no connection start command")
 
     # Get device console port information
     last_word_in_start_match = re.match(r'.*\s(\S+)$', start)

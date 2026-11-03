@@ -28,6 +28,31 @@ class TestCopyStartupConfigToScp(TestCase):
                 username='', password='Secret123'
             )
 
+    def test_copy_startup_config_to_scp_with_vrf(self):
+        """Verify SCP command includes vrf when provided."""
+        device = Mock()
+        device.name = 'Router1'
+        copy_startup_config_to_scp(
+            device, host='10.1.1.1', file='/backup/startup.cfg',
+            username='admin', password='Secret123', vrf='Mgmt-vrf'
+        )
+        call_args = device.execute.call_args
+        cmd = call_args[0][0]
+        self.assertIn('copy startup-config scp://admin@10.1.1.1///backup/startup.cfg', cmd)
+        self.assertTrue(cmd.endswith('vrf Mgmt-vrf'))
+
+    def test_copy_startup_config_to_scp_without_vrf(self):
+        """Verify SCP command has no vrf suffix when vrf is None."""
+        device = Mock()
+        device.name = 'Router1'
+        copy_startup_config_to_scp(
+            device, host='10.1.1.1', file='/backup/startup.cfg',
+            username='admin', password='Secret123'
+        )
+        call_args = device.execute.call_args
+        cmd = call_args[0][0]
+        self.assertNotIn('vrf', cmd)
+
     def test_device_failure(self):
         """Verify SubCommandFailure is raised on device error."""
         from unicon.core.errors import SubCommandFailure

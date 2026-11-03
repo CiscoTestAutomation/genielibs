@@ -195,17 +195,56 @@ def _recovery_steps(device, clear_line=True, powercycler=True,
                 if configure_console_speed and powercycler_attempt + 1 < power_cycle_retry:
                     log.info(f"Device '{device.name}' failed to boot. Updating the console speed.")
                     log.info(banner(f"Attempting to configure management console speed on device '{device.name}'"))
-                    device.destroy()
-                    device.api.configure_management_console()
-                    log.info(f"Successfully configured management console speed on device '{device.name}'")
+                    try:
+                        try:
+                            device.destroy()
+                        except Exception as cleanup_error:
+                            # device_recovery_boot() destroys the managed Unicon
+                            # connection before creating its own recovery Spawn.
+                            # Recovery can therefore leave a registered
+                            # connection whose provider is already gone. Treat
+                            # destroying that connection again as best-effort
+                            # cleanup so it cannot mask the recovery failure or
+                            # prevent the console-speed retry.
+                            log.warning(
+                                "Unable to destroy the existing connection for "
+                                "device '%s' before the console-speed retry; "
+                                "continuing because it may already be "
+                                "destroyed: %s",
+                                device.name,
+                                cleanup_error,
+                            )
+                        device.api.configure_management_console()
+                        log.info(
+                            "Successfully configured management console speed "
+                            "on device '%s'", device.name)
 
-                    log.info(banner(f"Verify if manual boot is configured on device '{device.name}'"))
-                    device.api.verify_no_boot_manual()
+                        log.info(banner(
+                            "Verify if manual boot is configured on device "
+                            f"'{device.name}'"))
+                        device.api.verify_no_boot_manual()
 
-                    device.disconnect()
+                        device.disconnect()
+                    except Exception as retry_error:
+                        # Console-speed recovery is an optional second attempt.
+                        # If it cannot establish a usable managed connection,
+                        # report the boot recovery failure that initiated this
+                        # fallback instead of replacing it with a connection or
+                        # parser exception.
+                        log.warning(
+                            "Unable to prepare device '%s' for the console-speed "
+                            "recovery retry: %s",
+                            device.name,
+                            retry_error,
+                        )
+                        raise Exception(
+                            f"Failed to boot device '{device.name}' after "
+                            "powercycle") from e
                     continue
                 else:
-                    raise Exception(f"Failed to boot device '{device.name}' after powercycle")
+                    raise Exception(
+                        f"Failed to boot device '{device.name}' after "
+                        "powercycle") from e
             else:
                 log.info(f"Successfully booted device '{device.name}' after powercycle")
                 break

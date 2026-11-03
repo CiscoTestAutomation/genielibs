@@ -1,35 +1,41 @@
-import os
 import unittest
-from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.ospf.configure import unconfigure_ospfv3_ipsec_ah
+from unittest import TestCase
+from unittest.mock import Mock
+
+from genie.libs.sdk.apis.iosxe.ospf.configure import (
+    unconfigure_ospfv3_ipsec_ah,
+)
 
 
-class TestUnconfigureOspfv3IpsecAh(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          PE-B:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: c9300
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['PE-B']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestUnconfigureOspfv3IpsecAh(TestCase):
 
     def test_unconfigure_ospfv3_ipsec_ah(self):
-        result = unconfigure_ospfv3_ipsec_ah(self.device, '1', '0', 25605, 'md5', '1AAAA2BBBB3CCCC4DDDD5EEEE6FFFF78', None)
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.configure.return_value = None
+
+        result = unconfigure_ospfv3_ipsec_ah(
+            device,
+            "1",
+            "0",
+            25605,
+            "md5",
+            "1AAAA2BBBB3CCCC4DDDD5EEEE6FFFF78",
+            None,
+        )
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once()
+        commands = device.configure.call_args.args[0]
+        self.assertIsInstance(commands, list)
+        self.assertEqual(
+            commands,
+            [
+                "router ospfv3 1",
+                "no area 0 authentication ipsec spi 25605 md5 "
+                "1AAAA2BBBB3CCCC4DDDD5EEEE6FFFF78",
+            ],
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -4,6 +4,7 @@ import time
 import logging
 import re
 import inspect
+from functools import partial
 from threading import Event
 
 from pyats.log.utils import banner
@@ -11,32 +12,47 @@ from pyats.utils.secret_strings import to_plaintext
 
 # Unicon
 from unicon import Connection
-from unicon.core.errors import SubCommandFailure
+from unicon.core.errors import SubCommandFailure, StateMachineError
 from unicon.eal.dialogs import Statement, Dialog
 from concurrent.futures import ThreadPoolExecutor, wait as wait_futures, ALL_COMPLETED
 from unicon.plugins.iosxe.statements import grub_prompt_handler, please_reset_handler, rommon_prompt_handler
 from unicon.plugins.generic.patterns import GenericPatterns
-from unicon.plugins.generic.statements import generic_statements
+from unicon.plugins.generic.statements import (
+    authentication_statement_list, custom_auth_statements,
+    generic_statements)
 
 # Genie
 from genie.libs.clean.exception import FailedToBootException
+from genie.libs.sdk.apis.iosxe.rommon.get import _normalize_image_paths
+from genie.libs.sdk.apis.iosxe.rommon.configure import (
+    _capture_rommon_tftp_image, _verify_rommon_tftp_file,
+    configure_rommon_tftp, configure_rommon_tftp_ha,
+)
 
 log = logging.getLogger(__name__)
 
 def device_rommon_boot(device, golden_image=None, tftp_boot=None, error_pattern=[],
-                       grub_activity_pattern=None, timeout=None):
+                       grub_activity_pattern=None, timeout=None, *, tftp_boot_state=None):
     '''Boot device using golden image or using tftp image
         Args:
             device: device object
             golden_image(`list`): Golden image to boot the device.
             tftp_boot:
-                image(`list`): Image to boot.
+                image: One image path or supported Clean image/file metadata.
                 tftp_server('str'): tftp server information.
+                Explicit TFTP options override a default golden image in Clean
+                recovery data, but an explicitly supplied golden_image still
+                takes precedence as before.
             error_pattern(`list`): Error patterns to check for during boot.
             grub_activity_pattern(`str`): Custom grub activity pattern.
                 Defaults to '.*Use the UP and DOWN arrow keys to select.*'
             timeout(`int`, optional): Timeout for boot operation. If not provided,
                 uses device_recovery timeout or defaults to 2000 seconds.
+
+            tftp_boot_state (dict, optional): Stage-owned transport selection cache
+                shared across outer retries. Omit for a standalone boot operation.
+                Reuses the successfully configured provider transport path and
+                does not modify the caller's image metadata.
 
         Return:
             None
@@ -47,6 +63,24 @@ def device_rommon_boot(device, golden_image=None, tftp_boot=None, error_pattern=
     log.info(f'Get the recovery details from clean for device {device.name}')
     recovery_info = device.api.get_recovery_details(golden_image, tftp_boot)
     cmd = ""
+
+    # Explicit TFTP options must not fall back to a configured golden image.
+    use_tftp = (bool(tftp_boot) and not golden_image) or not recovery_info['golden_image']
+    if tftp_boot_state is None:
+        tftp_boot_state = {}
+    if use_tftp and not tftp_boot_state:
+        resolved_tftp = recovery_info.get('tftp_boot', {})
+        if 'image' in resolved_tftp:
+            # Legacy/plugin selectors must receive paths, not image/file wrappers.
+            image_paths = _normalize_image_paths(resolved_tftp['image'])
+            recovery_info = {**recovery_info, 'tftp_image': image_paths,
+                             'tftp_boot': {**resolved_tftp, 'image': image_paths}}
+        cmd, selected_image = device.api.get_tftp_boot_command(recovery_info)
+        # Reject invalid paths returned by platform API overrides.
+        selected_image = _normalize_image_paths(selected_image)[0]
+    elif use_tftp:
+        selected_image = _normalize_image_paths(tftp_boot_state.get('image'))[0]
+        cmd = tftp_boot_state['command']
 
     # For HA/stack devices, ensure all consoles are in rommon before proceeding
     if device.is_ha and hasattr(device, 'subconnections'):
@@ -81,7 +115,7 @@ def device_rommon_boot(device, golden_image=None, tftp_boot=None, error_pattern=
     device.api.configure_ignore_startup_config()
 
     # To boot using golden image
-    if recovery_info['golden_image']:
+    if not use_tftp:
         log.info(banner("Booting device '{}' with the Golden images".\
                         format(device.name)))
         log.info("Golden image information found:\n{}".format(recovery_info['golden_image']))
@@ -89,21 +123,34 @@ def device_rommon_boot(device, golden_image=None, tftp_boot=None, error_pattern=
         cmd = f"{golden_image}"
 
     # To boot using tftp information
-    elif recovery_info['tftp_image']:
+    else:
         log.info(banner("Booting device '{}' with the Tftp images".\
                         format(device.name)))
         log.info("Tftp boot information found:\n{}".format(recovery_info['tftp_boot']))
-        cmd, image_to_boot = device.api.get_tftp_boot_command(recovery_info)
-
         # Setting rommon variables for booting
         log.info(f'Setting the rommon variables for TFTP boot device {device.name}')
-        if device.is_ha and hasattr(device, 'subconnections'):
-            device.api.configure_rommon_tftp_ha(image_path=image_to_boot)
+        configure = (configure_rommon_tftp_ha if device.is_ha and hasattr(device, 'subconnections')
+                     else configure_rommon_tftp)
+        if tftp_boot_state:
+            # Replay the validated transport path, not its provider transformation.
+            tftp_boot_state['configure']()
         else:
-            device.api.configure_rommon_tftp(image_path=image_to_boot)
-    else:
-        raise Exception('Global recovery only support golden image and tftp '
-                         'boot recovery and neither was provided')
+            if cmd.startswith('tftp://'):
+                # A URL selector has already performed provider translation.
+                configure(device, image_path=selected_image)
+            else:
+                api = (device.api.configure_rommon_tftp_ha if configure is configure_rommon_tftp_ha
+                       else device.api.configure_rommon_tftp)
+                with _capture_rommon_tftp_image() as configured_images:
+                    api(image_path=selected_image)
+                if not configured_images or len(set(configured_images)) != 1:
+                    raise SubCommandFailure(
+                        'ROMMON TFTP provider did not expose one successfully configured transport image. '
+                        'Use a provider that delegates to configure_rommon_tftp; aborting boot.')
+                selected_image = _normalize_image_paths(configured_images[0])[0]
+            tftp_boot_state.update(command=cmd, image=selected_image,
+                                   configure=partial(configure, device, image_path=selected_image))
+            log.info('Selected authoritative ROMMON TFTP transport image: %s', selected_image)
 
     # Timeout for device to reload - use provided timeout or get from device_recovery
     if timeout is None:
@@ -129,6 +176,16 @@ def device_rommon_boot(device, golden_image=None, tftp_boot=None, error_pattern=
         # check for image to boot if we have a value store it and replace it with the golden image
         image_to_boot = conn.context.get('image_to_boot')
         conn.context['image_to_boot'] = cmd
+
+        def _set_selected_tftp_file():
+            output = conn.execute(f'TFTP_FILE={selected_image}', timeout=timeout)
+            # Some ROMMONs return assignment errors as text instead of raising.
+            if isinstance(output, str):
+                usage = re.search(r'\bUsage:\s*set\b[^\r\n]*', output, re.IGNORECASE)
+                if usage:
+                    raise SubCommandFailure(
+                        f'ROMMON rejected TFTP_FILE assignment: {usage.group(0)}')
+            _verify_rommon_tftp_file(device, selected_image, connection=conn)
 
         # these statments needed for booting from grub menu
         def _grub_boot_device(spawn, session, context):
@@ -163,6 +220,10 @@ def device_rommon_boot(device, golden_image=None, tftp_boot=None, error_pattern=
                     else "ROMMON prompt detected but image_to_boot not provided."
                 )
 
+            if use_tftp:
+                # A failed boot may reset ROMMON variables before this inner retry.
+                _set_selected_tftp_file()
+
             cmd = 'boot {}'.format(context['image_to_boot']) \
                 if 'image_to_boot' in context else ''
 
@@ -190,16 +251,18 @@ def device_rommon_boot(device, golden_image=None, tftp_boot=None, error_pattern=
         dialog = Dialog([grub_boot_stmt, grub_prompt_stmt, switch_conflict_stmt, switch_prompt_stmt])
 
         # bring rommon to disable state
-        conn.state_machine.go_to('disable',
-                            conn.spawn,
-                            timeout=timeout,
-                            context=conn.context,
-                            dialog=dialog)
-
-        # we need to set the value of grub_boot_image and image_to_boot to original value
-        if grub_activity_pattern:
-            conn.context['grub_boot_image'] = image_to_boot
-        conn.context['image_to_boot'] = image_to_boot
+        try:
+            conn.state_machine.go_to('disable',
+                                     conn.spawn,
+                                     timeout=timeout,
+                                     context=conn.context,
+                                     dialog=dialog)
+        finally:
+            # Restore context even if a boot or TFTP_FILE assignment failed.
+            if grub_activity_pattern:
+                conn.context['grub_boot_image'] = image_to_boot
+            conn.context['image_to_boot'] = image_to_boot
+    executor = None
     try:
         futures = []
         executor = ThreadPoolExecutor(max_workers=len(conn_list))
@@ -213,10 +276,18 @@ def device_rommon_boot(device, golden_image=None, tftp_boot=None, error_pattern=
                 grub_activity_pattern,
             ))
         wait_futures(futures, timeout=timeout, return_when=ALL_COMPLETED)
+        for future in futures:
+            # wait() does not propagate worker failures or report incomplete boots.
+            future.result(timeout=0)
+    except SubCommandFailure:
+        raise
     except Exception as e:
+        # Unicon wraps fatal dialog actions; do not turn an assignment rejection
+        # into a retryable boot failure and lose its actionable error message.
+        if isinstance(e, StateMachineError) and isinstance(e.__cause__, SubCommandFailure):
+            raise SubCommandFailure(str(e.__cause__)) from e
         log.error(str(e))
-        raise FailedToBootException(f"Failed to boot the device {device.name}")
-    
+        raise FailedToBootException(f"Failed to boot the device {device.name}: {e}") from e
     else:
         # Verify that all connections have left rommon state before
         # declaring the boot successful.
@@ -229,6 +300,11 @@ def device_rommon_boot(device, golden_image=None, tftp_boot=None, error_pattern=
         log.info(f"Successfully boot the device {device.name}")
         log.info(f"Waiting for {boot_timeout} seconds for device to stabilize after booting")
         time.sleep(boot_timeout)
+
+    finally:
+        if executor is not None:
+            # Do not start an outer Clean retry while an earlier boot is still sending commands.
+            executor.shutdown(wait=True)
 
     if device.is_ha:
         # designate handle method will bring the device to enable mode
@@ -264,10 +340,13 @@ def send_break_boot(device, console_activity_pattern= None,
     """ Connects to the device, waits for the (console or grub) activity pattern and
         sends break boot character to interrupt boot. Device is expected to reach rommon state.
 
+        On reconnect, configured Unicon login credentials are used to
+        authenticate an intermediate terminal server before monitoring boot.
+
         Args:
             device ('obj'): Device object
-            console_activity_pattern (str): Pattern to send the break at. Default to match
-                                            this boot statement: "...."
+            console_activity_pattern (str): Pattern to send the break at. Defaults to
+                                            three or more consecutive dots.
             console_breakboot_char (str): Character to send when console_activity_pattern is matched. Default to '\x03'.
             console_breakboot_telnet_break (bool): Use telnet `send break` to interrupt device boot.
             grub_activity_pattern (str): Break pattern on the device for grub boot mode
@@ -280,7 +359,7 @@ def send_break_boot(device, console_activity_pattern= None,
             SubCommandFailure
     """
 
-    console_activity_pattern = console_activity_pattern or r'\.\.\.\.'
+    console_activity_pattern = console_activity_pattern or r'\.{3,}'
     console_breakboot_char = console_breakboot_char or '\x03'
 
     def telnet_breakboot(spawn, break_count, cancel_event=None):
@@ -542,14 +621,26 @@ def send_break_boot(device, console_activity_pattern= None,
         try:
             for connection, _ in original_connection_timeouts:
                 connection.connection_timeout = timeout
-            # Keep the connection-refused handler so Unicon can run its normal
-            # clear-line/retry path. No other standard connection statements
-            # are included because they may send input and miss the boot-break
-            # window. Multi-RP and stack providers use the same replacement
-            # dialog for every subconnection.
+            # The replacement dialog bypasses Unicon's login dialog. Retain
+            # its authentication handlers, but not other connection handlers
+            # that may send input during the boot-break window. Multi-RP and
+            # stack providers use this dialog for every subconnection.
             connection_dialog = Dialog([
-                generic_statements.connection_refused_stmt
+                generic_statements.connection_refused_stmt,
             ])
+            custom_patterns = set()
+            for connection in conn_list:
+                for statement in custom_auth_statements(
+                        connection.settings.LOGIN_PROMPT,
+                        connection.settings.PASSWORD_PROMPT) or []:
+                    if statement.pattern not in custom_patterns:
+                        connection_dialog.append(statement)
+                        custom_patterns.add(statement.pattern)
+            # Password OK acknowledges the terminal server, not the DUT.
+            # Its normal callback probes the console and may miss boot output.
+            for statement in authentication_statement_list:
+                if statement is not generic_statements.password_ok_stmt:
+                    connection_dialog.append(statement)
             for statement in get_break_boot_dialog(conn_list):
                 connection_dialog.append(statement)
             parent.connect(

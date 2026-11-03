@@ -67,6 +67,8 @@ But got the following structure
                 self.EXPECTED_IMAGE_STRUCTURE_MSG.format(yaml.dump({"images": images}))
             )
 
+        BaseImageHandler.normalize_image_roles(self, ('image', 'smu', 'packages', 'other'))
+
     def valid_structure_1(self, images):
 
         schema = ListOf(str)

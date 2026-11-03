@@ -83,6 +83,11 @@ class test_platform(unittest.TestCase):
         self.assertEqual(p.sdr_owner, 'Owner')
         self.assertEqual(p.version, '6.1.4.10I')
         self.assertEqual(p.rp_uptime, 480)
+        self.assertEqual(p.chassis_type, 'dual_rp')
+        self.assertTrue(p.chassis_type_confident)
+        self.assertEqual(p.chassis_member_count, 2)
+        self.assertTrue(p.is_modular)
+        self.assertTrue(p.modularity_confident)
         slots = {
             'lc': {
                 '0/0': {

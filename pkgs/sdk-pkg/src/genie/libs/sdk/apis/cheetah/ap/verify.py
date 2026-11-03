@@ -1,79 +1,42 @@
 import logging
-from genie.utils.timeout import Timeout
 
 log = logging.getLogger(__name__)
 
 
-def verify_operation_state(device, operation_state, max_time=100, check_interval=10):
-    """Verify the operation state of devcie
-        Args:
-            device (obj): Device object
-            operation_state (str): Operation state of device
-            max_time (int, optional): Maximum time in seconds. Defaults to 100
-            check_interval (int, optional): check interval in seconds. Defaults to 10
+def verify_operation_state(device, operation_state):
+    """Verify the AP operation state once.
 
-        Returns:
-            True - if the expected Operation is seen
-            False - if the expected Operation is NOT seen
+    Args:
+        device (obj): AP device object.
+        operation_state (str): Expected AP operation state.
 
-        Raises:
-            N/A
-
-        """
-    timeout = Timeout(max_time, check_interval)
-    while timeout.iterate():
-        if operation_state == device.api.get_operation_state():
-            return True
-        timeout.sleep()
-
-    return False
+    Returns:
+        bool: True when the expected state is observed; otherwise False.
+    """
+    return operation_state == device.api.get_operation_state()
 
 
-def verify_controller_name(device, controller_name, max_time=100, check_interval=10):
-    """Verify the controller name to which device is associated
-        Args:
-            device (obj): Device object
-            controller_name (str): Name of the wireless controller
-            max_time (int, optional): Maximum time in seconds. Defaults to 100
-            check_interval (int, optional): check interval in seconds. Defaults to 10
+def verify_controller_name(device, controller_name):
+    """Verify the controller name once.
 
-        Returns:
-            True - if the device is associated to expected controller
-            False - if the device is not associated to expected controller
+    Args:
+        device (obj): AP device object.
+        controller_name (str): Expected wireless-controller name.
 
-        Raises:
-            N/A
-
-        """
-    timeout = Timeout(max_time, check_interval)
-    while timeout.iterate():
-        if controller_name == device.api.get_controller_name():
-            return True
-        timeout.sleep()
-
-    return False
+    Returns:
+        bool: True when the expected controller is observed; otherwise False.
+    """
+    return controller_name == device.api.get_controller_name()
 
 
-def verify_controller_ip(device, controller_ip_address, max_time=100, check_interval=10):
-    """Verify the controller name to which device is associated
-        Args:
-            device (obj): Device object
-            controller_ip_address (str): IP/IPv6 of the wireless controller
-            max_time (int, optional): Maximum time in seconds. Defaults to 100
-            check_interval (int, optional): check interval in seconds. Defaults to 10
+def verify_controller_ip(device, controller_ip_address):
+    """Verify the controller address once.
 
-        Returns:
-            True - if the device is associated to expected controller IP/Ipv6 address
-            False - if the device is not associated to expected controller IP/Ipv6 address
+    Args:
+        device (obj): AP device object.
+        controller_ip_address (str): Expected controller IP address.
 
-        Raises:
-            N/A
-
-        """
-    timeout = Timeout(max_time, check_interval)
-    while timeout.iterate():
-        if controller_ip_address == device.api.get_ip_address():
-            return True
-        timeout.sleep()
-
-    return False
+    Returns:
+        bool: True when the expected address is observed; otherwise False.
+    """
+    return controller_ip_address == device.api.get_ip_address()

@@ -49,7 +49,7 @@ def get_snmpv3_snmpwalk(
     option=None, timeout=60
 ):
     """ Get snmpwalk output from SNMP device using SNMPv3 authPriv
-    
+
     SHA auth + AES-128 encryption
         Example command:
             snmpwalk -v 3 -l authPriv -u SNMPV3_USER -a SHA -A AuthPass123 -x AES -X PrivPass123 <mgmt_address> 1.3.6.1.2.1.1.1
@@ -81,7 +81,6 @@ def get_snmpv3_snmpwalk(
 
     return device.execute(cmd, timeout=timeout)
 
-
 def get_snmp_snmpget(device, community, ip_address, oid, version="2c", option=None):
     """ Get snmpget output from SNMP device
 
@@ -106,7 +105,6 @@ def get_snmp_snmpget(device, community, ip_address, oid, version="2c", option=No
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to get snmp get output from the device. Error:\n{e}")
 
-
 def get_snmpv3_snmpget(
     device, user_name, ip_address, oid, auth_password, priv_password,
     auth_protocol='SHA', priv_protocol='AES', security_level='authPriv',
@@ -116,7 +114,6 @@ def get_snmpv3_snmpget(
         SHA auth + AES-128 encryption
         Example command:
             snmpget -v 3 -l authPriv -u SNMPV3_USER -a SHA -A AuthPass123 -x AES -X PrivPass123 <ip> <oid>
-
         Args:
             device (`obj`): SNMP device
             user_name (`str`): SNMPv3 username
@@ -146,7 +143,6 @@ def get_snmpv3_snmpget(
         return device.execute(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to get snmpv3 get output from the device. Error:\n{e}") from e
-
 
 def get_snmp_snmpgetnext(device, community, ip_address, oid, version="2c", option=None):
     """ Get snmpgetnext output from SNMP device
@@ -199,7 +195,7 @@ security_method, algorithm=None, private_passphrase=None, version="3", option=No
         cmd += f" -x {algorithm}"
     if private_passphrase:
         cmd += f" -X {private_passphrase}"
-    
+
     cmd += f" {ip_address} {oid}"
     if option:
         cmd += f" {option}"
@@ -209,7 +205,7 @@ security_method, algorithm=None, private_passphrase=None, version="3", option=No
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to get snmp walk output from the device. Error:\n{e}")
 
-def get_snmp_snmpwalk_version3(device, ip_address, oid, version="3", username=None, passprs=None, passphrase=None, var=None, 
+def get_snmp_snmpwalk_version3(device, ip_address, oid, version="3", username=None, passprs=None, passphrase=None, var=None,
         security=None, security_level=None, security_method=None, algorithm=None, private_passphrase=None, option=None):
     """ Get snmpwalk version 3 output from SNMP device
         Args:
@@ -225,7 +221,7 @@ def get_snmp_snmpwalk_version3(device, ip_address, oid, version="3", username=No
             security_method (`str`): security method
             algorithm (`str`): algorithm
             private_passphrase (`str`) : private passphrase
-            version (`str`): SNMP version 
+            version (`str`): SNMP version
             option (`str`): Optional command
         Returns:
             out (`str`): Executed output of SNMP command
@@ -248,31 +244,31 @@ def get_snmp_snmpwalk_version3(device, ip_address, oid, version="3", username=No
         cmd += f" -x {algorithm}"
     if private_passphrase:
         cmd += f" -X {private_passphrase}"
-    
+
     cmd += f" {ip_address} {oid}"
     if option:
         cmd += f" {option}"
-    
+
     try:
         return device.execute(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to get snmp walk output from the device. Error:\n{e}")
 
 
-def get_snmp_snmpwalk_sysname(device, ip_address, oid, username, passphrase, 
-                              security_level,security_method, dir=None, 
-                              algorithm=None, private_passphrase=None, 
+def get_snmp_snmpwalk_sysname(device, ip_address, oid, username, passphrase,
+                              security_level,security_method, dir=None,
+                              algorithm=None, private_passphrase=None,
                               version="3", option=None):
     """ Get snmpwalk version 3 sysname output from SNMP device
         Args:
             device (`obj`): SNMP device
             ip_address (`str`): IP address of hostname specified
             oid (`str`): Oid includes given OID in the search range
-            username (`str`): security username 
+            username (`str`): security username
             passphrase (`str`): authentication protocol pass phrase
-            security_level (`str`): set security level 
+            security_level (`str`): set security level
             dir('str',Optional): change path to given directory path. Defaults to None
-            security_method (`str`): authentication protocol to set 
+            security_method (`str`): authentication protocol to set
             algorithm (`str`,Optional): privacy protocol .Defaults to None
             private_passphrase (`str`,Optional) : privacy protocol pass phrase. Defaults to None
             version (`str`): specifies SNMP version to use
@@ -296,7 +292,7 @@ def get_snmp_snmpwalk_sysname(device, ip_address, oid, username, passphrase,
 
     if dir:
         f"cd {dir}"
-    
+
     try:
         return device.execute(cmd)
     except SubCommandFailure as e:

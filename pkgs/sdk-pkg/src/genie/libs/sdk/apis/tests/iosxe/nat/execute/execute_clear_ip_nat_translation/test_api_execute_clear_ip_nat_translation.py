@@ -1,65 +1,123 @@
-import os
-import unittest
-from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.nat.execute import execute_clear_ip_nat_translation
+from unittest import TestCase
+from unittest.mock import Mock
+
+from genie.libs.sdk.apis.iosxe.nat.execute import (
+    execute_clear_ip_nat_translation,
+)
 
 
-class TestExecuteClearIpNatTranslation(unittest.TestCase):
+class TestExecuteClearIpNatTranslation(TestCase):
 
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          stack3-nyquist-1:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: cat9k
-            type: router
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['stack3-nyquist-1']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
+    def test_clear_inside_and_outside_translation(self):
+        device = Mock()
+        device.execute.return_value = '%Translation not found'
+        result = execute_clear_ip_nat_translation(
+            device,
+            inside_local_ip='1.1.1.1',
+            inside_global_ip='2.2.2.2',
+            outside_local_ip='3.3.3.3',
+            outside_global_ip='5.5.5.5',
         )
 
-    def test_execute_clear_ip_nat_translation(self):
-        result = execute_clear_ip_nat_translation(self.device, False, False, False, '1.1.1.1', '2.2.2.2', None, None, None, None, None, None)
-        expected_output = '%Translation not found'
-        self.assertEqual(result, expected_output)
+        self.assertEqual(result, '%Translation not found')
+        device.execute.assert_called_once_with(
+            'clear ip nat translation inside 2.2.2.2 1.1.1.1 '
+            'outside 3.3.3.3 5.5.5.5'
+        )
 
-    def test_execute_clear_ip_nat_translation_1(self):
-        result = execute_clear_ip_nat_translation(self.device, False, False, True, None, None, None, None, None, None, None, None)
-        expected_output = ''
-        self.assertEqual(result, expected_output)
+    def test_clear_inside_translation(self):
+        device = Mock()
+        device.execute.return_value = '%Translation not found'
+        result = execute_clear_ip_nat_translation(
+            device,
+            inside_local_ip='1.1.1.1',
+            inside_global_ip='2.2.2.2',
+        )
 
-    def test_execute_clear_ip_nat_translation_2(self):
-        result = execute_clear_ip_nat_translation(self.device, False, False, True, '1.1.1.1', '2.2.2.2', None, None, None, None, None, None)
-        expected_output = '%Translation not found'
-        self.assertEqual(result, expected_output)
+        self.assertEqual(result, '%Translation not found')
+        device.execute.assert_called_once_with(
+            'clear ip nat translation inside 2.2.2.2 1.1.1.1'
+        )
 
-    def test_execute_clear_ip_nat_translation_3(self):
-        result = execute_clear_ip_nat_translation(self.device, False, False, False, '1.1.1.1', '2.2.2.2', None, None, '3.3.3.3', '5.5.5.5', None, None)
-        expected_output = '%Translation not found'
-        self.assertEqual(result, expected_output)
+    def test_clear_all_translations_forced(self):
+        device = Mock()
+        device.execute.return_value = ''
+        result = execute_clear_ip_nat_translation(device, forced=True)
 
-    def test_execute_clear_ip_nat_translation_4(self):
-        result = execute_clear_ip_nat_translation(self.device, False, True, False, '1.1.1.1', '2.2.2.2', 456, 789, '3.3.3.3', '5.5.5.5', 345, 987)
-        expected_output = '%Translation not found'
-        self.assertEqual(result, expected_output)
+        self.assertEqual(result, '')
+        device.execute.assert_called_once_with(
+            'clear ip nat translation forced'
+        )
 
-    def test_execute_clear_ip_nat_translation_5(self):
-        result = execute_clear_ip_nat_translation(self.device, True, False, False, '1.1.1.1', '2.2.2.2', 456, 789, None, None, None, None)
-        expected_output = '%Translation not found'
-        self.assertEqual(result, expected_output)
+    def test_clear_inside_translation_forced(self):
+        device = Mock()
+        device.execute.return_value = '%Translation not found'
+        result = execute_clear_ip_nat_translation(
+            device,
+            forced=True,
+            inside_local_ip='1.1.1.1',
+            inside_global_ip='2.2.2.2',
+        )
 
-    def test_execute_clear_ip_nat_translation_6(self):
-        result = execute_clear_ip_nat_translation(self.device, False, True, False, '1.1.1.1', '2.2.2.2', 456, 789, None, None, None, None)
-        expected_output = '%Translation not found'
-        self.assertEqual(result, expected_output)
+        self.assertEqual(result, '%Translation not found')
+        device.execute.assert_called_once_with(
+            'clear ip nat translation inside 2.2.2.2 1.1.1.1 forced'
+        )
+
+    def test_clear_inside_and_outside_translation_with_ports(self):
+        device = Mock()
+        device.execute.return_value = '%Translation not found'
+        result = execute_clear_ip_nat_translation(
+            device,
+            udp=True,
+            inside_local_ip='1.1.1.1',
+            inside_global_ip='2.2.2.2',
+            inside_local_port=456,
+            inside_global_port=789,
+            outside_local_ip='3.3.3.3',
+            outside_global_ip='5.5.5.5',
+            outside_local_port=345,
+            outside_global_port=987,
+        )
+
+        self.assertEqual(result, '%Translation not found')
+        device.execute.assert_called_once_with(
+            'clear ip nat translation udp inside 2.2.2.2 789 '
+            '1.1.1.1 456 outside 3.3.3.3 345 5.5.5.5 987'
+        )
+
+    def test_clear_inside_translation_tcp(self):
+        device = Mock()
+        device.execute.return_value = '%Translation not found'
+        result = execute_clear_ip_nat_translation(
+            device,
+            tcp=True,
+            inside_local_ip='1.1.1.1',
+            inside_global_ip='2.2.2.2',
+            inside_local_port=456,
+            inside_global_port=789,
+        )
+
+        self.assertEqual(result, '%Translation not found')
+        device.execute.assert_called_once_with(
+            'clear ip nat translation tcp inside 2.2.2.2 789 '
+            '1.1.1.1 456'
+        )
+
+    def test_clear_inside_translation_udp(self):
+        device = Mock()
+        device.execute.return_value = '%Translation not found'
+        result = execute_clear_ip_nat_translation(
+            device,
+            udp=True,
+            inside_local_ip='1.1.1.1',
+            inside_global_ip='2.2.2.2',
+            inside_local_port=456,
+            inside_global_port=789,
+        )
+
+        self.assertEqual(result, '%Translation not found')
+        device.execute.assert_called_once_with(
+            'clear ip nat translation udp inside 2.2.2.2 789 '
+            '1.1.1.1 456'
+        )

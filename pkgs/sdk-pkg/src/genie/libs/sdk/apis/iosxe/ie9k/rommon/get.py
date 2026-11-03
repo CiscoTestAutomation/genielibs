@@ -11,7 +11,8 @@ def get_recovery_details(
 ):
     """Get recovery details for IE9k platforms.
 
-    IE9k is similar to IE3k, hence reusing IE3k's implementation.
+    IE9k is similar to IE3k, hence reusing IE3k's emergency and SSA fallback
+    ordering.
 
     Args:
         device: device object

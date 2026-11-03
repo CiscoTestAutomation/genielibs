@@ -10,7 +10,7 @@ from genie.conf import Genie
 from genie.conf.base import Testbed, Device, Link, Interface
 
 # xBU-shared genie pacakge
-from genie.libs.conf.interface import TunnelTeInterface
+from genie.libs.conf.interface import PhysicalInterface, TunnelTeInterface
 from genie.libs.conf.base import MAC, IPv4Interface, IPv6Interface, IPv4Address, IPv6Address
 from genie.libs.conf.interface import Layer, L2_type, IPv4Addr, IPv6Addr
 from genie.libs.conf.vrf import Vrf
@@ -137,6 +137,14 @@ class test_interface(TestCase):
             'interface FiftyGigE6/0/1',
             'shutdown'
         ]))
+
+        for interface_name in (
+            'AppGigabitEthernet1/2/0/1',
+            'FiveGigabitEthernet1/1/0/15',
+        ):
+            with self.subTest(interface_name=interface_name):
+                interface = Interface(device=dev1, name=interface_name)
+                self.assertIsInstance(interface, PhysicalInterface)
 
 
     def test_EthernetSubInterface(self):
@@ -763,4 +771,3 @@ class test_interface(TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-

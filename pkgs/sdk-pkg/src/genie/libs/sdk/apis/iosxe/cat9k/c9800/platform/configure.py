@@ -132,3 +132,18 @@ def configure_ap_tx_power(device, access_points, tx_power='1'):
             f'Failed to configure AP transmit power on {device.name}: '
             f'{error}'
         ) from error
+
+
+def configure_no_boot_manual(device):
+    """Configure normal autoboot on a Catalyst 9800 controller.
+
+    Uses the config-register API to set register ``0x2102``. That API selects
+    ``config-register`` in IOS XE and ``confreg`` in ROMMON.
+
+    Args:
+        device (`obj`): Device object.
+
+    Returns:
+        None
+    """
+    return device.api.configure_autoboot()

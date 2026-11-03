@@ -3,6 +3,7 @@ from unittest.mock import MagicMock, patch
 
 from genie.libs.clean.exception import FailedToBootException
 from genie.libs.sdk.apis.iosxe.rommon.utils import device_rommon_boot
+from genie.libs.sdk.apis.iosxe.rommon.configure import configure_rommon_tftp
 
 
 class TestDeviceRommonBoot(unittest.TestCase):
@@ -35,6 +36,15 @@ class TestDeviceRommonBoot(unittest.TestCase):
         # Simulate that after the boot attempt, device is still in rommon
         state_machine.current_state = 'rommon'
         conn.state_machine = state_machine
+        device.state_machine = state_machine
+        device.management = {
+            'address': {'ipv4': '192.0.2.2/24'},
+            'gateway': {'ipv4': '192.0.2.1'},
+        }
+        device.testbed.servers = {'tftp': {'address': '192.0.2.10', 'protocol': 'tftp'}}
+        # A successful provider delegates the scalar transport image to the
+        # public configurator before the boot transition under test.
+        device.api.configure_rommon_tftp.side_effect = lambda **kwargs: configure_rommon_tftp(device, **kwargs)
 
         # ThreadPoolExecutor mock: execute submitted task immediately
         executor_instance = MagicMock()

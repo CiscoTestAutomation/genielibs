@@ -472,16 +472,25 @@ def delete_unprotected_files(device,
 
     protected_set = set()
     fu_device = FileUtils.from_device(device)
-    if recursive and dir_output is None:
-        # Large recursive listings such as bootflash:/core/ can exceed the
-        # parser-led execution timeout. Execute with the supplied timeout
-        # first, then parse the collected output.
-        log.debug('Listing recursive directory "%s" with timeout %s seconds', directory, timeout)
-        listing_timeout = timeout
-        if deadline is not None:
-            listing_timeout = _get_disk_cleanup_operation_timeout(deadline, timeout)
-        dir_output = device.execute(f'dir {directory}', timeout=listing_timeout)
-    parsed_dir_output = device.parse(f'dir {directory}', output=dir_output)
+    try:
+        if recursive and dir_output is None:
+            # Large recursive listings such as bootflash:/core/ can exceed the
+            # parser-led execution timeout. Execute with the supplied timeout
+            # first, then parse the collected output.
+            log.debug('Listing recursive directory "%s" with timeout %s seconds', directory, timeout)
+            listing_timeout = timeout
+            if deadline is not None:
+                listing_timeout = _get_disk_cleanup_operation_timeout(deadline, timeout)
+            dir_output = device.execute(f'dir {directory}', timeout=listing_timeout)
+        parsed_dir_output = device.parse(f'dir {directory}', output=dir_output)
+    except SchemaEmptyParserError:
+        # A directory can disappear between reading its parent and listing it.
+        # IOS-XE returns an error instead of a directory listing in that case;
+        # skip only this confirmed race and continue with other entries.
+        if recursive and re.search(r'No such file or directory', str(dir_output or ''), re.I):
+            log.info('Directory "%s" no longer exists; skipping it', directory)
+            return
+        raise
     file_details = _get_directory_file_details(parsed_dir_output)
 
     file_details = file_details or {}

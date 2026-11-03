@@ -1,35 +1,32 @@
-import os
 import unittest
-from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.multicast.configure import configure_ip_igmp_snooping_last_member_query_interval
+from unittest import TestCase
+from unittest.mock import Mock
+
+from genie.libs.sdk.apis.iosxe.multicast.configure import (
+    configure_ip_igmp_snooping_last_member_query_interval,
+)
 
 
-class TestConfigureIpIgmpSnoopingLastMemberQueryInterval(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          n08HA:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: c9500
-            type: c9500
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['n08HA']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureIpIgmpSnoopingLastMemberQueryInterval(TestCase):
 
     def test_configure_ip_igmp_snooping_last_member_query_interval(self):
-        result = configure_ip_igmp_snooping_last_member_query_interval(self.device, '1500')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.configure.return_value = None
+
+        result = configure_ip_igmp_snooping_last_member_query_interval(
+            device,
+            "1500",
+        )
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once()
+        command = device.configure.call_args.args[0]
+        self.assertIsInstance(command, str)
+        self.assertEqual(
+            command,
+            "ip igmp snooping last-member-query-interval 1500",
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -1,12 +1,10 @@
-# Genie package
-import re
 import copy
-# super class
+
+from genie.libs.ops.platform.iosxe.topology import populate_topology
 from genie.libs.ops.platform.rev1.platform import Platform as SuperPlatform
 from genie.libs.ops.utils.common import convert_to_bool, \
                                         convert_to_seconds, \
                                         slot_num
-# Genie Parsers
 from genie.libs.parser.iosxe import show_platform
 
 
@@ -40,6 +38,23 @@ class Platform(SuperPlatform):
         self.add_leaf(cmd='show version',
                       src=src_ver + '[chassis_sn]',
                       dest='chassis_sn')
+
+        self.add_leaf(cmd='show version',
+                      src=src_ver + '[switch_num][(?P<id>.*)][system_sn]',
+                      dest='[members][(?P<id>.*)][serial]')
+
+        self.add_leaf(cmd='show version',
+                      src=src_ver + '[switch_num][(?P<id>.*)][model_num]',
+                      dest='[members][(?P<id>.*)][pid]')
+
+        self.add_leaf(cmd='show version',
+                      src=src_ver + '[switch_num][(?P<id>.*)][model_rev_num]',
+                      dest='[members][(?P<id>.*)][hw_revision]')
+
+        self.add_leaf(cmd=show_platform.ShowModule,
+                      src='[switches][(?P<id>.*)][module][(?P<mod>.*)]'
+                          '[redundancy_role]',
+                      dest='[members][(?P<id>.*)][role]')
 
         # rtr_type
         self.add_leaf(cmd='show version',
@@ -110,6 +125,10 @@ class Platform(SuperPlatform):
         self.add_leaf(cmd='show inventory', revision='1',
                       src='[main][swstack]',
                       dest='swstack')
+
+        self.add_leaf(cmd='show inventory', revision='1',
+                      src='[member]',
+                      dest='_member_inventory')
 
         # sdr_owner
         # N/A
@@ -353,3 +372,14 @@ class Platform(SuperPlatform):
             # change the os type to alias
             if 'IOS-XE' in self.os:
                 self.os = 'iosxe'
+
+        if hasattr(self, 'members'):
+            coalesced = {}
+            for key, val in self.members.items():
+                coalesced.setdefault(str(key), {}).update(val or {})
+            self.members = coalesced
+
+        member_inventory = getattr(self, '_member_inventory', {})
+        populate_topology(self, member_inventory)
+        if hasattr(self, '_member_inventory'):
+            del self._member_inventory

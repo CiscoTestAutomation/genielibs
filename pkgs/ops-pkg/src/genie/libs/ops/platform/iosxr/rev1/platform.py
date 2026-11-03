@@ -2,6 +2,9 @@
 Platform Genie Ops Object for IOSXR.
 '''
 
+# Python
+import logging
+
 # super class
 from genie.libs.ops.platform.platform import Platform as SuperPlatform
 
@@ -11,6 +14,8 @@ from genie.libs.parser.iosxr.show_platform import ShowVersion, ShowSdrDetail,\
                                 ShowInstallActiveSummary, ShowInventory,\
                                 ShowRedundancySummary, AdminShowDiagChassis,\
                                 ShowRedundancy, Dir
+
+logger = logging.getLogger(__name__)
 
 
 class Platform(SuperPlatform):
@@ -59,6 +64,26 @@ class Platform(SuperPlatform):
 
         del self._inventory_modules
 
+    def _prefer_inventory_chassis_sn(self):
+        """Use the show inventory Rack 0 serial as chassis_sn when usable.
+
+        The show diag details / admin show diag chassis leaves stay as the
+        fallback; a mismatch with them is logged, not raised.
+        """
+        modules = getattr(self, '_inventory_modules', None)
+        if not isinstance(modules, dict):
+            return
+        sn = (modules.get('Rack 0') or {}).get('sn')
+        if not isinstance(sn, str) or sn.strip().upper() in ('', 'N/A', 'NA'):
+            return
+        sn = sn.strip()
+        diag_sn = getattr(self, 'chassis_sn', None)
+        if diag_sn and diag_sn != sn:
+            logger.warning(
+                "IOS-XR chassis serial mismatch: show inventory Rack 0 "
+                "reports %s, show diag reports %s; using %s", sn, diag_sn, sn)
+        self.chassis_sn = sn
+
     def learn(self):
         '''Learn Platform Ops'''
 
@@ -98,6 +123,18 @@ class Platform(SuperPlatform):
                       src='[item][Rack 0][common_blocks][serial_number]',
                       dest='[chassis_sn]')
 
+        # NCS5500 fixed chassis: Common Blocks holds the chassis board serial;
+        # the chassis serial matching show inventory is in these blocks.
+        self.add_leaf(cmd='show diag details', revision='1',
+                      src='[item][Rack 0][top_assesmbly_blocks][serial_number]',
+                      dest='[chassis_sn]')
+
+        self.add_leaf(cmd='show diag details', revision='1',
+                      src='[item][Rack 0]'
+                          '[second_serial_no_specific_blocks]'
+                          '[serial_number]',
+                      dest='[chassis_sn]')
+
         self.add_leaf(cmd='show diag details', revision='1',
                       src='[item][Rack 0-Chassis][chassis_serial_number]',
                       dest='[chassis_sn]')
@@ -110,10 +147,6 @@ class Platform(SuperPlatform):
                       src='[item][Rack 0-Virtual][pcb_serial_number]',
                       dest='[chassis_sn]')
 
-        # Backup in the event the above doesn't work
-        self.add_leaf(cmd='show inventory',
-                      src='[module_name][Rack 0][sn]',
-                      dest='[chassis_sn]')
 
         # chassis
         self.add_leaf(cmd=AdminShowDiagChassis,
@@ -302,6 +335,10 @@ class Platform(SuperPlatform):
 
         # Make Ops object
         self.make(final_call=True)
+
+        # Must run before _populate_slot_serial_numbers(), which deletes
+        # _inventory_modules
+        self._prefer_inventory_chassis_sn()
 
         # Augment slot data with serial numbers from show inventory
         self._populate_slot_serial_numbers()

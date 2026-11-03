@@ -437,8 +437,7 @@ class TestInstallImage(unittest.TestCase):
         expected_execute_call = [call('install add file sftp://server/image.bin activate commit prompt-level none',
                                  reply=reload_dialog,
                                  append_error_pattern=['FAILED:'],
-                                 timeout=500),
-                                 call('install commit')]
+                                 timeout=500)]
 
         device.execute.assert_has_calls(expected_execute_call)
         expected_reload_call = call(
@@ -452,6 +451,39 @@ class TestInstallImage(unittest.TestCase):
             )
         device.reload.assert_has_calls([expected_reload_call])
         self.assertEqual(Passed, steps.details[0].result)
+
+    @patch('genie.libs.clean.stages.iosxe.stages.Dialog')
+    def test_iosxe_issu_install_skips_post_reload_commit(self, dialog):
+        reload_dialog = Mock()
+        dialog.return_value = reload_dialog
+        steps = Steps()
+        cls = InstallImage()
+        cls.history = MagicMock()
+
+        device = Mock()
+        device.reload = Mock()
+        device.parse = Mock(return_value={})
+        device.api.get_running_image = Mock(return_value='old_image.bin')
+        device.execute = Mock(return_value=(
+            'Add: Passed on [R0 R1]\n'
+            'SUCCESS: install_add_activate_commit'
+        ))
+
+        cls.install_image(
+            steps=steps,
+            device=device,
+            images=['sftp://server/image.bin'],
+            issu=True,
+        )
+
+        commands = [call.args[0] for call in device.execute.call_args_list]
+        self.assertIn(
+            'install add file sftp://server/image.bin activate issu commit '
+            'prompt-level none',
+            commands,
+        )
+        self.assertNotIn('install commit', commands)
+        self.assertFalse(any(detail.result == Failed for detail in steps.details))
 
     @patch('genie.libs.clean.stages.iosxe.stages.Dialog')
     def test_iosxe_install_image_success_before_reload_timeout(self, dialog):
@@ -489,8 +521,7 @@ class TestInstallImage(unittest.TestCase):
             call('install add file sftp://server/image.bin activate commit prompt-level none',
                  reply=reload_dialog,
                  append_error_pattern=['FAILED:'],
-                 timeout=500),
-            call('install commit')
+                 timeout=500)
         ]
         device.execute.assert_has_calls(expected_execute_call)
         device.reload.assert_called_once_with(
@@ -623,8 +654,7 @@ iso   rp 0 0   rp_base cat9k-2.pkg'''
 
         expected_execute_call = [call('install add file bootflash:/image.bin activate commit prompt-level none', reply=reload_dialog, append_error_pattern=['FAILED:'], timeout=500),
                                 call('more bootflash:packages.conf'),
-                                call('install add file bootflash:/image.bin activate commit prompt-level none', reply=reload_dialog, append_error_pattern=['FAILED:'], timeout=500),
-                                call('install commit')]
+                                call('install add file bootflash:/image.bin activate commit prompt-level none', reply=reload_dialog, append_error_pattern=['FAILED:'], timeout=500)]
 
         device.execute.assert_has_calls(expected_execute_call)
         expected_reload_call = call(
@@ -665,6 +695,46 @@ iso   rp 0 0   rp_base cat9k-2.pkg'''
         self.assertEqual(Passed, steps.details[0].result)
         self.assertEqual(Skipped, steps.details[1].result)
 
+    def test_iosxe_install_image_commits_dual_rp_once(self):
+        steps = Steps()
+        cls = InstallImage()
+        device = Mock()
+        device.parse.return_value = {
+            'location': {
+                'R0': {
+                    'pkg_state': {
+                        1: {
+                            'type': 'IMG',
+                            'state': 'U',
+                            'filename_version': 'image.bin',
+                        },
+                    },
+                },
+                'R1': {
+                    'pkg_state': {
+                        2: {
+                            'type': 'IMG',
+                            'state': 'U',
+                            'filename_version': 'standby-image.bin',
+                        },
+                    },
+                    'auto_abort_timer': 'inactive',
+                },
+            },
+        }
+        device.execute.return_value = 'SUCCESS: install_commit'
+        device.api.get_running_image.return_value = 'bootflash:/image.bin'
+
+        cls.install_image(
+            steps=steps,
+            device=device,
+            images=['bootflash:/image.bin'],
+        )
+
+        device.execute.assert_called_once_with('install commit')
+        self.assertEqual(Passed, steps.details[0].result)
+        self.assertEqual(Skipped, steps.details[1].result)
+
     @patch('genie.libs.clean.stages.iosxe.stages.Dialog')
     def test_iosxe_install_image_grub_boot_image(self, dialog):
         reload_dialog = Mock()
@@ -694,8 +764,7 @@ iso   rp 0 0   rp_base cat9k-2.pkg'''
         expected_execute_call = [call('install add file sftp://server/image.bin activate commit prompt-level none',
                                  reply=reload_dialog,
                                  append_error_pattern=['FAILED:'],
-                                 timeout=500),
-                                 call('install commit')]
+                                 timeout=500)]
 
         device.execute.assert_has_calls(expected_execute_call)
         expected_reload_call = call(

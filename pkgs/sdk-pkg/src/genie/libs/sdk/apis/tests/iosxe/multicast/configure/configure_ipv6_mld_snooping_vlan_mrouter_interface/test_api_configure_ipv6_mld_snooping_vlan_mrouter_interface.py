@@ -1,35 +1,33 @@
-import os
 import unittest
-from pyats.topology import loader
-from genie.libs.sdk.apis.iosxe.multicast.configure import configure_ipv6_mld_snooping_vlan_mrouter_interface
+from unittest import TestCase
+from unittest.mock import Mock
+
+from genie.libs.sdk.apis.iosxe.multicast.configure import (
+    configure_ipv6_mld_snooping_vlan_mrouter_interface,
+)
 
 
-class TestConfigureIpv6MldSnoopingVlanMrouterInterface(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        testbed = f"""
-        devices:
-          stack3-nyquist-1:
-            connections:
-              defaults:
-                class: unicon.Unicon
-              a:
-                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
-                protocol: unknown
-            os: iosxe
-            platform: c9300
-            type: c9300
-        """
-        self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['stack3-nyquist-1']
-        self.device.connect(
-            learn_hostname=True,
-            init_config_commands=[],
-            init_exec_commands=[]
-        )
+class TestConfigureIpv6MldSnoopingVlanMrouterInterface(TestCase):
 
     def test_configure_ipv6_mld_snooping_vlan_mrouter_interface(self):
-        result = configure_ipv6_mld_snooping_vlan_mrouter_interface(self.device, 1, 'Gi1/0/1')
-        expected_output = None
-        self.assertEqual(result, expected_output)
+        device = Mock()
+        device.configure.return_value = None
+
+        result = configure_ipv6_mld_snooping_vlan_mrouter_interface(
+            device,
+            1,
+            "Gi1/0/1",
+        )
+
+        self.assertIsNone(result)
+        device.configure.assert_called_once()
+        command = device.configure.call_args.args[0]
+        self.assertIsInstance(command, str)
+        self.assertEqual(
+            command,
+            "ipv6 mld snooping vlan 1 mrouter interface Gi1/0/1",
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()

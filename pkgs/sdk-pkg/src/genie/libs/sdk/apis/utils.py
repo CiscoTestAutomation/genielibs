@@ -5688,27 +5688,41 @@ def device_recovery_boot(device, console_activity_pattern=None, console_breakboo
     try:
         from genie.libs import clean
         abstract = Lookup.from_device(device, packages={'clean': clean})
-        # Item is needed to be able to know in which parallel child
-        # we are
+
+        # SD-WAN recovery creates its own Spawn and therefore requires the
+        # instantiated connection start command. A connection index is also
+        # required when selecting TFTP recovery parameters.
+        start = device.start
+        if isinstance(start, (list, tuple)):
+            start = start[0]
 
         abstract.clean.recovery.recovery.recovery_worker(
-                device=device,
-                console_activity_pattern=console_activity_pattern,
-                console_breakboot_char=console_breakboot_char,
-                console_breakboot_telnet_break=console_breakboot_telnet_break,
-                grub_activity_pattern=grub_activity_pattern or recovery_info.get('grub_activity_pattern'),
-                grub_breakboot_char=grub_breakboot_char,
-                break_count=break_count,
-                timeout=timeout,
-                golden_image=golden_image,
-                tftp_boot=tftp_boot,
-                recovery_password=recovery_password or recovery_info.get('recovery_password')
+            start=start,
+            item=0,
+            device=device,
+            console_activity_pattern=console_activity_pattern,
+            console_breakboot_char=console_breakboot_char,
+            console_breakboot_telnet_break=console_breakboot_telnet_break,
+            grub_activity_pattern=(
+                grub_activity_pattern
+                or recovery_info.get('grub_activity_pattern')
+            ),
+            grub_breakboot_char=grub_breakboot_char,
+            break_count=break_count,
+            timeout=timeout,
+            golden_image=golden_image,
+            tftp_boot=tftp_boot,
+            recovery_password=(
+                recovery_password
+                or recovery_info.get('recovery_password')
+            ),
         )
     except Exception as e:
         log.error(str(e))
         raise Exception(f"Failed to boot the device {device.name}") from e
     else:
         log.info(f"Successfully boot the device {device.name}")
+
 
 def sanitize(s):
     """
@@ -6021,3 +6035,107 @@ def get_slot_num_by_interface(interface):
     match = pattern.search(interface)
     slot_num = match.groupdict().get('slot_num') if match else None
     return slot_num
+
+
+def _resolve_ping_diagnostic_interface(device, name):
+    try:
+        interface = device.interfaces[name]
+    except (AttributeError, KeyError, TypeError):
+        interface = None
+    resolved = getattr(interface, 'name', None)
+    return (resolved if isinstance(resolved, str) else name), interface
+
+
+def _run_ping_diagnostic_commands(device, commands):
+    results = {}
+    for command in commands:
+        try:
+            output = device.execute(command)
+        except Exception as error:
+            log.warning("Connectivity diagnostic %r on %s failed: %s",
+                        command, device.name, error)
+            results[command] = None
+        else:
+            log.info("Connectivity diagnostic on %s: %s\n%s",
+                     device.name, command, output)
+            results[command] = output
+    return results
+
+
+def collect_ping_failure_diagnostics(device, peer_ip, vrf=None,
+                                     interface=None, linux_device=None,
+                                     linux_interface=None, linux_peer_ip=None):
+    """Log Cisco and optional Linux state after a failed ping.
+
+    Args:
+        device (obj): Cisco device on which to run diagnostics.
+        peer_ip (str): Ping target for the Cisco route lookup.
+        vrf (str, optional): VRF for the Cisco route lookup.
+        interface (str, optional): Cisco interface name or testbed alias.
+        linux_device (obj or str, optional): Linux device object or its
+            testbed name or alias.
+        linux_interface (str, optional): Linux interface name or testbed alias.
+        linux_peer_ip (str, optional): Target for the Linux route lookup;
+            defaults to the Cisco interface's IPv4 address when available.
+
+    Returns:
+        dict: ``{'cisco': {command: output}, 'linux': {command: output}}``.
+        The ``cisco`` mapping is always present; ``linux`` is present only
+        when the Linux device resolves. Failed commands have a ``None`` output.
+    """
+    results = {}
+    interface_name, interface_obj = _resolve_ping_diagnostic_interface(
+        device, interface)
+
+    commands = ['show clock detail', 'show ip arp']
+    if interface_name:
+        commands.extend((f'show interfaces {interface_name}',
+                         f'show ip interface {interface_name}',
+                         f'show running-config interface {interface_name}'))
+    try:
+        destination = ip_address(peer_ip)
+    except (TypeError, ValueError):
+        log.warning("Skipping Cisco route diagnostic: %r is not an IP address",
+                    peer_ip)
+    else:
+        route = 'show ip route' if destination.version == 4 else 'show ipv6 route'
+        if vrf:
+            route += f' vrf {vrf}'
+        commands.append(f'{route} {destination}')
+    results['cisco'] = _run_ping_diagnostic_commands(device, commands)
+
+    if not linux_device:
+        return results
+
+    if isinstance(linux_device, str):
+        devices = getattr(getattr(device, 'testbed', None), 'devices', {})
+        linux_name = linux_device
+        linux_device = devices.get(linux_name)
+        if linux_device is None:
+            linux_device = next(
+                (candidate for candidate in devices.values()
+                 if getattr(candidate, 'alias', None) == linux_name), None)
+        if linux_device is None:
+            log.warning("Skipping Linux connectivity diagnostics: %s is not in the testbed",
+                        linux_name)
+            return results
+
+    commands = ['date -u', 'ip -br address']
+    linux_interface_name, _ = _resolve_ping_diagnostic_interface(
+        linux_device, linux_interface)
+    if linux_interface_name:
+        commands.append(f'ip -s link show dev {linux_interface_name}')
+    if not linux_peer_ip and interface_obj is not None:
+        linux_peer_ip = getattr(getattr(interface_obj, 'ipv4', None), 'ip', None)
+    if linux_peer_ip:
+        try:
+            destination = ip_address(linux_peer_ip)
+        except (TypeError, ValueError):
+            log.warning("Skipping Linux route diagnostic: %r is not an IP address",
+                        linux_peer_ip)
+        else:
+            commands.append(f'ip route get {destination}')
+    if linux_interface_name:
+        commands.append(f'ip neigh show dev {linux_interface_name}')
+    results['linux'] = _run_ping_diagnostic_commands(linux_device, commands)
+    return results

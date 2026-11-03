@@ -162,6 +162,14 @@ ping_server:
     interval (int, optional): Time in seconds between re-attempts to check
         minimum ping success rate. Defaults to 30.
 
+    diagnostics (dict, optional): Collect endpoint state on the first failed
+        ping, before retrying. Supported keys are interface (the Cisco test
+        interface name or alias), linux_device (a connected testbed device name
+        or alias), linux_interface (its interface name or alias), and
+        linux_peer_ip (the Cisco endpoint address). The ping destination is
+        used for the Cisco route lookup. If linux_peer_ip is omitted, the
+        Cisco interface IPv4 address is used when available.
+
 Example
 -------
 ping_server:
@@ -171,6 +179,10 @@ ping_server:
     min_success_rate: 75
     max_attempts: 3
     interval: 60
+    diagnostics:
+        interface: fpnl
+        linux_device: jumphost
+        linux_interface: fpnl
 """
 
     # =================
@@ -181,6 +193,7 @@ ping_server:
     MIN_SUCCESS_RATE = 60
     MAX_ATTEMPTS = 5
     INTERVAL = 30
+    DIAGNOSTICS = None
 
     # ============
     # Stage Schema
@@ -192,6 +205,12 @@ ping_server:
         Optional('min_success_rate'): int,
         Optional('max_attempts'): int,
         Optional('interval'): int,
+        Optional('diagnostics'): {
+            Optional('interface'): str,
+            Optional('linux_device'): str,
+            Optional('linux_interface'): str,
+            Optional('linux_peer_ip'): str,
+        },
     }
 
     # ==============================
@@ -207,7 +226,8 @@ ping_server:
                     timeout=TIMEOUT,
                     min_success_rate=MIN_SUCCESS_RATE,
                     max_attempts=MAX_ATTEMPTS,
-                    interval=INTERVAL):
+                    interval=INTERVAL,
+                    diagnostics=DIAGNOSTICS):
         with steps.start("Pinging server") as step:
 
             # Success rate is 80 percent (4/5)
@@ -243,6 +263,9 @@ ping_server:
                     else:
                         output = device.ping(server, timeout=timeout)
                 except SubCommandFailure as err:
+                    if diagnostics and i == 1:
+                        self._collect_connectivity_diagnostics(
+                            device, server, vrf, diagnostics)
                     if 'Requested protocol was not running during ping' in str(
                             err):
                         step.failed(
@@ -289,6 +312,9 @@ ping_server:
                         step.passed(f"{server} is reachable")
 
                 # Minimum success rate not met, retry
+                if diagnostics and i == 1:
+                    self._collect_connectivity_diagnostics(
+                        device, server, vrf, diagnostics)
                 log.warning(f'Unable to meet minimum ping success rate of '
                             f'{min_success_rate}%. Retrying after {interval} '
                             f'seconds.')
@@ -299,6 +325,19 @@ ping_server:
                 step.failed(
                     f"'{server}' is not reachable after {max_attempts} "
                     f"attempts.")
+
+    @staticmethod
+    def _collect_connectivity_diagnostics(device, server, vrf, diagnostics):
+        """Call the SDK collector while the first ping failure is present."""
+        try:
+            from genie.libs.sdk.apis.utils import (
+                collect_ping_failure_diagnostics)
+
+            collect_ping_failure_diagnostics(
+                device, server, vrf=vrf, **diagnostics)
+        except Exception as error:
+            log.warning("Connectivity diagnostic collection failed: %s",
+                        error, exc_info=True)
 
 
 class CopyToLinux(BaseStage):
